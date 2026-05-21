@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import Countdown from './Countdown';
 import { formatVietnameseDateTime } from '../utils/date';
+import { User, EventData, EventOption, EventVote, EventComment } from '../App';
 
 const getDynamicDatePresets = () => {
-  const getQuickDate = (daysAhead, hourStr = "19:30") => {
+  const getQuickDate = (daysAhead: number, hourStr = "19:30") => {
     const d = new Date();
     d.setDate(d.getDate() + daysAhead);
     const yyyy = d.getFullYear();
@@ -12,7 +13,7 @@ const getDynamicDatePresets = () => {
     return `${yyyy}-${mm}-${dd}T${hourStr}`;
   };
 
-  const getUpcomingDay = (dayOfWeek, hourStr = "19:30") => {
+  const getUpcomingDay = (dayOfWeek: number, hourStr = "19:30") => {
     const d = new Date();
     const currentDay = d.getDay(); // 0 is Sun, 5 is Fri, 6 is Sat
     let daysAhead = (dayOfWeek - currentDay + 7) % 7;
@@ -37,6 +38,22 @@ const AVATAR_COLORS = [
   '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899'
 ];
 
+interface EventDetailProps {
+  eventId: string;
+  eventData: EventData | null;
+  currentUser: User | null;
+  onBack: () => void;
+  onVoteToggle: (eventId: string, optionId: string, userId?: string, userName?: string) => void;
+  onAddOption: (optionData: any) => void;
+  onAddComment: (commentData: any) => void;
+  onLockEvent: (lockData: any) => void;
+}
+
+interface EventOptionWithVotes extends EventOption {
+  votes: EventVote[];
+  votesCount: number;
+}
+
 export default function EventDetail({ 
   eventId, 
   eventData, 
@@ -46,7 +63,7 @@ export default function EventDetail({
   onAddOption, 
   onAddComment, 
   onLockEvent 
-}) {
+}: EventDetailProps) {
   const [newOptionValues, setNewOptionValues] = useState({ datetime: '', location: '', beer: '' });
   const [commentText, setCommentText] = useState('');
   const [showLockModal, setShowLockModal] = useState(false);
@@ -57,7 +74,7 @@ export default function EventDetail({
   const [finalLocation, setFinalLocation] = useState('');
   const [finalBeerStyle, setFinalBeerStyle] = useState('');
 
-  const commentsEndRef = useRef(null);
+  const commentsEndRef = useRef<HTMLDivElement | null>(null);
 
   // Cuộn xuống cuối khi có comment mới
   useEffect(() => {
@@ -74,10 +91,10 @@ export default function EventDetail({
     );
   }
 
-  const { title, creatorName, status, options, votes, comments } = eventData;
+  const { title, creatorName, status, options = [], votes = [], comments = [] } = eventData;
 
   // Lọc các option theo từng loại
-  const getOptionsByType = (type) => {
+  const getOptionsByType = (type: 'datetime' | 'location' | 'beer'): EventOptionWithVotes[] => {
     const filtered = options.filter(o => o.type === type);
     // Tính số vote cho mỗi option
     const withVotes = filtered.map(opt => {
@@ -91,7 +108,7 @@ export default function EventDetail({
     // Sắp xếp theo số vote giảm dần, nếu bằng vote thì xếp theo thời gian tạo cũ hơn lên trước
     return withVotes.sort((a, b) => {
       if (b.votesCount === a.votesCount) {
-        return new Date(a.createdAt) - new Date(b.createdAt);
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       }
       return b.votesCount - a.votesCount;
     });
@@ -102,7 +119,7 @@ export default function EventDetail({
   const beerOptions = getOptionsByType('beer');
 
   // Sinh màu ngẫu nhiên cố định theo tên người dùng
-  const getAvatarColor = (name) => {
+  const getAvatarColor = (name: string) => {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -112,7 +129,7 @@ export default function EventDetail({
   };
 
   // Lấy chữ cái đầu làm avatar
-  const getInitial = (name) => {
+  const getInitial = (name: string) => {
     if (!name) return '?';
     // Loại bỏ dấu và lấy ký tự đầu tiên
     const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
@@ -136,9 +153,14 @@ export default function EventDetail({
   };
 
   // Xử lý gửi bình luận
-  const handleSendComment = (e) => {
+  const handleSendComment = (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!commentText.trim()) return;
+
+    if (!currentUser) {
+      onAddComment(null); // Kích hoạt modal nhập thông tin
+      return;
+    }
 
     onAddComment({
       eventId,
@@ -154,7 +176,11 @@ export default function EventDetail({
   };
 
   // Gửi bình luận nhanh
-  const handleQuickChat = (text) => {
+  const handleQuickChat = (text: string) => {
+    if (!currentUser) {
+      onAddComment(null); // Kích hoạt modal nhập thông tin
+      return;
+    }
     onAddComment({
       eventId,
       userId: currentUser.id,
@@ -168,7 +194,7 @@ export default function EventDetail({
   };
 
   // Xử lý thêm đề xuất mới
-  const handleAddSuggest = (type) => {
+  const handleAddSuggest = (type: 'datetime' | 'location' | 'beer') => {
     const val = newOptionValues[type];
     if (!val || !val.trim()) return;
 
@@ -176,6 +202,11 @@ export default function EventDetail({
     const isDuplicate = options.some(o => o.type === type && o.value.toLowerCase() === val.trim().toLowerCase());
     if (isDuplicate) {
       alert('Đề xuất này đã tồn tại rồi bạn ơi! Vote cho nó đi nào.');
+      return;
+    }
+
+    if (!currentUser) {
+      onAddOption(null); // Kích hoạt modal nhập thông tin
       return;
     }
 
@@ -228,9 +259,8 @@ export default function EventDetail({
     setTimeout(() => setToastMsg(''), 3000);
   };
 
-  const renderVotingSection = (titleIcon, titleText, type, listOptions) => {
+  const renderVotingSection = (titleIcon: string, titleText: string, type: 'datetime' | 'location' | 'beer', listOptions: EventOptionWithVotes[]) => {
     return (
-
       <div className="card-pub">
         <h4 className="section-card-title">
           <span>{titleIcon}</span> {titleText}
@@ -238,7 +268,7 @@ export default function EventDetail({
 
         <div className="options-list">
           {listOptions.map((opt, idx) => {
-            const hasVoted = opt.votes.some(v => v.userId === currentUser.id);
+            const hasVoted = currentUser ? opt.votes.some(v => v.userId === currentUser.id) : false;
             const isLeader = idx === 0 && opt.votesCount > 0;
             
             return (
@@ -273,7 +303,7 @@ export default function EventDetail({
                   {/* Nút Upvote */}
                   <button 
                     className={`vote-button ${hasVoted ? 'active' : ''}`}
-                    onClick={() => onVoteToggle(eventId, opt.id, currentUser.id, currentUser.name)}
+                    onClick={() => onVoteToggle(eventId, opt.id, currentUser?.id, currentUser?.name)}
                     disabled={status === 'locked'}
                     title={status === 'locked' ? 'Kèo đã chốt, không thể vote' : hasVoted ? 'Hủy bình chọn' : 'Bình chọn'}
                   >
@@ -372,7 +402,7 @@ export default function EventDetail({
       </span>
 
       {/* Banner nếu Kèo Đã Chốt */}
-      {status === 'locked' && (
+      {status === 'locked' && finalDateTime && (
         <div className="locked-banner animate-fade-in">
           <div className="locked-banner-title">
             <span>👑</span> Kèo Đã Chốt Chính Thức! Lên Đồ Đi Nhậu Thôi!
@@ -429,10 +459,9 @@ export default function EventDetail({
         <div className="detail-sidebar">
           
           {/* 1. Đếm Ngược / Lời kêu gọi */}
-          {status === 'locked' ? (
+          {status === 'locked' && eventData.finalDateTime ? (
             <Countdown key={eventData.finalDateTime} targetDate={eventData.finalDateTime} />
           ) : (
-
             <div className="card-pub" style={{ textAlign: 'center', padding: '1.5rem' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔥</div>
               <h4 style={{ fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '0.5rem', textTransform: 'uppercase', fontSize: '0.9rem' }}>

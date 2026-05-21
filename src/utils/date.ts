@@ -3,7 +3,7 @@
  * thành định dạng tiếng Việt dễ đọc và chuẩn xác.
  * Ví dụ: "19:30 - Thứ Tư, 20/05/2026"
  */
-export function formatVietnameseDateTime(dateTimeStr) {
+export function formatVietnameseDateTime(dateTimeStr: string | null | undefined): string {
   if (!dateTimeStr) return '';
   try {
     const date = new Date(dateTimeStr);

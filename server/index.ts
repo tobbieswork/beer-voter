@@ -1,5 +1,5 @@
 /* global process */
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -15,23 +15,85 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Định nghĩa Interfaces cho cơ sở dữ liệu JSON
+export interface DBEvent {
+  id: string;
+  title: string;
+  creatorId: string;
+  creatorName: string;
+  creatorNickname?: string;
+  creatorRealName?: string;
+  creatorUsername?: string;
+  status: 'voting' | 'locked';
+  createdAt: string;
+  lockedAt: string | null;
+  finalDateTime: string | null;
+  finalLocation: string | null;
+  finalBeerStyle: string | null;
+}
+
+export interface DBOption {
+  id: string;
+  eventId: string;
+  type: 'datetime' | 'location' | 'beer';
+  value: string;
+  creatorId: string;
+  creatorName: string;
+  creatorNickname?: string;
+  creatorRealName?: string;
+  creatorUsername?: string;
+  createdAt: string;
+}
+
+export interface DBVote {
+  id: string;
+  eventId: string;
+  optionId: string;
+  userId: string;
+  userName: string;
+  userNickname?: string;
+  userRealName?: string;
+  userEmail?: string;
+  createdAt: string;
+}
+
+export interface DBComment {
+  id: string;
+  eventId: string;
+  userId: string;
+  userName: string;
+  userRole?: string;
+  content: string;
+  userNickname?: string;
+  userRealName?: string;
+  userEmail?: string;
+  createdAt: string;
+}
+
+export interface DatabaseSchema {
+  events: DBEvent[];
+  options: DBOption[];
+  votes: DBVote[];
+  comments: DBComment[];
+}
+
 // Helper đọc/ghi Database
-function readDB() {
+function readDB(): DatabaseSchema {
   try {
     if (!fs.existsSync(DB_PATH)) {
-      const initialData = { events: [], options: [], votes: [], comments: [] };
+      const initialData: DatabaseSchema = { events: [], options: [], votes: [], comments: [] };
       fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2), 'utf8');
       return initialData;
     }
     const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
+    return JSON.parse(data) as DatabaseSchema;
   } catch (error) {
     console.error('Lỗi đọc database file JSON:', error);
     return { events: [], options: [], votes: [], comments: [] };
   }
 }
 
-function writeDB(data) {
+function writeDB(data: DatabaseSchema): void {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (error) {
@@ -40,7 +102,7 @@ function writeDB(data) {
 }
 
 // Helper lấy chi tiết đầy đủ của một kèo nhậu
-function getEventDetail(db, eventId) {
+function getEventDetail(db: DatabaseSchema, eventId: string) {
   const event = db.events.find(e => e.id === eventId);
   if (!event) return null;
   
@@ -59,7 +121,7 @@ function getEventDetail(db, eventId) {
 // ================= HTTP REST APIs =================
 
 // 1. Lấy danh sách các kèo nhậu
-app.get('/api/events', (req, res) => {
+app.get('/api/events', (_req: Request, res: Response) => {
   const db = readDB();
   // Trả về danh sách kèo kèm theo một vài thông tin tóm tắt
   const summaryEvents = db.events.map(event => {
@@ -76,7 +138,7 @@ app.get('/api/events', (req, res) => {
   // Sắp xếp kèo đang vote lên trước, kèo đã chốt xuống sau. Trong mỗi nhóm sắp xếp theo ngày tạo mới nhất.
   summaryEvents.sort((a, b) => {
     if (a.status === b.status) {
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
     return a.status === 'voting' ? -1 : 1;
   });
@@ -84,7 +146,7 @@ app.get('/api/events', (req, res) => {
 });
 
 // 2. Lấy chi tiết một kèo nhậu
-app.get('/api/events/:id', (req, res) => {
+app.get('/api/events/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const db = readDB();
   const eventDetail = getEventDetail(db, id);
@@ -95,7 +157,7 @@ app.get('/api/events/:id', (req, res) => {
 });
 
 // 3. Tạo kèo nhậu mới (Ai cũng có thể tạo kèo và làm chủ kèo)
-app.post('/api/events', (req, res) => {
+app.post('/api/events', (req: Request, res: Response) => {
   const { 
     title, 
     creatorId, 
@@ -115,7 +177,7 @@ app.post('/api/events', (req, res) => {
   const db = readDB();
   const eventId = 'evt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
   
-  const newEvent = {
+  const newEvent: DBEvent = {
     id: eventId,
     title,
     creatorId,
@@ -134,7 +196,7 @@ app.post('/api/events', (req, res) => {
   db.events.push(newEvent);
 
   // Thêm các option đề xuất ban đầu
-  const addOption = (value, type) => {
+  const addOption = (value: string, type: 'datetime' | 'location' | 'beer') => {
     if (!value || value.trim() === '') return;
     const optId = 'opt_' + type + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     db.options.push({
@@ -172,11 +234,16 @@ const server = http.createServer(app);
 
 const wss = new WebSocketServer({ server });
 
+interface ClientInfo {
+  currentEventId: string | null;
+  isLocal: boolean;
+}
+
 // Danh sách các kết nối WebSocket đang hoạt động
-const clients = new Map(); // ws -> { currentEventId }
+const clients = new Map<WebSocket, ClientInfo>();
 
 // Hàm phát sóng (broadcast) thông tin cập nhật cho mọi client đang xem event đó
-function broadcastEventUpdate(eventId) {
+function broadcastEventUpdate(eventId: string): void {
   const db = readDB();
   const eventDetail = getEventDetail(db, eventId);
   if (!eventDetail) return;
@@ -199,7 +266,7 @@ function broadcastEventUpdate(eventId) {
 }
 
 // Hàm phát sóng cập nhật danh sách kèo cho trang dashboard
-function broadcastDashboardUpdate() {
+function broadcastDashboardUpdate(): void {
   const db = readDB();
   const summaryEvents = db.events.map(event => {
     const votesCount = db.votes.filter(v => v.eventId === event.id).length;
@@ -215,7 +282,7 @@ function broadcastDashboardUpdate() {
   
   summaryEvents.sort((a, b) => {
     if (a.status === b.status) {
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
     return a.status === 'voting' ? -1 : 1;
   });
@@ -235,16 +302,17 @@ function broadcastDashboardUpdate() {
   });
 }
 
-wss.on('connection', (ws, req) => {
+wss.on('connection', (ws: WebSocket, req) => {
   const clientIp = req.socket.remoteAddress || '';
   const isLocal = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === '::ffff:127.0.0.1';
   console.log(`Một thiết bị đã kết nối qua WebSockets! IP: ${clientIp} (Local: ${isLocal})`);
   clients.set(ws, { currentEventId: null, isLocal });
 
-  ws.on('message', (messageStr) => {
+  ws.on('message', (messageStr: string) => {
     try {
       const action = JSON.parse(messageStr);
       const clientInfo = clients.get(ws);
+      if (!clientInfo) return;
 
       switch (action.type) {
         // Client thông báo đang xem event nào để nhận broadcast chính xác
@@ -314,7 +382,7 @@ wss.on('connection', (ws, req) => {
           }
 
           const optId = 'opt_' + optType + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-          const newOption = {
+          const newOption: DBOption = {
             id: optId,
             eventId,
             type: optType,
@@ -324,7 +392,6 @@ wss.on('connection', (ws, req) => {
             creatorNickname: userNickname || creatorName,
             creatorRealName: userRealName || '',
             creatorUsername: userUsername || userEmail || '',
-            creatorEmail: userEmail || '',
             createdAt: new Date().toISOString()
           };
 
@@ -419,7 +486,7 @@ const distPath = path.join(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   // Hỗ trợ SPA Routing cho React
-  app.get('*', (req, res, next) => {
+  app.get('*', (req: Request, res: Response, next) => {
     if (req.path.startsWith('/api')) {
       return next();
     }

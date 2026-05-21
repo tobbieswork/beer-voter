@@ -9,7 +9,15 @@ const FUNNY_SLOGANS = [
   'Họp mặt đông đủ, cạn ly rực rỡ! 🥂',
 ];
 
-function calculateTimeLeft(targetDate) {
+interface TimeLeft {
+  days?: number;
+  hours?: number;
+  minutes?: number;
+  seconds?: number;
+  isOver?: boolean;
+}
+
+function calculateTimeLeft(targetDate: string): TimeLeft {
   const difference = +new Date(targetDate) - +new Date();
 
   if (difference > 0) {
@@ -24,15 +32,18 @@ function calculateTimeLeft(targetDate) {
   return { isOver: true };
 }
 
-export default function Countdown({ targetDate }) {
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
-  const [slogan, setSlogan] = useState(() => {
+interface CountdownProps {
+  targetDate: string;
+}
+
+export default function Countdown({ targetDate }: CountdownProps) {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetDate));
+  const [slogan, setSlogan] = useState<string>(() => {
     return FUNNY_SLOGANS[Math.floor(Math.random() * FUNNY_SLOGANS.length)];
   });
 
   useEffect(() => {
     // Cập nhật đếm ngược mỗi giây
-
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
@@ -49,7 +60,7 @@ export default function Countdown({ targetDate }) {
     };
   }, [targetDate]);
 
-  const padZero = (num) => {
+  const padZero = (num: number) => {
     return String(num).padStart(2, '0');
   };
 
@@ -92,4 +103,3 @@ export default function Countdown({ targetDate }) {
     </div>
   );
 }
-

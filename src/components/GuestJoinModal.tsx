@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 
 const FUNNY_NAMES = [
   'Beer Thủ Vô Song 🍺',
@@ -18,7 +18,13 @@ const FUNNY_NAMES = [
   'Đệ Nhất Uống Nước Ngọt 🥤'
 ];
 
-export default function GuestJoinModal({ isOpen, onSubmit, usedNicknames = [] }) {
+interface GuestJoinModalProps {
+  isOpen: boolean;
+  onSubmit: (data: { nickname: string; realName: string; username: string }) => void;
+  usedNicknames?: string[];
+}
+
+export default function GuestJoinModal({ isOpen, onSubmit, usedNicknames = [] }: GuestJoinModalProps) {
   const [nickname, setNickname] = useState('');
   const [realName, setRealName] = useState('');
   const [username, setUsername] = useState('');
@@ -26,7 +32,7 @@ export default function GuestJoinModal({ isOpen, onSubmit, usedNicknames = [] })
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) {
       setError('Vui lòng nhập biệt danh để anh em dễ gọi nhé!');
@@ -48,7 +54,7 @@ export default function GuestJoinModal({ isOpen, onSubmit, usedNicknames = [] })
     });
   };
 
-  const handleSelectFunnyName = (funnyName) => {
+  const handleSelectFunnyName = (funnyName: string) => {
     setNickname(funnyName);
     setError('');
   };
@@ -160,4 +166,3 @@ export default function GuestJoinModal({ isOpen, onSubmit, usedNicknames = [] })
     </div>
   );
 }
-

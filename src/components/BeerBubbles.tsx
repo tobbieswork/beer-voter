@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, CSSProperties } from 'react';
+
+interface Bubble {
+  id: number;
+  style: CSSProperties;
+}
 
 export default function BeerBubbles() {
-  const [bubbles] = useState(() => {
+  const [bubbles] = useState<Bubble[]>(() => {
     // Khởi tạo danh sách bong bóng ngẫu nhiên
     const bubbleCount = 35;
     return Array.from({ length: bubbleCount }).map((_, index) => {

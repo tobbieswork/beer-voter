@@ -8,7 +8,80 @@ import EventDetail from './components/EventDetail';
 import GuestJoinModal from './components/GuestJoinModal';
 import CreateEvent from './components/CreateEvent';
 
-function getInitialUser() {
+export interface User {
+  id: string;
+  nickname: string;
+  realName: string;
+  username: string;
+  name: string;
+  role?: string;
+  email?: string;
+}
+
+export interface EventOption {
+  id: string;
+  eventId: string;
+  type: 'datetime' | 'location' | 'beer';
+  value: string;
+  creatorId: string;
+  creatorName: string;
+  creatorNickname?: string;
+  creatorRealName?: string;
+  creatorUsername?: string;
+  creatorEmail?: string;
+  createdAt: string;
+}
+
+export interface EventVote {
+  id: string;
+  eventId: string;
+  optionId: string;
+  userId: string;
+  userName: string;
+  userNickname?: string;
+  userRealName?: string;
+  userUsername?: string;
+  userEmail?: string;
+  createdAt: string;
+}
+
+export interface EventComment {
+  id: string;
+  eventId: string;
+  userId: string;
+  userName: string;
+  userRole?: string;
+  content: string;
+  userNickname?: string;
+  userRealName?: string;
+  userUsername?: string;
+  userEmail?: string;
+  createdAt: string;
+}
+
+export interface EventData {
+  id: string;
+  title: string;
+  creatorId: string;
+  creatorName: string;
+  creatorNickname?: string;
+  creatorRealName?: string;
+  creatorUsername?: string;
+  status: 'voting' | 'locked';
+  createdAt: string;
+  lockedAt?: string | null;
+  finalDateTime?: string | null;
+  finalLocation?: string | null;
+  finalBeerStyle?: string | null;
+  votesCount?: number;
+  commentsCount?: number;
+  optionsCount?: number;
+  options?: EventOption[];
+  votes?: EventVote[];
+  comments?: EventComment[];
+}
+
+function getInitialUser(): User | null {
   const userId = sessionStorage.getItem('beervote_user_id');
   const nickname = sessionStorage.getItem('beervote_user_nickname');
   const realName = sessionStorage.getItem('beervote_user_real_name');
@@ -26,31 +99,31 @@ function getInitialUser() {
 }
 
 export default function App() {
-  const [events, setEvents] = useState([]);
-  const [currentEventId, setCurrentEventId] = useState(() => {
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [currentEventId, setCurrentEventId] = useState<string | null>(() => {
     // Đọc eventId từ URL lúc khởi chạy
     const params = new URLSearchParams(window.location.search);
     return params.get('eventId') || null;
   });
   
-  const [currentEventData, setCurrentEventData] = useState(null);
-  const [currentUser, setCurrentUser] = useState(() => getInitialUser());
+  const [currentEventData, setCurrentEventData] = useState<EventData | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getInitialUser());
   
   // Trạng thái Modal
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState(() => {
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(() => {
     const user = getInitialUser();
     const params = new URLSearchParams(window.location.search);
     return params.get('eventId') ? !user : false;
   });
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState<boolean>(false);
 
-  const wsRef = useRef(null);
-  const reconnectTimerRef = useRef(null);
-  const connectWsRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const connectWsRef = useRef<(() => void) | null>(null);
 
   // 1. Tự động đồng bộ URL (Router mini)
-  const navigateToEvent = (eventId) => {
+  const navigateToEvent = (eventId: string | null) => {
     setCurrentEventId(eventId);
     const newUrl = eventId 
       ? `${window.location.origin}${window.location.pathname}?eventId=${eventId}`
@@ -96,7 +169,7 @@ export default function App() {
     }
   }, []);
 
-  const fetchEventDetail = useCallback(async (id) => {
+  const fetchEventDetail = useCallback(async (id: string) => {
     if (!id) return;
     try {
       const response = await fetch(`/api/events/${id}`);
@@ -133,7 +206,7 @@ export default function App() {
 
     // Tự động định vị địa chỉ WebSocket server dựa trên hostname và port hiện tại
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let wsUrl;
+    let wsUrl: string;
     if (window.location.port === '5173') {
       // Trong môi trường dev: React chạy ở 5173, WebSocket chạy ở 3001
       wsUrl = `${protocol}//${window.location.hostname}:3001`;
@@ -148,7 +221,7 @@ export default function App() {
 
     ws.onopen = () => {
       console.log('Đã kết nối WebSockets thành công tới BeerVote Server!');
-      clearTimeout(reconnectTimerRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
 
       // Đăng ký phòng khi kết nối mở
       if (currentEventId) {
@@ -200,12 +273,12 @@ export default function App() {
       if (wsRef.current) {
         wsRef.current.close();
       }
-      clearTimeout(reconnectTimerRef.current);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     };
   }, [connectWebSocket]);
 
   // 4. Thao tác gửi dữ liệu qua WebSockets
-  const handleVoteToggle = (eventId, optionId, userId, userName) => {
+  const handleVoteToggle = (eventId: string, optionId: string, userId?: string, userName?: string) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
@@ -215,9 +288,9 @@ export default function App() {
         type: 'VOTE_TOGGLE',
         eventId,
         optionId,
-        userId,
-        userName,
-        userNickname: currentUser.nickname || userName,
+        userId: userId || currentUser.id,
+        userName: userName || currentUser.name,
+        userNickname: currentUser.nickname || userName || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
         userEmail: currentUser.username || ''
@@ -227,7 +300,7 @@ export default function App() {
     }
   };
 
-  const handleAddOption = (optionData) => {
+  const handleAddOption = (optionData: any) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
@@ -246,7 +319,7 @@ export default function App() {
     }
   };
 
-  const handleAddComment = (commentData) => {
+  const handleAddComment = (commentData: any) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
@@ -265,7 +338,7 @@ export default function App() {
     }
   };
 
-  const handleLockEvent = (lockData) => {
+  const handleLockEvent = (lockData: any) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
@@ -295,14 +368,14 @@ export default function App() {
   };
 
   // Xử lý nộp biệt danh của người dùng
-  const handleGuestJoinSubmit = ({ nickname, realName, username }) => {
+  const handleGuestJoinSubmit = ({ nickname, realName, username }: { nickname: string; realName: string; username: string }) => {
     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
     sessionStorage.setItem('beervote_user_id', userId);
     sessionStorage.setItem('beervote_user_nickname', nickname);
     sessionStorage.setItem('beervote_user_real_name', realName);
     sessionStorage.setItem('beervote_user_username', username);
     
-    const user = {
+    const user: User = {
       id: userId,
       nickname,
       realName,
@@ -319,9 +392,9 @@ export default function App() {
   };
 
   // Trích xuất danh sách các biệt danh đang được dùng trong kèo
-  const getUsedNicknames = (eventData) => {
+  const getUsedNicknames = (eventData: EventData | null) => {
     if (!eventData) return [];
-    const names = new Set();
+    const names = new Set<string>();
     
     if (eventData.options) {
       eventData.options.forEach(opt => {

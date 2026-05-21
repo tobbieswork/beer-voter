@@ -1,7 +1,15 @@
 import { formatVietnameseDateTime } from '../utils/date';
+import { EventData, User } from '../App';
 
-export default function Dashboard({ events, onSelectEvent, onCreateEventClick }) {
-  const formatDate = (isoStr) => {
+interface DashboardProps {
+  events: EventData[];
+  onSelectEvent: (eventId: string | null) => void;
+  onCreateEventClick: () => void;
+  currentUser?: User | null;
+}
+
+export default function Dashboard({ events, onSelectEvent, onCreateEventClick }: DashboardProps) {
+  const formatDate = (isoStr: string) => {
     try {
       const date = new Date(isoStr);
       return date.toLocaleDateString('vi-VN', {
@@ -15,7 +23,6 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick })
       return isoStr;
     }
   };
-
 
   return (
     <div className="dashboard-container">

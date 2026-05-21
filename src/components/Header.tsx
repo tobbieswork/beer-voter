@@ -1,6 +1,11 @@
+import { User } from '../App';
 
+interface HeaderProps {
+  currentUser: User | null;
+  onGoHome: () => void;
+}
 
-export default function Header({ currentUser, onGoHome }) {
+export default function Header({ currentUser, onGoHome }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="header-logo" onClick={onGoHome}>

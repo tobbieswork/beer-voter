@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+import { User } from '../App';
 
 const TITLE_PRESETS = [
   'Họp mặt cuối tuần 🍻',
@@ -24,11 +25,18 @@ const BEER_PRESETS = [
   'Bia úp ngược đa sắc màu 🍹'
 ];
 
-export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentUser }) {
+interface CreateEventProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreateSuccess: (newEventId: string) => void;
+  currentUser: User | null;
+}
+
+export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentUser }: CreateEventProps) {
   const [title, setTitle] = useState('');
-  const [dateOpts, setDateOpts] = useState(['']);
-  const [locOpts, setLocOpts] = useState(['']);
-  const [beerOpts, setBeerOpts] = useState(['']);
+  const [dateOpts, setDateOpts] = useState<string[]>(['']);
+  const [locOpts, setLocOpts] = useState<string[]>(['']);
+  const [beerOpts, setBeerOpts] = useState<string[]>(['']);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,7 +44,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
 
   // Tính toán các gợi ý ngày giờ động dựa trên thời gian thực
   const getDynamicDatePresets = () => {
-    const getQuickDate = (daysAhead, hourStr = "19:30") => {
+    const getQuickDate = (daysAhead: number, hourStr = "19:30") => {
       const d = new Date();
       d.setDate(d.getDate() + daysAhead);
       const yyyy = d.getFullYear();
@@ -45,7 +53,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       return `${yyyy}-${mm}-${dd}T${hourStr}`;
     };
 
-    const getUpcomingDay = (dayOfWeek, hourStr = "19:30") => {
+    const getUpcomingDay = (dayOfWeek: number, hourStr = "19:30") => {
       const d = new Date();
       const currentDay = d.getDay(); // 0 là Chủ Nhật, 5 là Thứ Sáu, 6 là Thứ Bảy
       let daysAhead = (dayOfWeek - currentDay + 7) % 7;
@@ -68,13 +76,13 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
   const datePresets = getDynamicDatePresets();
 
   // Xử lý điền nhanh ý tưởng từ preset
-  const handleSelectPreset = (value, type) => {
+  const handleSelectPreset = (value: string, type: 'title' | 'date' | 'location' | 'beer') => {
     if (type === 'title') {
       setTitle(value);
       return;
     }
     
-    let opts, setOpts;
+    let opts: string[], setOpts: (o: string[]) => void;
     if (type === 'date') {
       opts = dateOpts;
       setOpts = setDateOpts;
@@ -98,8 +106,8 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
   };
 
   // Xử lý thay đổi mảng option
-  const handleOptChange = (index, value, type) => {
-    let updateOpts;
+  const handleOptChange = (index: number, value: string, type: 'date' | 'location' | 'beer') => {
+    let updateOpts: string[];
     if (type === 'date') {
       updateOpts = [...dateOpts];
       updateOpts[index] = value;
@@ -116,15 +124,15 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
   };
 
   // Thêm ô nhập option mới
-  const addOptField = (type) => {
+  const addOptField = (type: 'date' | 'location' | 'beer') => {
     if (type === 'date') setDateOpts([...dateOpts, '']);
     else if (type === 'location') setLocOpts([...locOpts, '']);
     else setBeerOpts([...beerOpts, '']);
   };
 
   // Xóa bớt ô nhập option
-  const removeOptField = (index, type) => {
-    let updateOpts;
+  const removeOptField = (index: number, type: 'date' | 'location' | 'beer') => {
+    let updateOpts: string[];
     if (type === 'date') {
       if (dateOpts.length === 1) return;
       updateOpts = dateOpts.filter((_, i) => i !== index);
@@ -140,7 +148,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -155,6 +163,11 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
 
     if (filteredDates.length === 0 || filteredLocs.length === 0 || filteredBeers.length === 0) {
       setError('Vui lòng nhập/chọn ít nhất 1 đề xuất ban đầu cho mỗi mục (Ngày/Giờ, Địa điểm, Loại bia)!');
+      return;
+    }
+
+    if (!currentUser) {
+      setError('Bạn cần nhập thông tin trước khi tạo kèo!');
       return;
     }
 

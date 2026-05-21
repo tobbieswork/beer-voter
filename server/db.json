@@ -1,6 +1,95 @@
 {
-  "events": [],
-  "options": [],
-  "votes": [],
-  "comments": []
+  "events": [
+    {
+      "id": "evt_1779331065426_0zk9f",
+      "title": "Họp mặt cuối tuần 🍻",
+      "creatorId": "usr_1779331058062_ec3",
+      "creatorName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "creatorNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "creatorRealName": "Phat",
+      "creatorUsername": "phatnd12",
+      "status": "voting",
+      "createdAt": "2026-05-21T02:37:45.426Z",
+      "lockedAt": null,
+      "finalDateTime": null,
+      "finalLocation": null,
+      "finalBeerStyle": null
+    }
+  ],
+  "options": [
+    {
+      "id": "opt_datetime_1779331065426_wvawa",
+      "eventId": "evt_1779331065426_0zk9f",
+      "type": "datetime",
+      "value": "2026-05-22T19:30",
+      "creatorId": "usr_1779331058062_ec3",
+      "creatorName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "creatorNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "creatorRealName": "Phat",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-21T02:37:45.426Z"
+    },
+    {
+      "id": "opt_location_1779331065426_3c1o9",
+      "eventId": "evt_1779331065426_0zk9f",
+      "type": "location",
+      "value": "Bia Hơi Vỉa Hè Bờ Sông 🌊",
+      "creatorId": "usr_1779331058062_ec3",
+      "creatorName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "creatorNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "creatorRealName": "Phat",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-21T02:37:45.426Z"
+    },
+    {
+      "id": "opt_beer_1779331065426_3qop1",
+      "eventId": "evt_1779331065426_0zk9f",
+      "type": "beer",
+      "value": "Bia hơi Hà Nội mát lạnh cổ điển 🍺",
+      "creatorId": "usr_1779331058062_ec3",
+      "creatorName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "creatorNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "creatorRealName": "Phat",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-21T02:37:45.426Z"
+    },
+    {
+      "id": "opt_location_1779331108711_giq4z",
+      "eventId": "evt_1779331065426_0zk9f",
+      "type": "location",
+      "value": "Nướng & Beer 💨",
+      "creatorId": "usr_1779331058062_ec3",
+      "creatorName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "creatorNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "creatorRealName": "Phat",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-21T02:38:28.711Z"
+    }
+  ],
+  "votes": [
+    {
+      "id": "vote_1779331108711_tjm",
+      "eventId": "evt_1779331065426_0zk9f",
+      "optionId": "opt_location_1779331108711_giq4z",
+      "userId": "usr_1779331058062_ec3",
+      "userName": "Dũng Sĩ Cạn Ly 🥂 (Phat)",
+      "userNickname": "Dũng Sĩ Cạn Ly 🥂",
+      "userRealName": "Phat",
+      "userEmail": "phatnd12",
+      "createdAt": "2026-05-21T02:38:28.711Z"
+    }
+  ],
+  "comments": [
+    {
+      "id": "cmt_1779331100894_c3vpl",
+      "eventId": "evt_1779331065426_0zk9f",
+      "userId": "usr_1779331094771_pju",
+      "userName": "Chiến Thần Diệt Mồi 🍗 (Hoan)",
+      "content": "🎤 Làm tí tăng hai Karaoke hát hò tưng bừng đê! 🎶",
+      "userNickname": "Chiến Thần Diệt Mồi 🍗",
+      "userRealName": "Hoan",
+      "userEmail": "hoantt",
+      "createdAt": "2026-05-21T02:38:20.894Z"
+    }
+  ]
 }
