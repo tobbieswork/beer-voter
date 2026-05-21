@@ -15,7 +15,7 @@ export default function Header({ currentUser, onGoHome }) {
             <span>
               <strong>{currentUser.nickname || currentUser.name}</strong>
               {currentUser.realName && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '0.4rem', fontWeight: 400 }}>
+                <span className="user-realname-header" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '0.4rem', fontWeight: 400 }}>
                   ({currentUser.realName})
                 </span>
               )}

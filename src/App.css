@@ -1110,9 +1110,11 @@
 }
 
 /* ================= ĐỒNG BỘ HIỂN THỊ DI ĐỘNG (RESPONSIVE) ================= */
+/* ================= ĐỒNG BỘ HIỂN THỊ DI ĐỘNG (RESPONSIVE) ================= */
 @media (max-width: 1024px) {
   .detail-layout {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .detail-sidebar {
@@ -1121,8 +1123,18 @@
 }
 
 @media (max-width: 768px) {
+  /* 1. HEADER & USER BADGE MOBILE */
   .app-header {
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .header-logo {
+    font-size: 1.25rem;
+    gap: 0.5rem;
+  }
+  
+  .logo-icon {
+    font-size: 1.5rem;
   }
   
   .header-actions {
@@ -1130,28 +1142,308 @@
   }
   
   .user-badge {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    gap: 0.35rem;
   }
   
-  .admin-toggle-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
+  .user-realname-header {
+    display: none !important; /* Ẩn tên thật dài trên Header mobile để tránh tràn màn hình */
+  }
+  
+  .user-badge .role-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.25rem;
+  }
+  
+  /* 2. CHUNG & DASHBOARD */
+  .main-content {
+    padding: 1rem 0.75rem; /* Giảm padding chính để mở rộng không gian hiển thị */
   }
   
   .dashboard-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: stretch;
+    gap: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dashboard-title h2 {
+    font-size: 1.4rem;
+  }
+  
+  .dashboard-title p {
+    font-size: 0.85rem;
   }
   
   .btn-primary {
     width: 100%;
     justify-content: center;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
   }
   
+  .event-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Hiển thị tốt trên màn hình hẹp */
+    gap: 1rem;
+  }
+  
+  .event-card {
+    padding: 1.25rem 1rem;
+    min-height: auto;
+  }
+  
+  .event-card-title {
+    font-size: 1.15rem;
+  }
+  
+  .event-card-stats {
+    font-size: 0.75rem;
+  }
+  
+  .btn-secondary {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  
+  /* 3. EVENT DETAIL & CARD CONTAINER MOBILE */
   .detail-title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+  }
+  
+  .detail-meta-row {
+    font-size: 0.8rem;
+    gap: 0.4rem 0.75rem;
+  }
+  
+  .card-pub {
+    padding: 1.25rem 1rem;
+    border-radius: 18px;
+  }
+  
+  .section-card-title {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .options-list {
+    gap: 0.5rem;
+  }
+  
+  .back-link {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  
+  .locked-banner {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .locked-banner-title {
+    font-size: 0.95rem;
+  }
+  
+  .locked-summary-grid {
+    grid-template-columns: 1fr; /* Xếp chồng cột chốt kèo để hiển thị rõ ràng trên mobile */
+    gap: 0.5rem;
+  }
+  
+  .locked-summary-box {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .locked-summary-val {
+    font-size: 0.85rem;
+  }
+  
+  /* 4. PRESETS & QUICK CHATS TRƯỢT NGANG NATIVE-LIKE */
+  .presets-container, .quick-chats-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 0.4rem !important;
+    padding-bottom: 0.6rem !important;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+  }
+  
+  .presets-container::-webkit-scrollbar, .quick-chats-grid::-webkit-scrollbar {
+    display: none; /* Hide scrollbar Chrome/Safari */
+  }
+  
+  .presets-container button, .quick-chats-grid button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.65rem !important;
+    border-radius: 9999px !important;
+  }
+  
+  .quick-chats-title {
+    font-size: 0.7rem;
+  }
+  
+  /* 5. SUGGEST INPUT & COMMENT FORM MOBILE */
+  .suggest-input-group {
+    gap: 0.4rem;
+    padding-top: 0.75rem;
+  }
+  
+  .suggest-input-group input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .btn-suggest-add {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .comment-form {
+    gap: 0.4rem;
+  }
+  
+  .comment-form input {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.85rem;
+  }
+  
+  .btn-send {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  /* 6. COMMENTS LIST MOBILE */
+  .comments-list {
+    max-height: 280px; /* Giảm chiều cao khung chat để thân thiện màn hình nhỏ */
+    gap: 0.65rem;
+  }
+  
+  .comment-item {
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    gap: 0.5rem;
+  }
+  
+  .comment-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+  
+  .comment-author-name {
+    font-size: 0.8rem;
+  }
+  
+  .comment-content {
+    font-size: 0.82rem;
+  }
+  
+  /* 7. SHARE BOX MOBILE */
+  .share-link-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-copy {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem;
+  }
+}
+
+/* TỐI ƯU HÓA ĐẶC BIỆT CHO ĐIỆN THOẠI CỰC BÉ (MAX-WIDTH: 480PX) */
+@media (max-width: 480px) {
+  /* Cải tiến hiển thị Option Item: chuyển sang dạng cột dọc để tránh đè avatars và tràn nút vote */
+  .option-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .option-content {
+    padding-right: 0;
+  }
+  
+  .option-value {
+    font-size: 0.95rem;
+  }
+  
+  .option-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-top: 1px dashed rgba(255, 255, 255, 0.05);
+    padding-top: 0.5rem;
+    margin-top: 0.15rem;
+    gap: 0.5rem;
+  }
+  
+  .vote-avatars-list {
+    flex-wrap: wrap; /* Cho phép avatars xuống dòng nếu quá nhiều */
+    max-width: 140px;
+  }
+  
+  .vote-button {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+  
+  /* Tối ưu hóa modals trên điện thoại */
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+  
+  .modal-pub {
+    padding: 1.25rem 1rem;
+    border-radius: 18px;
+  }
+  
+  .modal-title {
+    font-size: 1.3rem;
+  }
+  
+  .modal-desc {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.85rem;
+    gap: 0.35rem;
+  }
+  
+  .form-group label {
+    font-size: 0.75rem;
+  }
+  
+  .form-group input, .form-group textarea {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+  
+  .form-actions-modal {
+    flex-direction: column; /* Nút xếp dọc dễ chạm bằng ngón cái */
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .form-actions-modal button {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Giới hạn ảnh/icon trang trí trên mobile nhỏ */
+  .logo-icon {
+    animation: none; /* Tắt chuyển động để tối ưu hiệu năng trên dòng máy cũ */
   }
 }
 
