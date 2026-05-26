@@ -81,11 +81,32 @@ export interface EventData {
   comments?: EventComment[];
 }
 
+function getVisitedEvents(): string[] {
+  try {
+    const data = localStorage.getItem('beervote_visited_events');
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+function addVisitedEvent(eventId: string) {
+  try {
+    const events = getVisitedEvents();
+    if (!events.includes(eventId)) {
+      events.push(eventId);
+      localStorage.setItem('beervote_visited_events', JSON.stringify(events));
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 function getInitialUser(): User | null {
-  const userId = sessionStorage.getItem('beervote_user_id');
-  const nickname = sessionStorage.getItem('beervote_user_nickname');
-  const realName = sessionStorage.getItem('beervote_user_real_name');
-  const username = sessionStorage.getItem('beervote_user_username');
+  const userId = localStorage.getItem('beervote_user_id');
+  const nickname = localStorage.getItem('beervote_user_nickname');
+  const realName = localStorage.getItem('beervote_user_real_name');
+  const username = localStorage.getItem('beervote_user_username');
   if (userId && nickname) {
     return {
       id: userId,
@@ -100,6 +121,8 @@ function getInitialUser(): User | null {
 
 export default function App() {
   const [events, setEvents] = useState<EventData[]>([]);
+  const [visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
+  
   const [currentEventId, setCurrentEventId] = useState<string | null>(() => {
     // Đọc eventId từ URL lúc khởi chạy
     const params = new URLSearchParams(window.location.search);
@@ -185,12 +208,15 @@ export default function App() {
   // Tải dữ liệu khi chuyển trang
   useEffect(() => {
     if (currentEventId) {
+      addVisitedEvent(currentEventId);
+      setVisitedEventIds(getVisitedEvents());
       fetchEventDetail(currentEventId);
       // Đăng ký WebSocket JOIN_EVENT
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId }));
       }
     } else {
+      setVisitedEventIds(getVisitedEvents());
       fetchEvents();
       setCurrentEventData(null);
       // Đăng ký WebSocket JOIN_DASHBOARD
@@ -370,10 +396,11 @@ export default function App() {
   // Xử lý nộp biệt danh của người dùng
   const handleGuestJoinSubmit = ({ nickname, realName, username }: { nickname: string; realName: string; username: string }) => {
     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
-    sessionStorage.setItem('beervote_user_id', userId);
-    sessionStorage.setItem('beervote_user_nickname', nickname);
-    sessionStorage.setItem('beervote_user_real_name', realName);
-    sessionStorage.setItem('beervote_user_username', username);
+    // Lưu thông tin người dùng vào localStorage thay vì sessionStorage
+    localStorage.setItem('beervote_user_id', userId);
+    localStorage.setItem('beervote_user_nickname', nickname);
+    localStorage.setItem('beervote_user_real_name', realName);
+    localStorage.setItem('beervote_user_username', username);
     
     const user: User = {
       id: userId,
@@ -449,7 +476,7 @@ export default function App() {
           />
         ) : (
           <Dashboard 
-            events={events}
+            events={events.filter(evt => visitedEventIds.includes(evt.id))}
             onSelectEvent={navigateToEvent}
             onCreateEventClick={handleCreateEventClick}
             currentUser={currentUser}

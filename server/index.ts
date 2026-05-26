@@ -15,6 +15,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Endpoint ping giữ server luôn thức (warm-up)
+app.get('/api/ping', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Định nghĩa Interfaces cho cơ sở dữ liệu JSON
 export interface DBEvent {
   id: string;
@@ -77,28 +82,128 @@ export interface DatabaseSchema {
   comments: DBComment[];
 }
 
-// Helper đọc/ghi Database
-function readDB(): DatabaseSchema {
+let cacheDB: DatabaseSchema = { events: [], options: [], votes: [], comments: [] };
+let isLoaded = false;
+let isWriting = false;
+let pendingWrite = false;
+
+// Hàm khởi tạo và tải dữ liệu từ Cloud DB hoặc file JSON local
+async function initDB() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_KEY;
+
+  if (supabaseUrl && supabaseKey) {
+    console.log('🌐 Đang tải dữ liệu ban đầu từ Supabase Cloud DB...');
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data?key=eq.main_db`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json() as any[];
+        if (data && data.length > 0) {
+          cacheDB = data[0].value as DatabaseSchema;
+          console.log(`✅ Đã tải thành công DB từ Supabase. Số lượng kèo: ${cacheDB.events.length}`);
+          isLoaded = true;
+          return;
+        } else {
+          console.log('ℹ️ Chưa có dữ liệu trên Supabase. Tiến hành khởi tạo bản ghi trống...');
+          const res = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data`, {
+            method: 'POST',
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify({
+              key: 'main_db',
+              value: cacheDB
+            })
+          });
+          if (res.ok) {
+            console.log('✅ Khởi tạo bản ghi trống trên Supabase thành công!');
+          }
+          isLoaded = true;
+          return;
+        }
+      } else {
+        console.error('❌ Lỗi gọi Supabase API khi init, status:', response.status);
+      }
+    } catch (e) {
+      console.error('❌ Lỗi kết nối Supabase Cloud khi init:', e);
+    }
+  }
+
+  // Fallback sang đọc file JSON local
+  console.log('📁 Đang tải dữ liệu ban đầu từ file local db.json...');
   try {
     if (!fs.existsSync(DB_PATH)) {
-      const initialData: DatabaseSchema = { events: [], options: [], votes: [], comments: [] };
-      fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2), 'utf8');
-      return initialData;
+      fs.writeFileSync(DB_PATH, JSON.stringify(cacheDB, null, 2), 'utf8');
+    } else {
+      const data = fs.readFileSync(DB_PATH, 'utf8');
+      cacheDB = JSON.parse(data) as DatabaseSchema;
     }
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data) as DatabaseSchema;
+    console.log(`✅ Đã tải thành công DB từ file local. Số lượng kèo: ${cacheDB.events.length}`);
   } catch (error) {
-    console.error('Lỗi đọc database file JSON:', error);
-    return { events: [], options: [], votes: [], comments: [] };
+    console.error('❌ Lỗi đọc database file JSON:', error);
+  }
+  isLoaded = true;
+}
+
+// Đồng bộ lưu Supabase hoặc File local ngầm (Background Sync)
+async function syncDB() {
+  if (isWriting) {
+    pendingWrite = true;
+    return;
+  }
+  isWriting = true;
+  pendingWrite = false;
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_KEY;
+
+  try {
+    if (supabaseUrl && supabaseKey) {
+      const res = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          key: 'main_db',
+          value: cacheDB
+        })
+      });
+      if (!res.ok) {
+        console.error(`❌ Lỗi đồng bộ Supabase Cloud DB: ${res.status} ${res.statusText}`);
+      }
+    } else {
+      fs.writeFileSync(DB_PATH, JSON.stringify(cacheDB, null, 2), 'utf8');
+    }
+  } catch (err) {
+    console.error('❌ Lỗi đồng bộ DB xuống bộ nhớ:', err);
+  } finally {
+    isWriting = false;
+    if (pendingWrite) {
+      syncDB();
+    }
   }
 }
 
+// Helper đọc/ghi Database đồng bộ cực nhanh từ RAM cache
+function readDB(): DatabaseSchema {
+  return cacheDB;
+}
+
 function writeDB(data: DatabaseSchema): void {
-  try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Lỗi ghi database file JSON:', error);
-  }
+  cacheDB = data;
+  syncDB(); // Gọi tiến trình đồng bộ ngầm
 }
 
 // Helper lấy chi tiết đầy đủ của một kèo nhậu
@@ -496,8 +601,18 @@ if (fs.existsSync(distPath)) {
 }
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
-  console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
-  console.log(`👉 WebSockets: ws://localhost:${PORT}`);
+
+// Khởi tạo DB trước khi lắng nghe request
+initDB().then(() => {
+  server.listen(PORT, () => {
+    console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
+    console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
+    console.log(`👉 WebSockets: ws://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('❌ Không thể khởi động server do lỗi DB:', err);
+  // Khởi động fallback phòng trường hợp lỗi mạng để server vẫn hoạt động
+  server.listen(PORT, () => {
+    console.log(`⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`);
+  });
 });
