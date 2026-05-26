@@ -367,6 +367,8 @@
   box-shadow: var(--shadow-glass);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card-pub.locked-border {
@@ -1109,341 +1111,542 @@
   100% { transform: translate(-50%, -20px); opacity: 0; }
 }
 
-/* ================= ĐỒNG BỘ HIỂN THỊ DI ĐỘNG (RESPONSIVE) ================= */
-/* ================= ĐỒNG BỘ HIỂN THỊ DI ĐỘNG (RESPONSIVE) ================= */
+/* ================= RESPONSIVE ================= */
+
 @media (max-width: 1024px) {
   .detail-layout {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .detail-sidebar {
     position: static;
   }
 }
 
 @media (max-width: 768px) {
-  /* 1. HEADER & USER BADGE MOBILE */
+  /* Header */
   .app-header {
     padding: 0.75rem 1rem;
   }
-  
+
   .header-logo {
     font-size: 1.25rem;
     gap: 0.5rem;
   }
-  
+
   .logo-icon {
     font-size: 1.5rem;
   }
-  
+
   .header-actions {
     gap: 0.5rem;
   }
-  
+
   .user-badge {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.75rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.78rem;
     gap: 0.35rem;
+    max-width: 180px;
   }
-  
+
+  .user-badge strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 90px;
+    display: inline-block;
+    vertical-align: bottom;
+  }
+
   .user-realname-header {
-    display: none !important; /* Ẩn tên thật dài trên Header mobile để tránh tràn màn hình */
+    display: none !important;
   }
-  
+
   .user-badge .role-badge {
-    font-size: 0.65rem;
-    padding: 0.1rem 0.25rem;
+    display: none;
   }
-  
-  /* 2. CHUNG & DASHBOARD */
+
+  /* Touch targets — 44 px minimum (Apple HIG) */
+  .vote-button {
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+  }
+
+  .back-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn-suggest-add,
+  .btn-send {
+    min-height: 44px;
+  }
+
+  .quick-chat-tag {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Main content */
   .main-content {
-    padding: 1rem 0.75rem; /* Giảm padding chính để mở rộng không gian hiển thị */
+    padding: 1rem 0.75rem;
   }
-  
+
+  /* Dashboard */
   .dashboard-header {
     flex-direction: column;
     align-items: stretch;
     gap: 0.85rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .dashboard-title h2 {
     font-size: 1.4rem;
   }
-  
+
   .dashboard-title p {
     font-size: 0.85rem;
   }
-  
+
   .btn-primary {
     width: 100%;
     justify-content: center;
-    padding: 0.65rem 1.25rem;
-    font-size: 0.9rem;
+    min-height: 48px;
+    font-size: 0.95rem;
   }
-  
+
   .event-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Hiển thị tốt trên màn hình hẹp */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
   }
-  
+
   .event-card {
     padding: 1.25rem 1rem;
     min-height: auto;
   }
-  
+
+  /* Stack event card footer vertically */
+  .event-card-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+
+  .event-card-bottom .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .event-card-stats {
+    font-size: 0.8rem;
+  }
+
   .event-card-title {
     font-size: 1.15rem;
   }
-  
-  .event-card-stats {
-    font-size: 0.75rem;
+
+  /* EventDetail: reorder sections so countdown + admin show above voting on mobile.
+     display:contents makes detail-main / detail-sidebar transparent; their children
+     become direct flex items of detail-layout and can be independently ordered. */
+  .detail-layout {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1rem;
   }
-  
-  .btn-secondary {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.8rem;
+
+  .detail-main,
+  .detail-sidebar {
+    display: contents;
   }
-  
-  /* 3. EVENT DETAIL & CARD CONTAINER MOBILE */
+
+  .detail-main > *:nth-child(1) { order: 1; }   /* title card */
+  .detail-sidebar > *:nth-child(1) { order: 2; } /* countdown / voting-open status */
+  .detail-sidebar > *:nth-child(2) { order: 3; } /* admin panel */
+  .detail-main > *:nth-child(2) { order: 4; }    /* datetime voting */
+  .detail-main > *:nth-child(3) { order: 5; }    /* location voting */
+  .detail-main > *:nth-child(4) { order: 6; }    /* beer voting */
+  .detail-sidebar > *:nth-child(3) { order: 7; } /* chat */
+
+  /* Event detail */
   .detail-title {
     font-size: 1.5rem;
   }
-  
+
   .detail-meta-row {
     font-size: 0.8rem;
     gap: 0.4rem 0.75rem;
   }
-  
+
   .card-pub {
     padding: 1.25rem 1rem;
     border-radius: 18px;
   }
-  
+
   .section-card-title {
     font-size: 1rem;
     margin-bottom: 0.75rem;
   }
-  
+
   .options-list {
     gap: 0.5rem;
   }
-  
-  .back-link {
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-  }
-  
+
   .locked-banner {
     padding: 1rem;
     gap: 0.5rem;
   }
-  
+
   .locked-banner-title {
     font-size: 0.95rem;
   }
-  
+
   .locked-summary-grid {
-    grid-template-columns: 1fr; /* Xếp chồng cột chốt kèo để hiển thị rõ ràng trên mobile */
+    grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .locked-summary-box {
     padding: 0.5rem 0.75rem;
   }
-  
+
   .locked-summary-val {
     font-size: 0.85rem;
   }
-  
-  /* 4. PRESETS & QUICK CHATS TRƯỢT NGANG NATIVE-LIKE */
-  .presets-container, .quick-chats-grid {
+
+  /* Presets & quick chats: full width, wrap to new lines */
+  .presets-container,
+  .quick-chats-grid {
     display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
+    flex-wrap: wrap !important;
+    width: 100%;
     gap: 0.4rem !important;
-    padding-bottom: 0.6rem !important;
     margin-top: 0.5rem !important;
     margin-bottom: 0.5rem !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
   }
-  
-  .presets-container::-webkit-scrollbar, .quick-chats-grid::-webkit-scrollbar {
-    display: none; /* Hide scrollbar Chrome/Safari */
+
+  .presets-container button,
+  .quick-chats-grid button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 9999px;
   }
-  
-  .presets-container button, .quick-chats-grid button {
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    font-size: 0.75rem !important;
-    padding: 0.25rem 0.65rem !important;
-    border-radius: 9999px !important;
-  }
-  
+
   .quick-chats-title {
     font-size: 0.7rem;
   }
-  
-  /* 5. SUGGEST INPUT & COMMENT FORM MOBILE */
+
+  /* Suggest input & comment form */
   .suggest-input-group {
     gap: 0.4rem;
     padding-top: 0.75rem;
   }
-  
+
   .suggest-input-group input {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
   }
-  
+
   .btn-suggest-add {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
-  
+
   .comment-form {
     gap: 0.4rem;
   }
-  
+
   .comment-form input {
-    padding: 0.6rem 0.85rem;
-    font-size: 0.85rem;
+    padding: 0.65rem 0.85rem;
   }
-  
+
   .btn-send {
-    padding: 0.6rem 1rem;
+    padding: 0.65rem 1rem;
     font-size: 0.85rem;
   }
-  
-  /* 6. COMMENTS LIST MOBILE */
+
+  /* Comments list */
   .comments-list {
-    max-height: 280px; /* Giảm chiều cao khung chat để thân thiện màn hình nhỏ */
+    max-height: 280px;
     gap: 0.65rem;
   }
-  
+
   .comment-item {
     padding: 0.6rem 0.75rem;
     border-radius: 12px;
     gap: 0.5rem;
   }
-  
+
   .comment-avatar {
     width: 28px;
     height: 28px;
     font-size: 0.75rem;
   }
-  
+
   .comment-author-name {
     font-size: 0.8rem;
   }
-  
+
   .comment-content {
     font-size: 0.82rem;
   }
-  
-  /* 7. SHARE BOX MOBILE */
+
+  /* Share box */
   .share-link-row {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .btn-copy {
     width: 100%;
     text-align: center;
+    min-height: 40px;
     padding: 0.5rem;
   }
 }
 
-/* TỐI ƯU HÓA ĐẶC BIỆT CHO ĐIỆN THOẠI CỰC BÉ (MAX-WIDTH: 480PX) */
+/* Small phones (≤ 480 px) */
 @media (max-width: 480px) {
-  /* Cải tiến hiển thị Option Item: chuyển sang dạng cột dọc để tránh đè avatars và tràn nút vote */
+  /* iOS Safari zoom fix: only user-fillable fields need ≥ 16 px */
+  .comment-form input,
+  .suggest-input-group input,
+  .form-group input,
+  .form-group textarea {
+    font-size: 16px !important;
+  }
+
+  /* Force single column grid */
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Bottom-sheet style modal — feels native */
+  .modal-overlay {
+    padding: 0 0 0 0;
+    align-items: flex-end;
+  }
+
+  .modal-pub {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.25rem 1rem 2rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .modal-desc {
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Option items: vertical stack */
   .option-item {
     flex-direction: column;
     align-items: stretch;
     gap: 0.65rem;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.85rem;
   }
-  
+
   .option-content {
     padding-right: 0;
   }
-  
+
   .option-value {
     font-size: 0.95rem;
   }
-  
+
   .option-actions {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
     width: 100%;
     border-top: 1px dashed rgba(255, 255, 255, 0.05);
     padding-top: 0.5rem;
-    margin-top: 0.15rem;
     gap: 0.5rem;
   }
-  
+
   .vote-avatars-list {
-    flex-wrap: wrap; /* Cho phép avatars xuống dòng nếu quá nhiều */
-    max-width: 140px;
+    flex-wrap: wrap;
+    max-width: 150px;
   }
-  
+
   .vote-button {
-    padding: 0.4rem 0.75rem;
+    padding: 0.45rem 0.85rem;
     font-size: 0.85rem;
     border-radius: 10px;
   }
-  
-  /* Tối ưu hóa modals trên điện thoại */
-  .modal-overlay {
-    padding: 0.5rem;
-  }
-  
-  .modal-pub {
-    padding: 1.25rem 1rem;
-    border-radius: 18px;
-  }
-  
-  .modal-title {
+
+  /* Detail title smaller */
+  .detail-title {
     font-size: 1.3rem;
   }
-  
-  .modal-desc {
-    font-size: 0.8rem;
-    margin-bottom: 1rem;
+
+  /* Dot separator wastes space on mobile */
+  .dot-separator {
+    display: none;
   }
-  
+
+  /* Meta row: wrap to two lines */
+  .detail-meta-row {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  /* Countdown: tighter digits */
+  .countdown-digit {
+    font-size: 1.3rem;
+  }
+
+  .countdown-label {
+    font-size: 0.58rem;
+  }
+
+  /* Cards */
+  .card-pub {
+    padding: 1rem 0.85rem;
+    border-radius: 16px;
+  }
+
+  /* Form groups */
   .form-group {
     margin-bottom: 0.85rem;
     gap: 0.35rem;
   }
-  
+
   .form-group label {
     font-size: 0.75rem;
   }
-  
-  .form-group input, .form-group textarea {
-    padding: 0.55rem 0.75rem;
-    font-size: 0.85rem;
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.6rem 0.75rem;
     border-radius: 8px;
   }
-  
+
   .form-actions-modal {
-    flex-direction: column; /* Nút xếp dọc dễ chạm bằng ngón cái */
+    flex-direction: column;
     gap: 0.5rem;
     margin-top: 1rem;
   }
-  
+
   .form-actions-modal button {
     width: 100%;
-    padding: 0.6rem;
+    min-height: 48px;
+    font-size: 0.9rem;
+  }
+
+  .logo-icon {
+    animation: none;
+  }
+}
+
+/* Ultra-small phones (≤ 360 px) */
+@media (max-width: 360px) {
+  .app-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .header-logo {
+    font-size: 1rem;
+    gap: 0.35rem;
+  }
+
+  .logo-icon {
+    font-size: 1.2rem;
+  }
+
+  .user-badge {
+    max-width: 130px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .user-badge strong {
+    max-width: 70px;
+  }
+
+  .main-content {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .card-pub {
+    padding: 0.85rem 0.7rem;
+    border-radius: 14px;
+  }
+
+  .dashboard-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .event-card {
+    padding: 1rem 0.75rem;
+    border-radius: 16px;
+  }
+
+  .detail-title {
+    font-size: 1.15rem;
+  }
+
+  .locked-banner-title {
     font-size: 0.85rem;
   }
-  
-  /* Giới hạn ảnh/icon trang trí trên mobile nhỏ */
-  .logo-icon {
-    animation: none; /* Tắt chuyển động để tối ưu hiệu năng trên dòng máy cũ */
+
+  .countdown-digit {
+    font-size: 1.1rem;
+  }
+
+  .comment-form input,
+  .suggest-input-group input,
+  .form-group input,
+  .form-group textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* iOS safe-area insets (notch / home indicator) */
+@supports (padding: max(0px)) {
+  .app-header {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  @media (max-width: 768px) {
+    .app-header {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .main-content {
+      padding-left: max(0.75rem, env(safe-area-inset-left));
+      padding-right: max(0.75rem, env(safe-area-inset-right));
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+
+    .toast-msg {
+      bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .modal-pub {
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
   }
 }
 

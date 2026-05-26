@@ -270,6 +270,11 @@ export default function App() {
           if (!currentEventId) {
             setEvents(message.events);
           }
+        } else if (message.type === 'EVENT_DELETED') {
+          setEvents(prev => prev.filter(e => e.id !== message.eventId));
+          if (message.eventId === currentEventId) {
+            navigateToEvent(null);
+          }
         }
       } catch (err) {
         console.error('Lỗi phân tích tin nhắn WebSocket:', err);
@@ -319,7 +324,7 @@ export default function App() {
         userNickname: currentUser.nickname || userName || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || ''
       }));
     } else {
       alert('Mất kết nối WebSocket tới Server. Vui lòng đợi trong giây lát!');
@@ -340,7 +345,7 @@ export default function App() {
         userNickname: currentUser.nickname || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || ''
       }));
     }
   };
@@ -359,7 +364,7 @@ export default function App() {
         userNickname: currentUser.nickname || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || ''
       }));
     }
   };
@@ -370,16 +375,46 @@ export default function App() {
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const creatorToken = localStorage.getItem(`beervote_creator_token_${lockData.eventId}`) || '';
       wsRef.current.send(JSON.stringify({
         type: 'LOCK_EVENT',
         ...lockData,
         userId: currentUser.id,
-        userName: currentUser.name,
-        userNickname: currentUser.nickname || currentUser.name,
-        userRealName: currentUser.realName || '',
-        userUsername: currentUser.username || '',
-        userEmail: currentUser.username || ''
+        creatorToken
       }));
+    }
+  };
+
+  const handleUnlockEvent = (eventId: string) => {
+    if (!currentUser) return;
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
+      wsRef.current.send(JSON.stringify({
+        type: 'UNLOCK_EVENT',
+        eventId,
+        userId: currentUser.id,
+        creatorToken
+      }));
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!currentUser) return;
+    const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creatorToken, userId: currentUser.id })
+      });
+      if (res.ok) {
+        navigateToEvent(null);
+        setEvents(prev => prev.filter(e => e.id !== eventId));
+      } else {
+        alert('Không thể xóa kèo nhậu này. Bạn có phải Chủ Kèo không?');
+      }
+    } catch {
+      alert('Lỗi kết nối khi xóa kèo nhậu!');
     }
   };
 
@@ -464,7 +499,7 @@ export default function App() {
       {/* Phần nội dung chính của sòng nhậu */}
       <main className="main-content">
         {currentEventId ? (
-          <EventDetail 
+          <EventDetail
             eventId={currentEventId}
             eventData={currentEventData}
             currentUser={currentUser}
@@ -473,10 +508,12 @@ export default function App() {
             onAddOption={handleAddOption}
             onAddComment={handleAddComment}
             onLockEvent={handleLockEvent}
+            onUnlockEvent={handleUnlockEvent}
+            onDeleteEvent={handleDeleteEvent}
           />
         ) : (
-          <Dashboard 
-            events={events.filter(evt => visitedEventIds.includes(evt.id))}
+          <Dashboard
+            events={events}
             onSelectEvent={navigateToEvent}
             onCreateEventClick={handleCreateEventClick}
             currentUser={currentUser}

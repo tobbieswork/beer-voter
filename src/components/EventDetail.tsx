@@ -47,6 +47,8 @@ interface EventDetailProps {
   onAddOption: (optionData: any) => void;
   onAddComment: (commentData: any) => void;
   onLockEvent: (lockData: any) => void;
+  onUnlockEvent: (eventId: string) => void;
+  onDeleteEvent: (eventId: string) => Promise<void>;
 }
 
 interface EventOptionWithVotes extends EventOption {
@@ -54,19 +56,23 @@ interface EventOptionWithVotes extends EventOption {
   votesCount: number;
 }
 
-export default function EventDetail({ 
-  eventId, 
-  eventData, 
-  currentUser, 
-  onBack, 
-  onVoteToggle, 
-  onAddOption, 
-  onAddComment, 
-  onLockEvent 
+export default function EventDetail({
+  eventId,
+  eventData,
+  currentUser,
+  onBack,
+  onVoteToggle,
+  onAddOption,
+  onAddComment,
+  onLockEvent,
+  onUnlockEvent,
+  onDeleteEvent
 }: EventDetailProps) {
   const [newOptionValues, setNewOptionValues] = useState({ datetime: '', location: '', beer: '' });
   const [commentText, setCommentText] = useState('');
   const [showLockModal, setShowLockModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   
   // State phục vụ modal chốt kèo của Admin
@@ -259,6 +265,19 @@ export default function EventDetail({
     setTimeout(() => setToastMsg(''), 3000);
   };
 
+  const handleUnlock = () => {
+    onUnlockEvent(eventId);
+    setToastMsg('🔓 Đã mở lại kèo để tiếp tục bình chọn!');
+    setTimeout(() => setToastMsg(''), 3000);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    setIsDeleting(true);
+    await onDeleteEvent(eventId);
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+  };
+
   const renderVotingSection = (titleIcon: string, titleText: string, type: 'datetime' | 'location' | 'beer', listOptions: EventOptionWithVotes[]) => {
     return (
       <div className="card-pub">
@@ -402,7 +421,7 @@ export default function EventDetail({
       </span>
 
       {/* Banner nếu Kèo Đã Chốt */}
-      {status === 'locked' && finalDateTime && (
+      {status === 'locked' && eventData.finalDateTime && (
         <div className="locked-banner animate-fade-in">
           <div className="locked-banner-title">
             <span>👑</span> Kèo Đã Chốt Chính Thức! Lên Đồ Đi Nhậu Thôi!
@@ -480,23 +499,40 @@ export default function EventDetail({
             </h4>
             
             <div className="admin-action-box">
-              {/* Chỉ Chủ Kèo mới chốt kèo được */}
-              {status === 'voting' && (
-                (currentUser && currentUser.id === eventData.creatorId) ? (
-                  <button className="btn-lock" onClick={handleOpenLockModal}>
-                    🔒 Chốt Kèo Tới Bến
+              {currentUser && currentUser.id === eventData.creatorId ? (
+                <>
+                  {status === 'voting' && (
+                    <button className="btn-lock" onClick={handleOpenLockModal}>
+                      🔒 Chốt Kèo Tới Bến
+                    </button>
+                  )}
+                  {status === 'locked' && (
+                    <button
+                      className="btn-secondary"
+                      onClick={handleUnlock}
+                      style={{ width: '100%', marginBottom: '0.5rem' }}
+                    >
+                      🔓 Mở Lại Bình Chọn
+                    </button>
+                  )}
+                  <button
+                    className="btn-secondary"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    style={{ width: '100%', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--accent-red)' }}
+                  >
+                    🗑️ Xóa Kèo Này
                   </button>
-                ) : (
+                </>
+              ) : (
+                status === 'voting' ? (
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px dashed var(--border-glass)', textAlign: 'center' }}>
                     🔒 Chỉ <strong>Chủ Kèo ({eventData.creatorNickname || eventData.creatorName})</strong> mới có quyền chốt kèo này.
                   </div>
+                ) : (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--accent-green)', fontWeight: 600, background: 'rgba(16, 185, 129, 0.1)', padding: '0.6rem', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
+                    ✅ Kèo nhậu này đã đóng băng bình chọn.
+                  </div>
                 )
-              )}
-
-              {status === 'locked' && (
-                <div style={{ fontSize: '0.85rem', color: 'var(--accent-green)', fontWeight: 600, background: 'rgba(16, 185, 129, 0.1)', padding: '0.6rem', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
-                  ✅ Kèo nhậu này đã đóng băng bình chọn.
-                </div>
               )}
 
               {/* Hộp chia sẻ link */}
@@ -614,6 +650,32 @@ export default function EventDetail({
 
         </div>
       </div>
+
+      {/* ================= MODAL XÁC NHẬN XÓA KÈO ================= */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-pub" style={{ maxWidth: '420px' }}>
+            <h3 className="modal-title" style={{ color: 'var(--accent-red)' }}>🗑️ Xác Nhận Xóa Kèo</h3>
+            <p className="modal-desc">
+              Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và chat chit sẽ bị xóa vĩnh viễn!
+            </p>
+            <div className="form-actions-modal">
+              <button type="button" className="btn-secondary" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
+                Hủy Bỏ
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: '#fff' }}
+                onClick={handleDeleteConfirmed}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= MODAL CHỐT KÈO DÀNH CHO ADMIN ================= */}
       {showLockModal && (

@@ -6,21 +6,32 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_PATH = path.join(__dirname, 'db.json');
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : null;
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!allowedOrigins || !origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  }
+}));
+
 app.use(express.json());
 
-// Endpoint ping giữ server luôn thức (warm-up)
 app.get('/api/ping', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Định nghĩa Interfaces cho cơ sở dữ liệu JSON
 export interface DBEvent {
   id: string;
   title: string;
@@ -29,6 +40,7 @@ export interface DBEvent {
   creatorNickname?: string;
   creatorRealName?: string;
   creatorUsername?: string;
+  creatorToken?: string;
   status: 'voting' | 'locked';
   createdAt: string;
   lockedAt: string | null;
@@ -87,7 +99,11 @@ let isLoaded = false;
 let isWriting = false;
 let pendingWrite = false;
 
-// Hàm khởi tạo và tải dữ liệu từ Cloud DB hoặc file JSON local
+function withoutToken(event: DBEvent): Omit<DBEvent, 'creatorToken'> {
+  const { creatorToken: _token, ...rest } = event;
+  return rest;
+}
+
 async function initDB() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_KEY;
@@ -118,14 +134,9 @@ async function initDB() {
               'Content-Type': 'application/json',
               'Prefer': 'resolution=merge-duplicates'
             },
-            body: JSON.stringify({
-              key: 'main_db',
-              value: cacheDB
-            })
+            body: JSON.stringify({ key: 'main_db', value: cacheDB })
           });
-          if (res.ok) {
-            console.log('✅ Khởi tạo bản ghi trống trên Supabase thành công!');
-          }
+          if (res.ok) console.log('✅ Khởi tạo bản ghi trống trên Supabase thành công!');
           isLoaded = true;
           return;
         }
@@ -137,7 +148,6 @@ async function initDB() {
     }
   }
 
-  // Fallback sang đọc file JSON local
   console.log('📁 Đang tải dữ liệu ban đầu từ file local db.json...');
   try {
     if (!fs.existsSync(DB_PATH)) {
@@ -153,7 +163,6 @@ async function initDB() {
   isLoaded = true;
 }
 
-// Đồng bộ lưu Supabase hoặc File local ngầm (Background Sync)
 async function syncDB() {
   if (isWriting) {
     pendingWrite = true;
@@ -175,14 +184,9 @@ async function syncDB() {
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates'
         },
-        body: JSON.stringify({
-          key: 'main_db',
-          value: cacheDB
-        })
+        body: JSON.stringify({ key: 'main_db', value: cacheDB })
       });
-      if (!res.ok) {
-        console.error(`❌ Lỗi đồng bộ Supabase Cloud DB: ${res.status} ${res.statusText}`);
-      }
+      if (!res.ok) console.error(`❌ Lỗi đồng bộ Supabase Cloud DB: ${res.status} ${res.statusText}`);
     } else {
       fs.writeFileSync(DB_PATH, JSON.stringify(cacheDB, null, 2), 'utf8');
     }
@@ -190,106 +194,78 @@ async function syncDB() {
     console.error('❌ Lỗi đồng bộ DB xuống bộ nhớ:', err);
   } finally {
     isWriting = false;
-    if (pendingWrite) {
-      syncDB();
-    }
+    if (pendingWrite) syncDB();
   }
 }
 
-// Helper đọc/ghi Database đồng bộ cực nhanh từ RAM cache
 function readDB(): DatabaseSchema {
   return cacheDB;
 }
 
 function writeDB(data: DatabaseSchema): void {
   cacheDB = data;
-  syncDB(); // Gọi tiến trình đồng bộ ngầm
+  syncDB();
 }
 
-// Helper lấy chi tiết đầy đủ của một kèo nhậu
 function getEventDetail(db: DatabaseSchema, eventId: string) {
   const event = db.events.find(e => e.id === eventId);
   if (!event) return null;
-  
-  const options = db.options.filter(o => o.eventId === eventId);
-  const votes = db.votes.filter(v => v.eventId === eventId);
-  const comments = db.comments.filter(c => c.eventId === eventId);
-  
   return {
-    ...event,
-    options,
-    votes,
-    comments
+    ...withoutToken(event),
+    options: db.options.filter(o => o.eventId === eventId),
+    votes: db.votes.filter(v => v.eventId === eventId),
+    comments: db.comments.filter(c => c.eventId === eventId)
   };
 }
 
 // ================= HTTP REST APIs =================
 
-// 1. Lấy danh sách các kèo nhậu
 app.get('/api/events', (_req: Request, res: Response) => {
   const db = readDB();
-  // Trả về danh sách kèo kèm theo một vài thông tin tóm tắt
   const summaryEvents = db.events.map(event => {
     const votesCount = db.votes.filter(v => v.eventId === event.id).length;
     const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
     const optionsCount = db.options.filter(o => o.eventId === event.id).length;
-    return {
-      ...event,
-      votesCount,
-      commentsCount,
-      optionsCount
-    };
+    return { ...withoutToken(event), votesCount, commentsCount, optionsCount };
   });
-  // Sắp xếp kèo đang vote lên trước, kèo đã chốt xuống sau. Trong mỗi nhóm sắp xếp theo ngày tạo mới nhất.
   summaryEvents.sort((a, b) => {
-    if (a.status === b.status) {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
+    if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return a.status === 'voting' ? -1 : 1;
   });
   res.json(summaryEvents);
 });
 
-// 2. Lấy chi tiết một kèo nhậu
 app.get('/api/events/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const db = readDB();
   const eventDetail = getEventDetail(db, id);
-  if (!eventDetail) {
-    return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
-  }
+  if (!eventDetail) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
   res.json(eventDetail);
 });
 
-// 3. Tạo kèo nhậu mới (Ai cũng có thể tạo kèo và làm chủ kèo)
 app.post('/api/events', (req: Request, res: Response) => {
-  const { 
-    title, 
-    creatorId, 
-    creatorName, 
-    creatorNickname, 
-    creatorRealName, 
-    creatorUsername, 
-    dateOptions, 
-    locationOptions, 
-    beerOptions 
-  } = req.body;
-  
+  const { title, creatorId, creatorName, creatorNickname, creatorRealName, creatorUsername, dateOptions, locationOptions, beerOptions } = req.body;
+
   if (!title || !creatorId || !creatorName) {
     return res.status(400).json({ message: 'Tên kèo, ID người tạo và tên người tạo là bắt buộc!' });
   }
+  if (typeof title !== 'string' || title.trim().length > 100) {
+    return res.status(400).json({ message: 'Tên kèo không được vượt quá 100 ký tự!' });
+  }
 
   const db = readDB();
-  const eventId = 'evt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-  
+  const eventId = randomUUID();
+  const creatorToken = randomUUID();
+
   const newEvent: DBEvent = {
     id: eventId,
-    title,
+    title: title.trim(),
     creatorId,
     creatorName,
     creatorNickname: creatorNickname || creatorName,
     creatorRealName: creatorRealName || '',
     creatorUsername: creatorUsername || '',
+    creatorToken,
     status: 'voting',
     createdAt: new Date().toISOString(),
     lockedAt: null,
@@ -300,15 +276,14 @@ app.post('/api/events', (req: Request, res: Response) => {
 
   db.events.push(newEvent);
 
-  // Thêm các option đề xuất ban đầu
   const addOption = (value: string, type: 'datetime' | 'location' | 'beer') => {
-    if (!value || value.trim() === '') return;
-    const optId = 'opt_' + type + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const trimmed = value?.trim();
+    if (!trimmed || trimmed.length > 200) return;
     db.options.push({
-      id: optId,
+      id: randomUUID(),
       eventId,
       type,
-      value: value.trim(),
+      value: trimmed,
       creatorId,
       creatorName,
       creatorNickname: creatorNickname || creatorName,
@@ -318,89 +293,97 @@ app.post('/api/events', (req: Request, res: Response) => {
     });
   };
 
-  if (dateOptions && Array.isArray(dateOptions)) {
-    dateOptions.forEach(opt => addOption(opt, 'datetime'));
-  }
-  if (locationOptions && Array.isArray(locationOptions)) {
-    locationOptions.forEach(opt => addOption(opt, 'location'));
-  }
-  if (beerOptions && Array.isArray(beerOptions)) {
-    beerOptions.forEach(opt => addOption(opt, 'beer'));
-  }
+  if (Array.isArray(dateOptions)) dateOptions.forEach(opt => addOption(opt, 'datetime'));
+  if (Array.isArray(locationOptions)) locationOptions.forEach(opt => addOption(opt, 'location'));
+  if (Array.isArray(beerOptions)) beerOptions.forEach(opt => addOption(opt, 'beer'));
 
   writeDB(db);
-  res.status(201).json(newEvent);
+  res.status(201).json({ ...withoutToken(newEvent), creatorToken });
 });
 
-// Create HTTP server
-const server = http.createServer(app);
+app.delete('/api/events/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { creatorToken, userId } = req.body;
+
+  const db = readDB();
+  const eventIndex = db.events.findIndex(e => e.id === id);
+  if (eventIndex === -1) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
+
+  const event = db.events[eventIndex];
+  const authorized = event.creatorToken
+    ? event.creatorToken === creatorToken
+    : event.creatorId === userId;
+
+  if (!authorized) return res.status(403).json({ message: 'Bạn không có quyền xóa kèo nhậu này!' });
+
+  db.events.splice(eventIndex, 1);
+  db.options = db.options.filter(o => o.eventId !== id);
+  db.votes = db.votes.filter(v => v.eventId !== id);
+  db.comments = db.comments.filter(c => c.eventId !== id);
+
+  writeDB(db);
+  broadcastEventDeleted(id);
+  res.json({ message: 'Kèo nhậu đã được xóa!' });
+});
 
 // ================= WEBSOCKETS SERVER =================
 
+const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 interface ClientInfo {
   currentEventId: string | null;
   isLocal: boolean;
+  lastActionAt: number;
 }
 
-// Danh sách các kết nối WebSocket đang hoạt động
 const clients = new Map<WebSocket, ClientInfo>();
+const RATE_LIMIT_MS = 500;
 
-// Hàm phát sóng (broadcast) thông tin cập nhật cho mọi client đang xem event đó
 function broadcastEventUpdate(eventId: string): void {
   const db = readDB();
   const eventDetail = getEventDetail(db, eventId);
   if (!eventDetail) return;
 
-  const message = JSON.stringify({
-    type: 'EVENT_UPDATED',
-    eventId,
-    eventData: eventDetail
-  });
-
+  const message = JSON.stringify({ type: 'EVENT_UPDATED', eventId, eventData: eventDetail });
   wss.clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
-      const clientInfo = clients.get(client);
-      // Chỉ broadcast cho các client đang xem event này hoặc ở trang dashboard cần nhận cập nhật
-      if (clientInfo && (clientInfo.currentEventId === eventId || clientInfo.currentEventId === 'dashboard')) {
+      const info = clients.get(client);
+      if (info && (info.currentEventId === eventId || info.currentEventId === 'dashboard')) {
         client.send(message);
       }
     }
   });
 }
 
-// Hàm phát sóng cập nhật danh sách kèo cho trang dashboard
 function broadcastDashboardUpdate(): void {
   const db = readDB();
   const summaryEvents = db.events.map(event => {
     const votesCount = db.votes.filter(v => v.eventId === event.id).length;
     const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
     const optionsCount = db.options.filter(o => o.eventId === event.id).length;
-    return {
-      ...event,
-      votesCount,
-      commentsCount,
-      optionsCount
-    };
+    return { ...withoutToken(event), votesCount, commentsCount, optionsCount };
   });
-  
   summaryEvents.sort((a, b) => {
-    if (a.status === b.status) {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
+    if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return a.status === 'voting' ? -1 : 1;
   });
 
-  const message = JSON.stringify({
-    type: 'DASHBOARD_UPDATED',
-    events: summaryEvents
-  });
-
+  const message = JSON.stringify({ type: 'DASHBOARD_UPDATED', events: summaryEvents });
   wss.clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
-      const clientInfo = clients.get(client);
-      if (clientInfo && clientInfo.currentEventId === 'dashboard') {
+      const info = clients.get(client);
+      if (info && info.currentEventId === 'dashboard') client.send(message);
+    }
+  });
+}
+
+function broadcastEventDeleted(eventId: string): void {
+  const message = JSON.stringify({ type: 'EVENT_DELETED', eventId });
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      const info = clients.get(client);
+      if (info && (info.currentEventId === eventId || info.currentEventId === 'dashboard')) {
         client.send(message);
       }
     }
@@ -411,7 +394,7 @@ wss.on('connection', (ws: WebSocket, req) => {
   const clientIp = req.socket.remoteAddress || '';
   const isLocal = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === '::ffff:127.0.0.1';
   console.log(`Một thiết bị đã kết nối qua WebSockets! IP: ${clientIp} (Local: ${isLocal})`);
-  clients.set(ws, { currentEventId: null, isLocal });
+  clients.set(ws, { currentEventId: null, isLocal, lastActionAt: 0 });
 
   ws.on('message', (messageStr: string) => {
     try {
@@ -420,44 +403,37 @@ wss.on('connection', (ws: WebSocket, req) => {
       if (!clientInfo) return;
 
       switch (action.type) {
-        // Client thông báo đang xem event nào để nhận broadcast chính xác
         case 'JOIN_EVENT': {
           clientInfo.currentEventId = action.eventId;
-          console.log(`Thiết bị đăng ký xem kèo: ${action.eventId}`);
           break;
         }
 
-        // Client đăng ký nhận cập nhật tại trang chủ
         case 'JOIN_DASHBOARD': {
           clientInfo.currentEventId = 'dashboard';
-          console.log('Thiết bị đăng ký xem Dashboard');
           break;
         }
 
-        // Thao tác BÌNH CHỌN / HỦY BÌNH CHỌN
         case 'VOTE_TOGGLE': {
           const { eventId, optionId, userId, userName, userNickname, userRealName, userEmail } = action;
+          if (!eventId || !optionId || !userId) break;
+
+          const now = Date.now();
+          if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
+          clientInfo.lastActionAt = now;
+
           const db = readDB();
-
-          // Kiểm tra xem event có bị khóa (locked) chưa
           const event = db.events.find(e => e.id === eventId);
-          if (event && event.status === 'locked') {
-            console.log('Kèo đã chốt, không thể vote!');
-            break;
-          }
+          if (event?.status === 'locked') break;
 
-          // Kiểm tra xem đã vote cho option này chưa
           const existingVoteIndex = db.votes.findIndex(
             v => v.eventId === eventId && v.optionId === optionId && v.userId === userId
           );
 
           if (existingVoteIndex > -1) {
-            // Đã vote rồi -> Hủy vote
             db.votes.splice(existingVoteIndex, 1);
           } else {
-            // Chưa vote -> Thêm vote mới
             db.votes.push({
-              id: 'vote_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+              id: randomUUID(),
               eventId,
               optionId,
               userId,
@@ -475,18 +451,19 @@ wss.on('connection', (ws: WebSocket, req) => {
           break;
         }
 
-        // Thao tác ĐỀ XUẤT OPTION MỚI
         case 'ADD_OPTION': {
           const { eventId, optType, value, creatorId, creatorName, userNickname, userRealName, userUsername, userEmail } = action;
+          if (!eventId || !value || typeof value !== 'string' || value.trim().length === 0 || value.trim().length > 200) break;
+
+          const now = Date.now();
+          if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
+          clientInfo.lastActionAt = now;
+
           const db = readDB();
-
           const event = db.events.find(e => e.id === eventId);
-          if (event && event.status === 'locked') {
-            console.log('Kèo đã chốt, không thể đề xuất thêm!');
-            break;
-          }
+          if (event?.status === 'locked') break;
 
-          const optId = 'opt_' + optType + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+          const optId = randomUUID();
           const newOption: DBOption = {
             id: optId,
             eventId,
@@ -501,10 +478,8 @@ wss.on('connection', (ws: WebSocket, req) => {
           };
 
           db.options.push(newOption);
-
-          // Tự động vote +1 cho chính người đề xuất
           db.votes.push({
-            id: 'vote_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+            id: randomUUID(),
             eventId,
             optionId: optId,
             userId: creatorId,
@@ -521,14 +496,17 @@ wss.on('connection', (ws: WebSocket, req) => {
           break;
         }
 
-        // Thao tác GỬI BÌNH LUẬN
         case 'ADD_COMMENT': {
           const { eventId, userId, userName, userRole, content, userNickname, userRealName, userEmail } = action;
-          const db = readDB();
+          if (!eventId || !content || typeof content !== 'string' || content.trim().length === 0 || content.trim().length > 500) break;
 
-          const commentId = 'cmt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+          const now = Date.now();
+          if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
+          clientInfo.lastActionAt = now;
+
+          const db = readDB();
           db.comments.push({
-            id: commentId,
+            id: randomUUID(),
             eventId,
             userId,
             userName,
@@ -546,29 +524,71 @@ wss.on('connection', (ws: WebSocket, req) => {
           break;
         }
 
-        // Thao tác CHỐT KÈO & LÊN LỊCH (Chủ Kèo)
         case 'LOCK_EVENT': {
-          const { eventId, userId, finalDateTime, finalLocation, finalBeerStyle } = action;
+          const { eventId, userId, creatorToken, finalDateTime, finalLocation, finalBeerStyle } = action;
+
+          const now = Date.now();
+          if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
+          clientInfo.lastActionAt = now;
+
           const db = readDB();
-
           const eventIndex = db.events.findIndex(e => e.id === eventId);
-          if (eventIndex > -1) {
-            const event = db.events[eventIndex];
-            if (event.creatorId !== userId) {
-              console.warn(`Cảnh báo bảo mật: Người dùng ${userId} không phải chủ kèo ${event.creatorId} cố gắng chốt kèo!`);
-              break;
-            }
-            db.events[eventIndex].status = 'locked';
-            db.events[eventIndex].lockedAt = new Date().toISOString();
-            db.events[eventIndex].finalDateTime = finalDateTime;
-            db.events[eventIndex].finalLocation = finalLocation;
-            db.events[eventIndex].finalBeerStyle = finalBeerStyle;
+          if (eventIndex === -1) break;
 
-            writeDB(db);
-            broadcastEventUpdate(eventId);
-            broadcastDashboardUpdate();
-            console.log(`Kèo ${eventId} đã được CHỐT thành công bởi Chủ Kèo!`);
+          const event = db.events[eventIndex];
+          const authorized = event.creatorToken
+            ? event.creatorToken === creatorToken
+            : event.creatorId === userId;
+
+          if (!authorized) {
+            console.warn(`Security: unauthorized LOCK_EVENT attempt for ${eventId}`);
+            break;
           }
+
+          db.events[eventIndex].status = 'locked';
+          db.events[eventIndex].lockedAt = new Date().toISOString();
+          db.events[eventIndex].finalDateTime = finalDateTime;
+          db.events[eventIndex].finalLocation = finalLocation;
+          db.events[eventIndex].finalBeerStyle = finalBeerStyle;
+
+          writeDB(db);
+          broadcastEventUpdate(eventId);
+          broadcastDashboardUpdate();
+          console.log(`Kèo ${eventId} đã được CHỐT thành công bởi Chủ Kèo!`);
+          break;
+        }
+
+        case 'UNLOCK_EVENT': {
+          const { eventId, userId, creatorToken } = action;
+
+          const now = Date.now();
+          if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
+          clientInfo.lastActionAt = now;
+
+          const db = readDB();
+          const eventIndex = db.events.findIndex(e => e.id === eventId);
+          if (eventIndex === -1) break;
+
+          const event = db.events[eventIndex];
+          const authorized = event.creatorToken
+            ? event.creatorToken === creatorToken
+            : event.creatorId === userId;
+
+          if (!authorized) {
+            console.warn(`Security: unauthorized UNLOCK_EVENT attempt for ${eventId}`);
+            break;
+          }
+
+          db.events[eventIndex].status = 'voting';
+          db.events[eventIndex].lockedAt = null;
+          db.events[eventIndex].finalDateTime = null;
+          db.events[eventIndex].finalLocation = null;
+          db.events[eventIndex].finalBeerStyle = null;
+
+          writeDB(db);
+          broadcastEventUpdate(eventId);
+          broadcastDashboardUpdate();
+          console.log(`Kèo ${eventId} đã được MỞ KHÓA bởi Chủ Kèo.`);
           break;
         }
 
@@ -581,20 +601,15 @@ wss.on('connection', (ws: WebSocket, req) => {
   });
 
   ws.on('close', () => {
-    console.log('Một thiết bị đã ngắt kết nối WebSocket.');
     clients.delete(ws);
   });
 });
 
-// Phục vụ các file tĩnh từ React build sau khi chạy `npm run build`
 const distPath = path.join(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  // Hỗ trợ SPA Routing cho React
   app.get('*', (req: Request, res: Response, next) => {
-    if (req.path.startsWith('/api')) {
-      return next();
-    }
+    if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(distPath, 'index.html'));
   });
   console.log(`📌 [Unified Server] Đang phục vụ thư mục tĩnh React build tại: ${distPath}`);
@@ -602,7 +617,6 @@ if (fs.existsSync(distPath)) {
 
 const PORT = process.env.PORT || 3001;
 
-// Khởi tạo DB trước khi lắng nghe request
 initDB().then(() => {
   server.listen(PORT, () => {
     console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
@@ -611,7 +625,6 @@ initDB().then(() => {
   });
 }).catch(err => {
   console.error('❌ Không thể khởi động server do lỗi DB:', err);
-  // Khởi động fallback phòng trường hợp lỗi mạng để server vẫn hoạt động
   server.listen(PORT, () => {
     console.log(`⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`);
   });
