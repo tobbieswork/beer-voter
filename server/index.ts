@@ -6,7 +6,10 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+
+const googleOAuthClient = new OAuth2Client();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +44,7 @@ export interface DBEvent {
   creatorRealName?: string;
   creatorUsername?: string;
   creatorToken?: string;
+  partyPinHash?: string;
   status: 'voting' | 'locked';
   createdAt: string;
   lockedAt: string | null;
@@ -99,9 +103,13 @@ let isLoaded = false;
 let isWriting = false;
 let pendingWrite = false;
 
-function withoutToken(event: DBEvent): Omit<DBEvent, 'creatorToken'> {
-  const { creatorToken: _token, ...rest } = event;
-  return rest;
+function sanitizeEvent(event: DBEvent): Omit<DBEvent, 'creatorToken' | 'partyPinHash'> & { hasPin: boolean } {
+  const { creatorToken: _t, partyPinHash: _p, ...rest } = event;
+  return { ...rest, hasPin: !!event.partyPinHash };
+}
+
+function hashPin(pin: string): string {
+  return createHash('sha256').update(String(pin)).digest('hex');
 }
 
 async function initDB() {
@@ -211,7 +219,7 @@ function getEventDetail(db: DatabaseSchema, eventId: string) {
   const event = db.events.find(e => e.id === eventId);
   if (!event) return null;
   return {
-    ...withoutToken(event),
+    ...sanitizeEvent(event),
     options: db.options.filter(o => o.eventId === eventId),
     votes: db.votes.filter(v => v.eventId === eventId),
     comments: db.comments.filter(c => c.eventId === eventId)
@@ -226,7 +234,7 @@ app.get('/api/events', (_req: Request, res: Response) => {
     const votesCount = db.votes.filter(v => v.eventId === event.id).length;
     const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
     const optionsCount = db.options.filter(o => o.eventId === event.id).length;
-    return { ...withoutToken(event), votesCount, commentsCount, optionsCount };
+    return { ...sanitizeEvent(event), votesCount, commentsCount, optionsCount };
   });
   summaryEvents.sort((a, b) => {
     if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -244,7 +252,7 @@ app.get('/api/events/:id', (req: Request, res: Response) => {
 });
 
 app.post('/api/events', (req: Request, res: Response) => {
-  const { title, creatorId, creatorName, creatorNickname, creatorRealName, creatorUsername, dateOptions, locationOptions, beerOptions } = req.body;
+  const { title, creatorId, creatorName, creatorNickname, creatorRealName, creatorUsername, dateOptions, locationOptions, beerOptions, partyPin } = req.body;
 
   if (!title || !creatorId || !creatorName) {
     return res.status(400).json({ message: 'Tên kèo, ID người tạo và tên người tạo là bắt buộc!' });
@@ -257,6 +265,8 @@ app.post('/api/events', (req: Request, res: Response) => {
   const eventId = randomUUID();
   const creatorToken = randomUUID();
 
+  const pinHash = partyPin && /^\d{6}$/.test(String(partyPin)) ? hashPin(String(partyPin)) : undefined;
+
   const newEvent: DBEvent = {
     id: eventId,
     title: title.trim(),
@@ -266,6 +276,7 @@ app.post('/api/events', (req: Request, res: Response) => {
     creatorRealName: creatorRealName || '',
     creatorUsername: creatorUsername || '',
     creatorToken,
+    partyPinHash: pinHash,
     status: 'voting',
     createdAt: new Date().toISOString(),
     lockedAt: null,
@@ -299,6 +310,42 @@ app.post('/api/events', (req: Request, res: Response) => {
 
   writeDB(db);
   res.status(201).json({ ...withoutToken(newEvent), creatorToken });
+});
+
+app.post('/api/events/:id/verify-pin', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { pin } = req.body;
+  if (!pin || !/^\d{6}$/.test(String(pin))) {
+    return res.status(400).json({ valid: false, message: 'PIN phải là 6 chữ số!' });
+  }
+  const db = readDB();
+  const event = db.events.find(e => e.id === id);
+  if (!event) return res.status(404).json({ valid: false, message: 'Không tìm thấy kèo nhậu này!' });
+  if (!event.partyPinHash) return res.json({ valid: true });
+  res.json({ valid: hashPin(String(pin)) === event.partyPinHash });
+});
+
+app.post('/api/auth/google', async (req: Request, res: Response) => {
+  const { credential } = req.body;
+  if (!credential) return res.status(400).json({ message: 'Missing credential' });
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) return res.status(500).json({ message: 'Google auth is not configured on this server' });
+  try {
+    const ticket = await googleOAuthClient.verifyIdToken({ idToken: credential, audience: clientId });
+    const payload = ticket.getPayload();
+    if (!payload) throw new Error('Empty payload');
+    res.json({
+      sub: payload.sub,
+      email: payload.email || '',
+      name: payload.name || '',
+      given_name: payload.given_name || '',
+      family_name: payload.family_name || '',
+      picture: payload.picture || ''
+    });
+  } catch (e) {
+    console.error('Google token verification failed:', e);
+    res.status(401).json({ message: 'Invalid Google token' });
+  }
 });
 
 app.delete('/api/events/:id', (req: Request, res: Response) => {
@@ -362,7 +409,7 @@ function broadcastDashboardUpdate(): void {
     const votesCount = db.votes.filter(v => v.eventId === event.id).length;
     const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
     const optionsCount = db.options.filter(o => o.eventId === event.id).length;
-    return { ...withoutToken(event), votesCount, commentsCount, optionsCount };
+    return { ...sanitizeEvent(event), votesCount, commentsCount, optionsCount };
   });
   summaryEvents.sort((a, b) => {
     if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();

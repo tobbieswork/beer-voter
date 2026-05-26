@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import EventDetail from './components/EventDetail';
 import GuestJoinModal from './components/GuestJoinModal';
 import CreateEvent from './components/CreateEvent';
+import PartyPinModal from './components/PartyPinModal';
 
 export interface User {
   id: string;
@@ -16,6 +17,9 @@ export interface User {
   name: string;
   role?: string;
   email?: string;
+  avatar?: string;
+  googleId?: string;
+  authMethod?: 'google' | 'guest';
 }
 
 export interface EventOption {
@@ -68,6 +72,7 @@ export interface EventData {
   creatorRealName?: string;
   creatorUsername?: string;
   status: 'voting' | 'locked';
+  hasPin?: boolean;
   createdAt: string;
   lockedAt?: string | null;
   finalDateTime?: string | null;
@@ -107,16 +112,40 @@ function getInitialUser(): User | null {
   const nickname = localStorage.getItem('beervote_user_nickname');
   const realName = localStorage.getItem('beervote_user_real_name');
   const username = localStorage.getItem('beervote_user_username');
+  const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
+  const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
+  const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as 'google' | 'guest';
   if (userId && nickname) {
     return {
       id: userId,
       nickname,
       realName: realName || '',
       username: username || '',
-      name: realName ? `${nickname} (${realName})` : nickname
+      name: realName ? `${nickname} (${realName})` : nickname,
+      avatar,
+      googleId,
+      authMethod
     };
   }
   return null;
+}
+
+function saveUserToStorage(user: User) {
+  localStorage.setItem('beervote_user_id', user.id);
+  localStorage.setItem('beervote_user_nickname', user.nickname);
+  localStorage.setItem('beervote_user_real_name', user.realName);
+  localStorage.setItem('beervote_user_username', user.username);
+  if (user.avatar) localStorage.setItem('beervote_user_avatar', user.avatar);
+  else localStorage.removeItem('beervote_user_avatar');
+  if (user.googleId) localStorage.setItem('beervote_user_google_id', user.googleId);
+  else localStorage.removeItem('beervote_user_google_id');
+  localStorage.setItem('beervote_user_auth_method', user.authMethod || 'guest');
+}
+
+function clearUserFromStorage() {
+  ['beervote_user_id', 'beervote_user_nickname', 'beervote_user_real_name',
+   'beervote_user_username', 'beervote_user_avatar', 'beervote_user_google_id',
+   'beervote_user_auth_method'].forEach(k => localStorage.removeItem(k));
 }
 
 export default function App() {
@@ -140,6 +169,7 @@ export default function App() {
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState<boolean>(false);
+  const [showPinModal, setShowPinModal] = useState<boolean>(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -225,6 +255,20 @@ export default function App() {
       }
     }
   }, [currentEventId, fetchEventDetail, fetchEvents]);
+
+  // PIN gating: show PIN modal if event is protected and access not granted
+  useEffect(() => {
+    if (!currentEventId || !currentEventData) {
+      setShowPinModal(false);
+      return;
+    }
+    if (currentEventData.hasPin) {
+      const granted = localStorage.getItem(`beervote_pin_granted_${currentEventId}`);
+      setShowPinModal(granted !== 'true');
+    } else {
+      setShowPinModal(false);
+    }
+  }, [currentEventId, currentEventData]);
 
   // 3. Thiết lập Kết nối WebSockets Real-time
   const connectWebSocket = useCallback(() => {
@@ -428,29 +472,49 @@ export default function App() {
     }
   };
 
-  // Xử lý nộp biệt danh của người dùng
   const handleGuestJoinSubmit = ({ nickname, realName, username }: { nickname: string; realName: string; username: string }) => {
     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
-    // Lưu thông tin người dùng vào localStorage thay vì sessionStorage
-    localStorage.setItem('beervote_user_id', userId);
-    localStorage.setItem('beervote_user_nickname', nickname);
-    localStorage.setItem('beervote_user_real_name', realName);
-    localStorage.setItem('beervote_user_username', username);
-    
     const user: User = {
-      id: userId,
-      nickname,
-      realName,
-      username,
-      name: realName ? `${nickname} (${realName})` : nickname
+      id: userId, nickname, realName, username,
+      name: realName ? `${nickname} (${realName})` : nickname,
+      authMethod: 'guest'
     };
+    saveUserToStorage(user);
     setCurrentUser(user);
     setIsJoinModalOpen(false);
-
     if (triggerCreateAfterJoin) {
       setTriggerCreateAfterJoin(false);
       setIsCreateModalOpen(true);
     }
+  };
+
+  const handleGoogleAuthSuccess = ({ sub, email, name, given_name, picture }: { sub: string; email: string; name: string; given_name: string; picture: string }) => {
+    const displayName = given_name || name || email;
+    const realName = name || given_name || '';
+    const user: User = {
+      id: 'google_' + sub,
+      nickname: displayName,
+      realName,
+      username: email,
+      name: realName ? `${displayName} (${realName})` : displayName,
+      email,
+      avatar: picture,
+      googleId: sub,
+      authMethod: 'google'
+    };
+    saveUserToStorage(user);
+    setCurrentUser(user);
+    setIsJoinModalOpen(false);
+    if (triggerCreateAfterJoin) {
+      setTriggerCreateAfterJoin(false);
+      setIsCreateModalOpen(true);
+    }
+  };
+
+  const handleSignOut = () => {
+    clearUserFromStorage();
+    setCurrentUser(null);
+    navigateToEvent(null);
   };
 
   // Trích xuất danh sách các biệt danh đang được dùng trong kèo
@@ -491,14 +555,25 @@ export default function App() {
       <BeerBubbles />
 
       {/* Header điều khiển và thông tin người dùng */}
-      <Header 
+      <Header
         currentUser={currentUser}
         onGoHome={() => navigateToEvent(null)}
+        onSignOut={currentUser ? handleSignOut : undefined}
       />
 
       {/* Phần nội dung chính của sòng nhậu */}
       <main className="main-content">
-        {currentEventId ? (
+        {currentEventId && showPinModal ? (
+          <PartyPinModal
+            eventId={currentEventId}
+            eventTitle={currentEventData?.title}
+            onSuccess={() => {
+              localStorage.setItem(`beervote_pin_granted_${currentEventId}`, 'true');
+              setShowPinModal(false);
+            }}
+            onBack={() => navigateToEvent(null)}
+          />
+        ) : currentEventId ? (
           <EventDetail
             eventId={currentEventId}
             eventData={currentEventData}
@@ -522,9 +597,10 @@ export default function App() {
       </main>
 
       {/* Modal yêu cầu nhập biệt danh và định danh khi vào sòng hoặc tạo kèo */}
-      <GuestJoinModal 
+      <GuestJoinModal
         isOpen={isJoinModalOpen}
         onSubmit={handleGuestJoinSubmit}
+        onGoogleSuccess={handleGoogleAuthSuccess}
         usedNicknames={currentEventData ? getUsedNicknames(currentEventData) : []}
       />
 

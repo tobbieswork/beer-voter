@@ -37,6 +37,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
   const [dateOpts, setDateOpts] = useState<string[]>(['']);
   const [locOpts, setLocOpts] = useState<string[]>(['']);
   const [beerOpts, setBeerOpts] = useState<string[]>(['']);
+  const [partyPin, setPartyPin] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -157,6 +158,11 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       return;
     }
 
+    if (partyPin && !/^\d{6}$/.test(partyPin)) {
+      setError('Mật khẩu phải là đúng 6 chữ số (để trống nếu không cần)!');
+      return;
+    }
+
     const filteredDates = dateOpts.filter(o => o.trim() !== '');
     const filteredLocs = locOpts.filter(o => o.trim() !== '');
     const filteredBeers = beerOpts.filter(o => o.trim() !== '');
@@ -186,7 +192,8 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
           creatorUsername: currentUser.username,
           dateOptions: filteredDates,
           locationOptions: filteredLocs,
-          beerOptions: filteredBeers
+          beerOptions: filteredBeers,
+          ...(partyPin ? { partyPin } : {})
         })
       });
 
@@ -368,6 +375,26 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
             <span className="btn-add-opt-row" onClick={() => addOptField('beer')}>
               ➕ Thêm Loại Bia Khác
             </span>
+          </div>
+
+          {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label htmlFor="party-pin">🔐 Mật Khẩu Bảo Vệ Kèo <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(tùy chọn)</span></label>
+            <input
+              type="text"
+              id="party-pin"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Để trống nếu kèo công khai, hoặc nhập đúng 6 chữ số..."
+              value={partyPin}
+              onChange={(e) => setPartyPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength={6}
+            />
+            {partyPin && (
+              <span style={{ fontSize: '0.75rem', color: partyPin.length === 6 ? 'var(--accent-green)' : 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                {partyPin.length === 6 ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!' : `Còn thiếu ${6 - partyPin.length} chữ số`}
+              </span>
+            )}
           </div>
 
           <div className="form-actions-modal">

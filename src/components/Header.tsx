@@ -3,9 +3,10 @@ import { User } from '../App';
 interface HeaderProps {
   currentUser: User | null;
   onGoHome: () => void;
+  onSignOut?: () => void;
 }
 
-export default function Header({ currentUser, onGoHome }: HeaderProps) {
+export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="header-logo" onClick={onGoHome}>
@@ -16,7 +17,15 @@ export default function Header({ currentUser, onGoHome }: HeaderProps) {
       <div className="header-actions">
         {currentUser && (
           <div className="user-badge">
-            <span style={{ fontSize: '1.1rem' }}>🍺</span>
+            {currentUser.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.nickname}
+                className="user-avatar-img"
+              />
+            ) : (
+              <span style={{ fontSize: '1.1rem' }}>🍺</span>
+            )}
             <span>
               <strong>{currentUser.nickname || currentUser.name}</strong>
               {currentUser.realName && (
@@ -25,9 +34,14 @@ export default function Header({ currentUser, onGoHome }: HeaderProps) {
                 </span>
               )}
             </span>
-            <span className="role-badge guest">
-              Chiến Hữu
+            <span className={`role-badge ${currentUser.authMethod === 'google' ? 'google' : 'guest'}`}>
+              {currentUser.authMethod === 'google' ? 'Google' : 'Chiến Hữu'}
             </span>
+            {onSignOut && (
+              <button className="btn-signout" onClick={onSignOut} title="Đăng xuất">
+                ↩
+              </button>
+            )}
           </div>
         )}
       </div>

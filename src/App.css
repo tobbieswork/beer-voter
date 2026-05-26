@@ -1718,3 +1718,102 @@
   display: inline-block;
   margin-top: 0.05rem;
 }
+
+/* ================= GOOGLE AUTH & USER AVATAR ================= */
+.user-avatar-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.role-badge.google {
+  background: rgba(66, 133, 244, 0.15);
+  border: 1px solid rgba(66, 133, 244, 0.3);
+  color: #7ab4f5;
+}
+
+.btn-signout {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.1rem;
+  line-height: 1;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-signout:hover {
+  color: var(--accent-red);
+}
+
+/* ================= JOIN MODE DIVIDER ================= */
+.join-mode-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.join-mode-divider::before,
+.join-mode-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-glass);
+}
+
+/* ================= PARTY PIN MODAL ================= */
+.pin-input-row {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin: 1.25rem 0;
+}
+
+.pin-digit-input {
+  width: 48px;
+  height: 58px;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  border: 2px solid var(--border-glass);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  caret-color: transparent;
+}
+
+.pin-digit-input:focus {
+  border-color: var(--accent-gold);
+  background: rgba(255, 176, 0, 0.07);
+  box-shadow: 0 0 0 3px rgba(255, 176, 0, 0.15);
+}
+
+.pin-digit-input:disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  .pin-digit-input {
+    width: 42px;
+    height: 52px;
+    font-size: 1.4rem;
+    border-radius: 10px;
+  }
+
+  .pin-input-row {
+    gap: 0.4rem;
+  }
+}
