@@ -103,13 +103,48 @@ let isLoaded = false;
 let isWriting = false;
 let pendingWrite = false;
 
+// Pin token store - single-process, survives server restart (same as cacheDB)
+const pinTokens = new Map<string, { eventId: string; expiresAt: number }>();
+const PIN_TOKEN_TTL = 24*60*60*1000;
+
 function sanitizeEvent(event: DBEvent): Omit<DBEvent, 'creatorToken' | 'partyPinHash'> & { hasPin: boolean } {
   const { creatorToken: _t, partyPinHash: _p, ...rest } = event;
   return { ...rest, hasPin: !!event.partyPinHash };
 }
 
+function withoutPinHash(event: DBEvent): Omit<DBEvent, 'partyPinHash'> {
+  const { partyPinHash: _p, ...rest } = event;
+  return rest;
+}
+
 function hashPin(pin: string): string {
   return createHash('sha256').update(String(pin)).digest('hex');
+}
+
+// Generate a verification PIN token
+function generatePinToken(eventId: string): string {
+  const token = randomUUID();
+  pinTokens.set(token, { eventId, expiresAt: Date.now() + PIN_TOKEN_TTL });
+  return token;
+}
+
+// Check and retrieve event associated with pinToken
+function checkPinToken(pinToken: string | undefined): { eventId: string; isValid: boolean } | null {
+  if (!pinToken || pinToken.length < 1) return null;
+  const entry = pinTokens.get(pinToken);
+  if (!entry || Date.now() > entry.expiresAt) {
+    pinTokens.delete(pinToken);
+    return null;
+  }
+  return { eventId: entry.eventId, isValid: true };
+}
+
+// Validate pinToken against event - returns true if authorized, false if not
+function isPinAuthorized(event: DBEvent | undefined, pinToken: string | undefined): boolean {
+  if (!event || !event.partyPinHash) return true; // No PIN on event, always allowed
+  if (!pinToken) return false;
+  const check = checkPinToken(pinToken);
+  return check !== null && check.eventId === event.id;
 }
 
 async function initDB() {
@@ -245,9 +280,14 @@ app.get('/api/events', (_req: Request, res: Response) => {
 
 app.get('/api/events/:id', (req: Request, res: Response) => {
   const { id } = req.params;
+  const pinToken = req.headers['x-pin-token'] as string | undefined;
   const db = readDB();
+  const event = db.events.find(e => e.id === id);
+  if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
+  if (!isPinAuthorized(event, pinToken)) {
+    return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
+  }
   const eventDetail = getEventDetail(db, id);
-  if (!eventDetail) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
   res.json(eventDetail);
 });
 
@@ -309,7 +349,7 @@ app.post('/api/events', (req: Request, res: Response) => {
   if (Array.isArray(beerOptions)) beerOptions.forEach(opt => addOption(opt, 'beer'));
 
   writeDB(db);
-  res.status(201).json({ ...withoutToken(newEvent), creatorToken });
+  res.status(201).json({ ...withoutPinHash(newEvent), creatorToken });
 });
 
 app.post('/api/events/:id/verify-pin', (req: Request, res: Response) => {
@@ -321,8 +361,13 @@ app.post('/api/events/:id/verify-pin', (req: Request, res: Response) => {
   const db = readDB();
   const event = db.events.find(e => e.id === id);
   if (!event) return res.status(404).json({ valid: false, message: 'Không tìm thấy kèo nhậu này!' });
-  if (!event.partyPinHash) return res.json({ valid: true });
-  res.json({ valid: hashPin(String(pin)) === event.partyPinHash });
+  if (!event.partyPinHash) {
+    return res.json({ valid: true, pinToken: generatePinToken(id) });
+  }
+  if (hashPin(String(pin)) === event.partyPinHash) {
+    return res.json({ valid: true, pinToken: generatePinToken(id) });
+  }
+  res.json({ valid: false });
 });
 
 app.post('/api/auth/google', async (req: Request, res: Response) => {
@@ -382,6 +427,7 @@ interface ClientInfo {
   currentEventId: string | null;
   isLocal: boolean;
   lastActionAt: number;
+  verifiedPinTokens: Map<string, string>; // eventId -> valid pinToken (cached on JOIN_EVENT)
 }
 
 const clients = new Map<WebSocket, ClientInfo>();
@@ -441,7 +487,7 @@ wss.on('connection', (ws: WebSocket, req) => {
   const clientIp = req.socket.remoteAddress || '';
   const isLocal = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === '::ffff:127.0.0.1';
   console.log(`Một thiết bị đã kết nối qua WebSockets! IP: ${clientIp} (Local: ${isLocal})`);
-  clients.set(ws, { currentEventId: null, isLocal, lastActionAt: 0 });
+  clients.set(ws, { currentEventId: null, isLocal, lastActionAt: 0, verifiedPinTokens: new Map() });
 
   ws.on('message', (messageStr: string) => {
     try {
@@ -451,6 +497,14 @@ wss.on('connection', (ws: WebSocket, req) => {
 
       switch (action.type) {
         case 'JOIN_EVENT': {
+          const event_join = readDB().events.find(e => e.id === action.eventId);
+          if (event_join && event_join.partyPinHash) {
+            if (!isPinAuthorized(event_join, action.pinToken)) {
+              console.warn(`PIN denied JOIN_EVENT for ${action.eventId}`);
+              break;
+            }
+            clientInfo.verifiedPinTokens.set(action.eventId, action.pinToken);
+          }
           clientInfo.currentEventId = action.eventId;
           break;
         }
@@ -461,8 +515,11 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'VOTE_TOGGLE': {
-          const { eventId, optionId, userId, userName, userNickname, userRealName, userEmail } = action;
+          const { eventId, optionId, userId, userName, userNickname, userRealName, userEmail, pinToken } = action;
           if (!eventId || !optionId || !userId) break;
+          const voteEvent = readDB().events.find(e => e.id === eventId);
+          const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+          if (!isPinAuthorized(voteEvent, effectiveToken)) break;
 
           const now = Date.now();
           if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -499,8 +556,11 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'ADD_OPTION': {
-          const { eventId, optType, value, creatorId, creatorName, userNickname, userRealName, userUsername, userEmail } = action;
+          const { eventId, optType, value, creatorId, creatorName, userNickname, userRealName, userUsername, userEmail, pinToken } = action;
           if (!eventId || !value || typeof value !== 'string' || value.trim().length === 0 || value.trim().length > 200) break;
+          const addOptEvent = readDB().events.find(e => e.id === eventId);
+          const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+          if (!isPinAuthorized(addOptEvent, effectiveToken)) break;
 
           const now = Date.now();
           if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -544,7 +604,10 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'ADD_COMMENT': {
-          const { eventId, userId, userName, userRole, content, userNickname, userRealName, userEmail } = action;
+          const { eventId, userId, userName, userRole, content, userNickname, userRealName, userEmail, pinToken } = action;
+          const commentEvent = readDB().events.find(e => e.id === eventId);
+          const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+          if (!isPinAuthorized(commentEvent, effectiveToken)) break;
           if (!eventId || !content || typeof content !== 'string' || content.trim().length === 0 || content.trim().length > 500) break;
 
           const now = Date.now();
@@ -572,7 +635,10 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'LOCK_EVENT': {
-          const { eventId, userId, creatorToken, finalDateTime, finalLocation, finalBeerStyle } = action;
+          const { eventId, userId, creatorToken, finalDateTime, finalLocation, finalBeerStyle, pinToken } = action;
+          const lockEvent = readDB().events.find(e => e.id === eventId);
+          const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+          if (!isPinAuthorized(lockEvent, effectiveToken)) break;
 
           const now = Date.now();
           if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -606,7 +672,10 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'UNLOCK_EVENT': {
-          const { eventId, userId, creatorToken } = action;
+          const { eventId, userId, creatorToken, pinToken } = action;
+          const unlockEvent = readDB().events.find(e => e.id === eventId);
+          const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+          if (!isPinAuthorized(unlockEvent, effectiveToken)) break;
 
           const now = Date.now();
           if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;

@@ -3,7 +3,7 @@ import { useState, useRef, KeyboardEvent, ClipboardEvent } from 'react';
 interface PartyPinModalProps {
   eventId: string;
   eventTitle?: string;
-  onSuccess: () => void;
+  onSuccess: (pinToken: string) => void;
   onBack: () => void;
 }
 
@@ -54,10 +54,10 @@ export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }
       });
       const data = await res.json();
       if (data.valid) {
-        onSuccess();
+        onSuccess(data.pinToken);
       } else {
         setError('Mật khẩu không đúng. Thử lại nhé!');
-        setDigits(['', '', '', '', '', '']);
+        setDigits(['', '', '', '', '']);
         setTimeout(() => inputRefs.current[0]?.focus(), 50);
       }
     } catch {

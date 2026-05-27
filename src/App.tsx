@@ -107,6 +107,31 @@ function addVisitedEvent(eventId: string) {
   }
 }
 
+// Pin token storage helpers
+function getPinToken(eventId: string): string | null {
+  try {
+    return localStorage.getItem(`beervote_pin_token_${eventId}`);
+  } catch {
+    return null;
+  }
+}
+
+function savePinToken(eventId: string, token: string) {
+  try {
+    localStorage.setItem(`beervote_pin_token_${eventId}`, token);
+  } catch {
+    // Storage full, ignore
+  }
+}
+
+function clearPinToken(eventId: string) {
+  try {
+    localStorage.removeItem(`beervote_pin_token_${eventId}`);
+  } catch {
+    // Ignore
+  }
+}
+
 function getInitialUser(): User | null {
   const userId = localStorage.getItem('beervote_user_id');
   const nickname = localStorage.getItem('beervote_user_nickname');
@@ -223,12 +248,19 @@ export default function App() {
   }, []);
 
   const fetchEventDetail = useCallback(async (id: string) => {
-    if (!id) return;
     try {
-      const response = await fetch(`/api/events/${id}`);
+      const pinToken = getPinToken(id);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (pinToken) {
+        headers['X-Pin-Token'] = pinToken;
+      }
+      const response = await fetch(`/api/events/${id}`, { headers });
       if (response.ok) {
         const data = await response.json();
         setCurrentEventData(data);
+      } else if (response.status === 403) {
+        clearPinToken(id);
+        setShowPinModal(true);
       }
     } catch (error) {
       console.error(`Không thể gọi API lấy chi tiết kèo ${id}:`, error);
@@ -240,10 +272,12 @@ export default function App() {
     if (currentEventId) {
       addVisitedEvent(currentEventId);
       setVisitedEventIds(getVisitedEvents());
+      const pinToken = getPinToken(currentEventId);
       fetchEventDetail(currentEventId);
-      // Đăng ký WebSocket JOIN_EVENT
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId }));
+      // Only send JOIN_EVENT immediately if we already have a valid PIN token.
+      // Otherwise, defer to PIN gating effect or ws.onopen handler.
+      if (pinToken && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken }));
       }
     } else {
       setVisitedEventIds(getVisitedEvents());
@@ -256,15 +290,15 @@ export default function App() {
     }
   }, [currentEventId, fetchEventDetail, fetchEvents]);
 
-  // PIN gating: show PIN modal if event is protected and access not granted
+  // PIN gating: show PIN modal if event is protected and token not present
   useEffect(() => {
     if (!currentEventId || !currentEventData) {
       setShowPinModal(false);
       return;
     }
     if (currentEventData.hasPin) {
-      const granted = localStorage.getItem(`beervote_pin_granted_${currentEventId}`);
-      setShowPinModal(granted !== 'true');
+      const token = getPinToken(currentEventId);
+      setShowPinModal(!token);
     } else {
       setShowPinModal(false);
     }
@@ -295,7 +329,7 @@ export default function App() {
 
       // Đăng ký phòng khi kết nối mở
       if (currentEventId) {
-        ws.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId }));
+        ws.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken: getPinToken(currentEventId) }));
       } else {
         ws.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
       }
@@ -368,7 +402,8 @@ export default function App() {
         userNickname: currentUser.nickname || userName || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || '',
+        pinToken: getPinToken(eventId) || ''
       }));
     } else {
       alert('Mất kết nối WebSocket tới Server. Vui lòng đợi trong giây lát!');
@@ -389,7 +424,8 @@ export default function App() {
         userNickname: currentUser.nickname || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || '',
+        pinToken: getPinToken(optionData.eventId) || ''
       }));
     }
   };
@@ -408,7 +444,8 @@ export default function App() {
         userNickname: currentUser.nickname || currentUser.name,
         userRealName: currentUser.realName || '',
         userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || ''
+        userEmail: currentUser.email || currentUser.username || '',
+        pinToken: getPinToken(commentData.eventId) || ''
       }));
     }
   };
@@ -424,7 +461,8 @@ export default function App() {
         type: 'LOCK_EVENT',
         ...lockData,
         userId: currentUser.id,
-        creatorToken
+        creatorToken,
+        pinToken: getPinToken(lockData.eventId) || ''
       }));
     }
   };
@@ -437,7 +475,8 @@ export default function App() {
         type: 'UNLOCK_EVENT',
         eventId,
         userId: currentUser.id,
-        creatorToken
+        creatorToken,
+        pinToken: getPinToken(eventId) || ''
       }));
     }
   };
@@ -567,9 +606,15 @@ export default function App() {
           <PartyPinModal
             eventId={currentEventId}
             eventTitle={currentEventData?.title}
-            onSuccess={() => {
-              localStorage.setItem(`beervote_pin_granted_${currentEventId}`, 'true');
+            onSuccess={(pinToken) => {
+              if (!currentEventId) return;
+              savePinToken(currentEventId, pinToken);
               setShowPinModal(false);
+              fetchEventDetail(currentEventId);
+              // Send JOIN_EVENT with pinToken now that we have it
+              if (wsRef.current?.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken }));
+              }
             }}
             onBack={() => navigateToEvent(null)}
           />
