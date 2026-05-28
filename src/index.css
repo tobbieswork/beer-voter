@@ -2,6 +2,27 @@
 
 @import 'tailwindcss';
 
+/* Bridge: legacy App.css var(--*) → actual theme values */
+:root {
+  --accent-gold: #ffb000;
+  --accent-gold-hover: #d97706;
+  --accent-amber: #f59e0b;
+  --accent-green: #34d399;
+  --accent-red: #f87171;
+  --bg-primary: #0a0b0d;
+  --bg-secondary: #14161d;
+  --bg-card: rgba(23, 26, 33, 0.65);
+  --bg-card-hover: rgba(30, 34, 43, 0.8);
+  --bg-input: rgba(13, 15, 19, 0.8);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-glass-active: rgba(255, 176, 0, 0.3);
+  --text-primary: #f3f4f6;
+  --text-secondary: #a8acb8;
+  --text-muted: #88909a;
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-gold: 0 0 15px rgba(255, 176, 0, 0.15);
+}
+
 @theme {
   --color-bg-primary: #0a0b0d;
   --color-bg-secondary: #14161d;
@@ -9,10 +30,12 @@
   --color-gold-hover: #d97706;
   --color-amber: #f59e0b;
   --color-green: #10b981;
-  --color-red: #ef4444;
+  --color-green-light: #34d399;
+  --color-red-light: #f87171;
+  --color-red: #f87171;
   --color-text-primary: #f3f4f6;
-  --color-text-secondary: #9ca3af;
-  --color-text-muted: #6b7280;
+  --color-text-secondary: #a8acb8;
+  --color-text-muted: #88909a;
   --color-glass: rgba(255, 255, 255, 0.06);
   --color-glass-active: rgba(255, 176, 0, 0.3);
   --color-glass-hover: rgba(255, 255, 255, 0.12);
@@ -218,7 +241,7 @@
 }
 
 .event-status-badge.locked {
-  @apply border border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.15)] text-green;
+  @apply border border-[rgba(52,211,153,0.25)] bg-[rgba(52,211,153,0.15)] text-green-light;
 }
 
 .glow-text {
@@ -227,4 +250,116 @@
 
 .glow-box {
   box-shadow: 0 0 20px rgba(255, 176, 0, 0.2);
+}
+
+.btn-danger {
+  @apply flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-all duration-300;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.btn-danger:hover {
+  @apply -translate-y-0.5;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-success {
+  @apply flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white transition-all duration-300;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.btn-success:hover {
+  @apply -translate-y-0.5;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-outline-danger {
+  @apply rounded-xl border px-5 py-2 text-[0.9rem] font-semibold transition-all duration-300;
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.btn-outline-danger:hover {
+  background-color: rgba(248, 113, 113, 0.25);
+}
+
+.warning-box {
+  @apply rounded-xl border px-4 py-3 text-[0.8rem] leading-relaxed;
+  background-color: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #a8acb8;
+}
+
+.info-box-green {
+  @apply rounded-lg border px-4 py-3 text-center text-[0.85rem] font-semibold;
+  background-color: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+}
+
+.info-box-muted {
+  @apply rounded-lg border border-dashed px-4 py-3 text-center text-[0.8rem];
+  background-color: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #a8acb8;
+}
+
+.presets-container {
+  @apply flex flex-wrap gap-1 pt-2;
+}
+
+.presets-container .quick-chat-tag {
+  @apply px-2 py-0.5 text-[0.75rem];
+}
+
+.empty-state-text {
+  @apply italic text-[0.85rem] text-text-muted;
+}
+
+.modal-error-box {
+  @apply rounded-lg border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.15)] p-3 text-sm font-medium text-[#ef4444];
+}
+
+.status-voting {
+  color: #f59e0b;
+}
+
+.status-locked {
+  color: #34d399;
+}
+
+.text-muted {
+  color: #88909a;
+}
+
+.text-secondary {
+  color: #a8acb8;
+}
+
+.pin-modal-header {
+  @apply mb-2 text-center text-[2.5rem];
+}
+
+.modal-icon-large {
+  @apply mb-2 text-center text-[2.5rem];
+}
+
+.funny-name-label {
+  @apply mb-2.5 block text-[0.75rem] font-semibold uppercase text-text-muted;
+}
+
+.funny-name-scroll {
+  @apply max-h-[120px] pr-0.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.form-actions-vertical {
+  @apply flex flex-col gap-2;
+}
+
+.form-actions-vertical button {
+  @apply w-full justify-center;
 }

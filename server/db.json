@@ -1,6 +1,95 @@
 {
-  "events": [],
-  "options": [],
+  "events": [
+    {
+      "id": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "title": "Mừng lương về 🎉",
+      "creatorId": "usr_1779966663530_7kq",
+      "creatorName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "creatorNickname": "Beer Thủ Vô Song 🍺",
+      "creatorRealName": "sss Tester sss",
+      "creatorUsername": "tester101",
+      "creatorToken": "ba3fb14b-8585-43f1-be3d-36a1126e8e2b",
+      "status": "voting",
+      "createdAt": "2026-05-28T11:11:09.519Z",
+      "lockedAt": null,
+      "finalDateTime": null,
+      "finalLocation": null,
+      "finalBeerStyle": null
+    }
+  ],
+  "options": [
+    {
+      "id": "ecc23bfa-4e97-4694-81dd-ecf8e4a54e77",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "datetime",
+      "value": "2026-05-29T19:30",
+      "creatorId": "usr_1779966663530_7kq",
+      "creatorName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "creatorNickname": "Beer Thủ Vô Song 🍺",
+      "creatorRealName": "sss Tester sss",
+      "creatorUsername": "tester101",
+      "createdAt": "2026-05-28T11:11:09.519Z"
+    },
+    {
+      "id": "12842518-9b83-41cb-ac08-fd1f1e1629d1",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "location",
+      "value": "Quán Lẩu Dê Đồng Quê 🐐",
+      "creatorId": "usr_1779966663530_7kq",
+      "creatorName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "creatorNickname": "Beer Thủ Vô Song 🍺",
+      "creatorRealName": "sss Tester sss",
+      "creatorUsername": "tester101",
+      "createdAt": "2026-05-28T11:11:09.519Z"
+    },
+    {
+      "id": "29c64155-4438-448d-b15c-5315977a65c8",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "beer",
+      "value": "Bia úp ngược đa sắc màu 🍹",
+      "creatorId": "usr_1779966663530_7kq",
+      "creatorName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "creatorNickname": "Beer Thủ Vô Song 🍺",
+      "creatorRealName": "sss Tester sss",
+      "creatorUsername": "tester101",
+      "createdAt": "2026-05-28T11:11:09.519Z"
+    },
+    {
+      "id": "26bccbce-511f-4c3a-afef-eb488f5ee4e0",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "beer",
+      "value": "Bia úp ngược đa sắc màu 🍹",
+      "creatorId": "usr_1779966663530_7kq",
+      "creatorName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "creatorNickname": "Beer Thủ Vô Song 🍺",
+      "creatorRealName": "sss Tester sss",
+      "creatorUsername": "tester101",
+      "createdAt": "2026-05-28T11:11:09.519Z"
+    }
+  ],
   "votes": [],
-  "comments": []
+  "comments": [
+    {
+      "id": "b3fec1e5-f65b-489e-a9f2-cefbe086bb08",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "userId": "usr_1779966663530_7kq",
+      "userName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "content": "💸 Kèo này tao bao... ly đầu tiên! 😂",
+      "userNickname": "Beer Thủ Vô Song 🍺",
+      "userRealName": "sss Tester sss",
+      "userEmail": "tester101",
+      "createdAt": "2026-05-28T11:11:39.993Z"
+    },
+    {
+      "id": "b79a978c-1b40-4fd7-a8f3-2ca8f22bfc3f",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "userId": "usr_1779966663530_7kq",
+      "userName": "Beer Thủ Vô Song 🍺 (sss Tester sss)",
+      "content": "🚗 Uống không lái, bắt Grab nha! 🚕",
+      "userNickname": "Beer Thủ Vô Song 🍺",
+      "userRealName": "sss Tester sss",
+      "userEmail": "tester101",
+      "createdAt": "2026-05-28T11:11:43.569Z"
+    }
+  ]
 }

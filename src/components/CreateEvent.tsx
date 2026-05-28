@@ -224,34 +224,14 @@ export default function CreateEvent({
 
   return (
     <div className="modal-overlay">
-      <div
-        className="modal-pub"
-        style={{ maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}
-      >
-        <h3 className="modal-title" style={{ fontSize: '1.6rem' }}>
-          🍻 Tạo Kèo Nhậu Mới 🍻
-        </h3>
-        <p className="modal-desc" style={{ marginBottom: '1rem' }}>
+      <div className="modal-pub max-h-[90vh] overflow-auto" style={{ maxWidth: '600px' }}>
+        <h3 className="modal-title text-[1.6rem]">🍻 Tạo Kèo Nhậu Mới 🍻</h3>
+        <p className="modal-desc mb-4">
           Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
           này sẽ mặc định làm <strong>Chủ Kèo</strong>.
         </p>
 
-        {error && (
-          <div
-            style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid var(--accent-red)',
-              padding: '0.75rem',
-              borderRadius: '10px',
-              color: 'var(--accent-red)',
-              fontSize: '0.85rem',
-              marginBottom: '1rem',
-              fontWeight: 600,
-            }}
-          >
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="modal-error-box mb-4">⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* Tên Kèo */}
@@ -267,16 +247,12 @@ export default function CreateEvent({
               required
             />
             {/* Presets cho Tên Kèo */}
-            <div
-              className="presets-container"
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}
-            >
+            <div className="presets-container">
               {TITLE_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'title')}
                 >
                   {preset}
@@ -286,7 +262,7 @@ export default function CreateEvent({
           </div>
 
           {/* Đề xuất Ngày/Giờ */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Lịch Trình Đề Xuất (Ngày & Giờ)</label>
             <div className="options-input-list">
               {dateOpts.map((opt, index) => (
@@ -310,22 +286,12 @@ export default function CreateEvent({
               ))}
             </div>
             {/* Presets cho Lịch Trình */}
-            <div
-              className="presets-container"
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.4rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.5rem',
-              }}
-            >
+            <div className="presets-container my-2">
               {datePresets.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset.value, 'date')}
                 >
                   {preset.label}
@@ -338,7 +304,7 @@ export default function CreateEvent({
           </div>
 
           {/* Đề xuất Địa điểm */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Địa Điểm Đề Xuất</label>
             <div className="options-input-list">
               {locOpts.map((opt, index) => (
@@ -363,22 +329,12 @@ export default function CreateEvent({
               ))}
             </div>
             {/* Presets cho Địa Điểm */}
-            <div
-              className="presets-container"
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.4rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.5rem',
-              }}
-            >
+            <div className="presets-container my-2">
               {LOCATION_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'location')}
                 >
                   {preset}
@@ -391,7 +347,7 @@ export default function CreateEvent({
           </div>
 
           {/* Đề xuất Loại Bia */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Loại Bia / Phong Cách Quán</label>
             <div className="options-input-list">
               {beerOpts.map((opt, index) => (
@@ -416,22 +372,12 @@ export default function CreateEvent({
               ))}
             </div>
             {/* Presets cho Loại Bia */}
-            <div
-              className="presets-container"
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '0.4rem',
-                marginTop: '0.5rem',
-                marginBottom: '0.5rem',
-              }}
-            >
+            <div className="presets-container my-2">
               {BEER_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'beer')}
                 >
                   {preset}
@@ -444,10 +390,9 @@ export default function CreateEvent({
           </div>
 
           {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label htmlFor="party-pin">
-              🔐 Mật Khẩu Bảo Vệ Kèo{' '}
-              <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(tùy chọn)</span>
+              🔐 Mật Khẩu Bảo Vệ Kèo <span className="font-normal text-muted">(tùy chọn)</span>
             </label>
             <input
               type="text"
@@ -461,12 +406,7 @@ export default function CreateEvent({
             />
             {partyPin && (
               <span
-                style={{
-                  fontSize: '0.75rem',
-                  color: partyPin.length === 6 ? 'var(--accent-green)' : 'var(--text-muted)',
-                  marginTop: '0.25rem',
-                  display: 'block',
-                }}
+                className={`block text-[0.75rem] pt-1 ${partyPin.length === 6 ? 'text-green' : 'text-muted'}`}
               >
                 {partyPin.length === 6
                   ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'

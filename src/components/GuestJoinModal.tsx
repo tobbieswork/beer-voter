@@ -125,7 +125,7 @@ export default function GuestJoinModal({
   return (
     <div className="modal-overlay">
       <div className="modal-pub">
-        <div style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '0.5rem' }}>🍻</div>
+        <div className="modal-icon-large">🍻</div>
         <h3 className="modal-title">Vào Sòng Nhậu BeerVote!</h3>
 
         {mode === 'choose' && (
@@ -138,13 +138,9 @@ export default function GuestJoinModal({
               <span>Đăng nhập nhanh</span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <div className="flex justify-center mb-4">
               {isVerifying ? (
-                <div
-                  style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '1rem' }}
-                >
-                  Đang xác thực Google...
-                </div>
+                <div className="text-secondary text-[0.9rem] p-4">Đang xác thực Google...</div>
               ) : (
                 <GoogleLogin
                   onSuccess={handleGoogleCredential}
@@ -163,9 +159,7 @@ export default function GuestJoinModal({
             </div>
 
             {googleError && (
-              <div className="modal-error-box animate-fade-in" style={{ marginBottom: '1rem' }}>
-                ⚠️ {googleError}
-              </div>
+              <div className="modal-error-box animate-fade-in mb-4">⚠️ {googleError}</div>
             )}
 
             <div className="join-mode-divider">
@@ -173,8 +167,7 @@ export default function GuestJoinModal({
             </div>
 
             <button
-              className="btn-secondary"
-              style={{ width: '100%', justifyContent: 'center', minHeight: '44px' }}
+              className="btn-secondary w-full justify-center min-h-[44px]"
               onClick={() => setMode('guest')}
             >
               👤 Tiếp Tục Không Cần Đăng Nhập
@@ -240,29 +233,11 @@ export default function GuestJoinModal({
                 />
               </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-muted)',
-                    fontWeight: 600,
-                    display: 'block',
-                    marginBottom: '0.6rem',
-                  }}
-                >
+              <div className="mb-6">
+                <span className="funny-name-label">
                   💡 Gợi ý biệt danh chưa sử dụng (✨ là còn trống):
                 </span>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                    maxHeight: '120px',
-                    overflowY: 'auto',
-                    paddingRight: '0.2rem',
-                  }}
-                >
+                <div className="funny-name-scroll">
                   {sortedNames.map((fn, idx) => {
                     const isUsed = usedNicknames.some(
                       (un) => un.trim().toLowerCase() === fn.trim().toLowerCase()
@@ -287,23 +262,11 @@ export default function GuestJoinModal({
                 </div>
               </div>
 
-              <div
-                className="form-actions-modal"
-                style={{ flexDirection: 'column', gap: '0.5rem' }}
-              >
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
+              <div className="form-actions-vertical gap-2">
+                <button type="submit" className="btn-primary">
                   🍻 XÁC NHẬN THÔNG TIN
                 </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                  onClick={() => setMode('choose')}
-                >
+                <button type="button" className="btn-secondary" onClick={() => setMode('choose')}>
                   ← Quay Lại
                 </button>
               </div>

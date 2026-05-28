@@ -106,7 +106,7 @@ export default function EventDetail({
 
   if (!eventData) {
     return (
-      <div className="card-pub" style={{ textAlign: 'center', padding: '3rem' }}>
+      <div className="card-pub text-center" style={{ padding: '3rem' }}>
         <p>Đang tải dữ liệu kèo nhậu cực chill...</p>
       </div>
     );
@@ -380,15 +380,13 @@ export default function EventDetail({
           })}
 
           {listOptions.length === 0 && (
-            <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              Chưa có đề xuất nào cho mục này.
-            </p>
+            <p className="empty-state-text">Chưa có đề xuất nào cho mục này.</p>
           )}
         </div>
 
         {/* Ô Đề xuất mới cho Guest/Admin */}
         {status === 'voting' && (
-          <div style={{ marginTop: '1rem' }}>
+          <div className="pt-4">
             <div className="suggest-input-group">
               <input
                 type={type === 'datetime' ? 'datetime-local' : 'text'}
@@ -410,17 +408,13 @@ export default function EventDetail({
             </div>
 
             {/* Presets điền nhanh cho phần đề xuất */}
-            <div
-              className="presets-container"
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}
-            >
+            <div className="presets-container mt-2">
               {type === 'datetime' &&
                 getDynamicDatePresets().map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
                     className="quick-chat-tag"
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
                     onClick={() => setNewOptionValues({ ...newOptionValues, [type]: preset.value })}
                   >
                     {preset.label}
@@ -438,7 +432,6 @@ export default function EventDetail({
                     key={idx}
                     type="button"
                     className="quick-chat-tag"
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
                     onClick={() => setNewOptionValues({ ...newOptionValues, [type]: preset })}
                   >
                     {preset}
@@ -456,7 +449,6 @@ export default function EventDetail({
                     key={idx}
                     type="button"
                     className="quick-chat-tag"
-                    style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem' }}
                     onClick={() => setNewOptionValues({ ...newOptionValues, [type]: preset })}
                   >
                     {preset}
@@ -509,7 +501,7 @@ export default function EventDetail({
         {/* Cột chính: Các mục bình chọn */}
         <div className="detail-main">
           {/* Thông tin tiêu đề kèo */}
-          <div className="card-pub" style={{ paddingBottom: '1.25rem' }}>
+          <div className="card-pub pb-5">
             <div className="detail-header-info">
               <h2 className="detail-title">{title}</h2>
               <div className="detail-meta-row">
@@ -518,13 +510,8 @@ export default function EventDetail({
                 </span>
                 <span className="dot-separator"></span>
                 <span>
-                  Trạng thái:
-                  <strong
-                    style={{
-                      color: status === 'voting' ? 'var(--accent-amber)' : 'var(--accent-green)',
-                      marginLeft: '0.25rem',
-                    }}
-                  >
+                  Trạng thái:{' '}
+                  <strong className={status === 'voting' ? 'status-voting' : 'status-locked'}>
                     {status === 'voting' ? '🔥 Đang bình chọn' : '🍻 Đã chốt lịch'}
                   </strong>
                 </span>
@@ -548,20 +535,12 @@ export default function EventDetail({
           {status === 'locked' && eventData.finalDateTime ? (
             <Countdown key={eventData.finalDateTime} targetDate={eventData.finalDateTime} />
           ) : (
-            <div className="card-pub" style={{ textAlign: 'center', padding: '1.5rem' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔥</div>
-              <h4
-                style={{
-                  fontWeight: 700,
-                  color: 'var(--accent-gold)',
-                  marginBottom: '0.5rem',
-                  textTransform: 'uppercase',
-                  fontSize: '0.9rem',
-                }}
-              >
+            <div className="card-pub text-center !p-6">
+              <div className="mb-2 text-4xl">🔥</div>
+              <h4 className="mb-2 text-[0.9rem] font-bold uppercase text-gold">
                 Đang Mở Sòng Vote
               </h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              <p className="text-secondary text-[0.85rem]">
                 Chia sẻ link cho bạn bè để cùng vào vote địa điểm ngon, giờ đẹp và loại bia chill
                 nhé anh em ơi!
               </p>
@@ -570,12 +549,7 @@ export default function EventDetail({
 
           {/* 2. Quyền năng Admin (Chốt kèo / Chia sẻ link) */}
           <div className="card-pub">
-            <h4
-              className="section-card-title"
-              style={{ fontSize: '1rem', marginBottom: '0.85rem' }}
-            >
-              ⚙️ Bảng Điều Khiển Sòng Nhậu
-            </h4>
+            <h4 className="section-card-title text-[1rem] mb-3.5">⚙️ Bảng Điều Khiển Sòng Nhậu</h4>
 
             <div className="admin-action-box">
               {currentUser && currentUser.id === eventData.creatorId ? (
@@ -586,58 +560,25 @@ export default function EventDetail({
                     </button>
                   )}
                   {status === 'locked' && (
-                    <button
-                      className="btn-secondary"
-                      onClick={handleUnlock}
-                      style={{ width: '100%', marginBottom: '0.5rem' }}
-                    >
+                    <button className="btn-secondary w-full mb-2" onClick={handleUnlock}>
                       🔓 Mở Lại Bình Chọn
                     </button>
                   )}
                   <button
-                    className="btn-secondary"
+                    className="btn-outline-danger w-full"
                     onClick={() => setShowDeleteConfirm(true)}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(239,68,68,0.15)',
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      color: 'var(--accent-red)',
-                    }}
                   >
                     🗑️ Xóa Kèo Này
                   </button>
                 </>
               ) : status === 'voting' ? (
-                <div
-                  style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--text-secondary)',
-                    background: 'rgba(255,255,255,0.02)',
-                    padding: '0.6rem 0.85rem',
-                    borderRadius: '8px',
-                    border: '1px dashed var(--border-glass)',
-                    textAlign: 'center',
-                  }}
-                >
+                <div className="info-box-muted">
                   🔒 Chỉ{' '}
                   <strong>Chủ Kèo ({eventData.creatorNickname || eventData.creatorName})</strong>{' '}
                   mới có quyền chốt kèo này.
                 </div>
               ) : (
-                <div
-                  style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--accent-green)',
-                    fontWeight: 600,
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    padding: '0.6rem',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(16,185,129,0.2)',
-                    textAlign: 'center',
-                  }}
-                >
-                  ✅ Kèo nhậu này đã đóng băng bình chọn.
-                </div>
+                <div className="info-box-green">✅ Kèo nhậu này đã đóng băng bình chọn.</div>
               )}
 
               {/* Hộp chia sẻ link */}
@@ -656,7 +597,7 @@ export default function EventDetail({
           </div>
 
           {/* 3. Khung Chat Thảo Luận / Bàn Lùi */}
-          <div className="card-pub" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="card-pub flex flex-col">
             <h4 className="chat-title">
               <span>💬</span> Chat Chit Bàn Lùi ({comments.length})
             </h4>
@@ -668,42 +609,24 @@ export default function EventDetail({
                   <div
                     className="comment-avatar"
                     style={{ backgroundColor: getAvatarColor(cmt.userNickname || cmt.userName) }}
-                    title={
-                      (cmt.userNickname || cmt.userName) +
-                      (cmt.userRealName
-                        ? ` (${cmt.userRealName} - ${cmt.userUsername || cmt.userEmail || 'Guest'})`
-                        : '')
-                    }
                   >
                     {getInitial(cmt.userNickname || cmt.userName)}
                   </div>
                   <div className="comment-main">
                     <div className="comment-header">
-                      <div
-                        className="comment-author-info"
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          gap: '0.1rem',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div className="comment-author-info flex flex-col items-start gap-[0.1rem]">
+                        <div className="flex items-center gap-2">
                           <span className="comment-author-name">
                             {cmt.userNickname || cmt.userName}
                           </span>
                           <span
                             className={`role-badge ${cmt.userId === eventData.creatorId ? 'admin' : 'guest'}`}
-                            style={{ fontSize: '0.6rem', padding: '0.05rem 0.25rem' }}
                           >
                             {cmt.userId === eventData.creatorId ? 'Chủ Kèo' : 'Chiến Hữu'}
                           </span>
                         </div>
                         {(cmt.userRealName || cmt.userUsername || cmt.userEmail) && (
-                          <span
-                            className="comment-author-sub"
-                            style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}
-                          >
+                          <span className="comment-author-sub text-muted text-[0.75rem]">
                             {cmt.userRealName ? `${cmt.userRealName} — ` : ''}
                             {cmt.userUsername || cmt.userEmail || 'Guest'}
                           </span>
@@ -716,22 +639,12 @@ export default function EventDetail({
                         })}
                       </span>
                     </div>
-                    <p className="comment-content" style={{ marginTop: '0.35rem' }}>
-                      {cmt.content}
-                    </p>
+                    <p className="comment-content mt-1.5">{cmt.content}</p>
                   </div>
                 </div>
               ))}
               {comments.length === 0 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '2rem 1rem',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85rem',
-                    fontStyle: 'italic',
-                  }}
-                >
+                <div className="empty-state-text py-8 px-4 text-center">
                   Chưa có lời gạ gẫm nào. Hãy phát súng lệnh chat đầu tiên đi nào! 🍺
                 </div>
               )}
@@ -822,10 +735,8 @@ export default function EventDetail({
       {/* ================= MODAL XÁC NHẬN XÓA KÈO ================= */}
       {showDeleteConfirm && (
         <div className="modal-overlay">
-          <div className="modal-pub" style={{ maxWidth: '420px' }}>
-            <h3 className="modal-title" style={{ color: 'var(--accent-red)' }}>
-              🗑️ Xác Nhận Xóa Kèo
-            </h3>
+          <div className="modal-pub max-w-[420px]">
+            <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
             <p className="modal-desc">
               Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
               chat chit sẽ bị xóa vĩnh viễn!
@@ -841,11 +752,7 @@ export default function EventDetail({
               </button>
               <button
                 type="button"
-                className="btn-primary"
-                style={{
-                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                  color: '#fff',
-                }}
+                className="btn-danger"
                 onClick={handleDeleteConfirmed}
                 disabled={isDeleting}
               >
@@ -859,10 +766,8 @@ export default function EventDetail({
       {/* ================= MODAL CHỐT KÈO DÀNH CHO ADMIN ================= */}
       {showLockModal && (
         <div className="modal-overlay">
-          <div className="modal-pub" style={{ maxWidth: '500px' }}>
-            <h3 className="modal-title" style={{ color: 'var(--accent-amber)' }}>
-              🔒 Xác Nhận Chốt Kèo Nhậu
-            </h3>
+          <div className="modal-pub max-w-[500px]">
+            <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
             <p className="modal-desc">
               Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể điều
               chỉnh lại thông tin trước khi chốt chính thức!
@@ -903,18 +808,7 @@ export default function EventDetail({
               />
             </div>
 
-            <div
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                padding: '0.75rem',
-                borderRadius: '10px',
-                fontSize: '0.8rem',
-                color: 'var(--text-secondary)',
-                marginBottom: '1rem',
-                lineHeight: '1.4',
-              }}
-            >
+            <div className="warning-box mb-4">
               ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng vote
               và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược sẽ kích
               hoạt ngay lập tức!
@@ -928,16 +822,7 @@ export default function EventDetail({
               >
                 Hủy Bỏ
               </button>
-              <button
-                type="button"
-                className="btn-primary"
-                style={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: '#fff',
-                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)',
-                }}
-                onClick={handleConfirmLock}
-              >
+              <button type="button" className="btn-success" onClick={handleConfirmLock}>
                 🍻 Xác Nhận Chốt Luôn!
               </button>
             </div>

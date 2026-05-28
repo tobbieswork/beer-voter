@@ -83,8 +83,8 @@ export default function PartyPinModal({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub" style={{ maxWidth: '400px', textAlign: 'center' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔐</div>
+      <div className="modal-pub max-w-[400px] text-center">
+        <div className="pin-modal-header">🔐</div>
         <h3 className="modal-title">Kèo Nhậu Riêng Tư</h3>
         <p className="modal-desc">
           {eventTitle ? (
@@ -98,11 +98,7 @@ export default function PartyPinModal({
           )}
         </p>
 
-        {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.15)] p-3 text-sm font-medium text-[#ef4444]">
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="modal-error-box mb-4 flex items-center gap-2">⚠️ {error}</div>}
 
         <div className="mb-5 mt-5 flex justify-center gap-2.5">
           {digits.map((d, i) => (
