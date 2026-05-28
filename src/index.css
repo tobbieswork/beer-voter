@@ -213,8 +213,8 @@
 }
 
 .event-status-badge.voting {
-    @apply border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.15)] text-amber;
-    animation: pulse-amber 2s ease-in-out infinite;
+  @apply border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.15)] text-amber;
+  animation: pulse-amber 2s ease-in-out infinite;
 }
 
 .event-status-badge.locked {

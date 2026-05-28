@@ -29,7 +29,9 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
       <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="dashboard-title">
           <h2 className="mb-1 text-white text-2xl font-bold">🍻 Tổng Hợp Kèo Ăn Nhậu</h2>
-          <p className="text-text-secondary text-[0.95rem]">Lên kế hoạch, bình chọn địa điểm và thống nhất giờ giấc cùng nhóm bạn</p>
+          <p className="text-text-secondary text-[0.95rem]">
+            Lên kế hoạch, bình chọn địa điểm và thống nhất giờ giấc cùng nhóm bạn
+          </p>
         </div>
 
         <button className="btn-primary" onClick={onCreateEventClick}>
@@ -55,12 +57,20 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
           {events.map((event) => (
             <div key={event.id} className="event-card">
               <div className="mb-4">
-                <span className={event.status === 'voting' ? 'event-status-badge voting' : 'event-status-badge locked'}>
+                <span
+                  className={
+                    event.status === 'voting'
+                      ? 'event-status-badge voting'
+                      : 'event-status-badge locked'
+                  }
+                >
                   {event.status === 'voting' ? '🔥 Đang bình chọn' : '🍻 Đã chốt kèo'}
                 </span>
                 <h3 className="mb-2 text-xl font-bold text-white">{event.title}</h3>
                 <div className="flex flex-col gap-1 text-text-secondary text-[0.85rem]">
-                  <span>Chủ sòng: <strong className="text-white">{event.creatorName}</strong></span>
+                  <span>
+                    Chủ sòng: <strong className="text-white">{event.creatorName}</strong>
+                  </span>
                   <span>Ngày lên kèo: {formatDate(event.createdAt)}</span>
                 </div>
               </div>
@@ -84,7 +94,9 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                     </div>
                     <div className="flex items-center gap-2 text-text-primary">
                       <span>🍺</span>
-                      <span className="text-[0.8rem] text-text-secondary">{event.finalBeerStyle}</span>
+                      <span className="text-[0.8rem] text-text-secondary">
+                        {event.finalBeerStyle}
+                      </span>
                     </div>
                   </div>
                 )}

@@ -118,7 +118,7 @@ export default function PartyPinModal({
               value={d}
               onChange={(e) => handleDigitChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              onKeyUp={handlePaste}
+              onPaste={handlePaste}
               className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
               disabled={isChecking}
             />
