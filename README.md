@@ -97,3 +97,7 @@ Dữ liệu sòng nhậu được lưu trữ tập trung trên đĩa dưới đ�
 ## 🍻 Chúc Bạn Có Những Buổi Nhậu Vui Vẻ, Tới Bến Cùng Chiến Hữu! 🍻
 
 _BeerVote - Kết nối chiến hữu, cạn ly rực rỡ!_
+
+---
+
+[![Contributors](https://contrib.rocks/image?repo=tobbieswork/beer-voter)](https://github.com/tobbieswork/beer-voter/graphs/contributors)
