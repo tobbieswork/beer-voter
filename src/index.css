@@ -207,7 +207,7 @@
 }
 
 .role-badge {
-  @apply rounded px-1.5 py-10000 text-xs font-bold uppercase;
+  @apply rounded px-1.5 py-0.5 text-xs font-bold uppercase;
 }
 
 .role-badge.admin {
