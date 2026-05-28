@@ -66,51 +66,50 @@ export default function Countdown({ targetDate }: CountdownProps) {
 
   if (timeLeft.isOver) {
     return (
-      <div
-        className="countdown-container card-pub"
-        style={{ border: '1px solid var(--accent-gold)' }}
-      >
-        <div className="countdown-box-title">🍻 ĐÃ ĐẾN GIỜ NHẬU! 🍻</div>
-        <div
-          style={{
-            textAlign: 'center',
-            fontSize: '1.2rem',
-            fontWeight: 800,
-            color: 'var(--accent-gold)',
-            margin: '1rem 0',
-          }}
-        >
+      <div className="card-pub border-gold">
+        <div className="mb-4 text-center text-gold uppercase tracking-wider text-sm font-bold">🍻 ĐÃ ĐẾN GIỜ NHẬU! 🍻</div>
+        <div className="my-4 text-center text-xl font-extrabold text-gold">
           ZÔ ZÔ ZÔ! ANH EM LÊN ĐỒ VÀ CẠN LY THÔI!
         </div>
-        <p className="countdown-slogan">Đứa nào chưa đến thì giục giã mau lên nha! 🚀</p>
+        <p className="pt-2 text-center text-[0.9rem] italic text-text-secondary border-t border-dashed border-white/5">
+          Chưa ai đến thì giục giã mau lên nha! 🚀
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="countdown-container card-pub">
-      <div className="countdown-box-title">⏳ Đếm Ngược Đến Giờ G ⏳</div>
+    <div className="card-pub">
+      <div className="mb-4 text-center text-gold uppercase tracking-wider text-[0.85rem] font-bold">⏳ Đếm Ngược Đến Giờ Nhậu ⏳</div>
 
-      <div className="countdown-grid">
-        <div className="countdown-segment">
-          <div className="countdown-digit">{padZero(timeLeft.days || 0)}</div>
-          <span className="countdown-label">Ngày</span>
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center w-full aspect-square text-2xl font-extrabold text-white border border-white/5 border-b-2 border-b-gold rounded-lg bg-gradient-to-b from-[#1f222a] to-[#0d0f12] shadow-[0_4px_10px_rgba(0,0,0,0.4)]">
+            {padZero(timeLeft.days || 0)}
+          </div>
+          <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">Ngày</span>
         </div>
-        <div className="countdown-segment">
-          <div className="countdown-digit">{padZero(timeLeft.hours || 0)}</div>
-          <span className="countdown-label">Giờ</span>
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center w-full aspect-square text-2xl font-extrabold text-white border border-white/5 border-b-2 border-b-gold rounded-lg bg-gradient-to-b from-[#1f222a] to-[#0d0f12] shadow-[0_4px_10px_rgba(0,0,0,0.4)]">
+            {padZero(timeLeft.hours || 0)}
+          </div>
+          <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">Giờ</span>
         </div>
-        <div className="countdown-segment">
-          <div className="countdown-digit">{padZero(timeLeft.minutes || 0)}</div>
-          <span className="countdown-label">Phút</span>
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center w-full aspect-square text-2xl font-extrabold text-white border border-white/5 border-b-2 border-b-gold rounded-lg bg-gradient-to-b from-[#1f222a] to-[#0d0f12] shadow-[0_4px_10px_rgba(0,0,0,0.4)]">
+            {padZero(timeLeft.minutes || 0)}
+          </div>
+          <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">Phút</span>
         </div>
-        <div className="countdown-segment">
-          <div className="countdown-digit">{padZero(timeLeft.seconds || 0)}</div>
-          <span className="countdown-label">Giây</span>
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center w-full aspect-square text-2xl font-extrabold text-white border border-white/5 border-b-2 border-b-gold rounded-lg bg-gradient-to-b from-[#1f222a] to-[#0d0f12] shadow-[0_4px_10px_rgba(0,0,0,0.4)]">
+            {padZero(timeLeft.seconds || 0)}
+          </div>
+          <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">Giây</span>
         </div>
       </div>
 
-      <p className="countdown-slogan">{slogan}</p>
+      <p className="pt-2 text-center text-[0.9rem] italic text-text-secondary border-t border-dashed border-white/5">{slogan}</p>
     </div>
   );
 }

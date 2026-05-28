@@ -62,7 +62,7 @@ export default function PartyPinModal({
         onSuccess(data.pinToken);
       } else {
         setError('Mật khẩu không đúng. Thử lại nhé!');
-        setDigits(['', '', '', '', '']);
+        setDigits(['', '', '', '', '', '']);
         setTimeout(() => inputRefs.current[0]?.focus(), 50);
       }
     } catch {
@@ -91,14 +91,20 @@ export default function PartyPinModal({
             <>
               <strong>{eventTitle}</strong>
               <br />
+              Kèo này được bảo vệ bởi mật khẩu.
             </>
-          ) : null}
-          Nhập mật khẩu 6 số để vào kèo nhậu này.
+          ) : (
+            'Nhập mật khẩu 6 số để vào kèo nhậu này.'
+          )}
         </p>
 
-        {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
+        {error && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.15)] p-3 text-sm font-medium text-[#ef4444]">
+            ⚠️ {error}
+          </div>
+        )}
 
-        <div className="pin-input-row">
+        <div className="mb-5 mt-5 flex justify-center gap-2.5">
           {digits.map((d, i) => (
             <input
               key={i}
@@ -112,31 +118,25 @@ export default function PartyPinModal({
               value={d}
               onChange={(e) => handleDigitChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              onPaste={handlePaste}
-              className="pin-digit-input"
+              onKeyUp={handlePaste}
+              className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
               disabled={isChecking}
-              autoFocus={i === 0}
             />
           ))}
         </div>
 
-        <div
-          className="form-actions-modal"
-          style={{ marginTop: '1.5rem', flexDirection: 'column', gap: '0.6rem' }}
-        >
+        <div className="mt-6 flex flex-col gap-2">
           <button
-            className="btn-primary"
+            className="btn-primary w-full justify-center min-h-[48px]"
             onClick={handleSubmit}
             disabled={isChecking || digits.some((d) => d === '')}
-            style={{ width: '100%', justifyContent: 'center', minHeight: '48px' }}
           >
             {isChecking ? 'Đang kiểm tra...' : '🔓 Xác Nhận Mật Khẩu'}
           </button>
           <button
-            className="btn-secondary"
+            className="btn-secondary w-full justify-center"
             onClick={onBack}
             disabled={isChecking}
-            style={{ width: '100%', justifyContent: 'center' }}
           >
             ← Quay Lại
           </button>
