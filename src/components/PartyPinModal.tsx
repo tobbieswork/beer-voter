@@ -7,7 +7,12 @@ interface PartyPinModalProps {
   onBack: () => void;
 }
 
-export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }: PartyPinModalProps) {
+export default function PartyPinModal({
+  eventId,
+  eventTitle,
+  onSuccess,
+  onBack,
+}: PartyPinModalProps) {
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
@@ -22,7 +27,7 @@ export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }
     if (clean && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
-    if (next.every(d => d !== '') && next.join('').length === 6) {
+    if (next.every((d) => d !== '') && next.join('').length === 6) {
       verifyPin(next.join(''));
     }
   };
@@ -50,7 +55,7 @@ export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }
       const res = await fetch(`/api/events/${eventId}/verify-pin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin })
+        body: JSON.stringify({ pin }),
       });
       const data = await res.json();
       if (data.valid) {
@@ -82,28 +87,31 @@ export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }
         <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔐</div>
         <h3 className="modal-title">Kèo Nhậu Riêng Tư</h3>
         <p className="modal-desc">
-          {eventTitle ? <><strong>{eventTitle}</strong><br /></> : null}
+          {eventTitle ? (
+            <>
+              <strong>{eventTitle}</strong>
+              <br />
+            </>
+          ) : null}
           Nhập mật khẩu 6 số để vào kèo nhậu này.
         </p>
 
-        {error && (
-          <div className="modal-error-box animate-fade-in">
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
 
         <div className="pin-input-row">
           {digits.map((d, i) => (
             <input
               key={i}
-              ref={el => { inputRefs.current[i] = el; }}
+              ref={(el) => {
+                inputRefs.current[i] = el;
+              }}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
               maxLength={1}
               value={d}
-              onChange={e => handleDigitChange(i, e.target.value)}
-              onKeyDown={e => handleKeyDown(i, e)}
+              onChange={(e) => handleDigitChange(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
               onPaste={handlePaste}
               className="pin-digit-input"
               disabled={isChecking}
@@ -112,11 +120,14 @@ export default function PartyPinModal({ eventId, eventTitle, onSuccess, onBack }
           ))}
         </div>
 
-        <div className="form-actions-modal" style={{ marginTop: '1.5rem', flexDirection: 'column', gap: '0.6rem' }}>
+        <div
+          className="form-actions-modal"
+          style={{ marginTop: '1.5rem', flexDirection: 'column', gap: '0.6rem' }}
+        >
           <button
             className="btn-primary"
             onClick={handleSubmit}
-            disabled={isChecking || digits.some(d => d === '')}
+            disabled={isChecking || digits.some((d) => d === '')}
             style={{ width: '100%', justifyContent: 'center', minHeight: '48px' }}
           >
             {isChecking ? 'Đang kiểm tra...' : '🔓 Xác Nhận Mật Khẩu'}

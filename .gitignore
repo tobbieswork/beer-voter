@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OpenCode internal files (keep agent/ and config, ignore deps)
+.opencode/node_modules
+.opencode/package.json
+.opencode/package-lock.json

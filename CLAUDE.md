@@ -22,6 +22,7 @@ There are no automated tests in this project.
 ### Server (`server/index.ts`)
 
 Express on port 3001 serves three things from one process:
+
 - REST API at `/api/*`
 - Static React build (SPA fallback to `index.html`)
 - WebSocket server on the same port
@@ -46,10 +47,10 @@ Guest-based (no login). Anyone can create events, vote, propose options, and com
 
 ### Key files
 
-| Path | Role |
-|------|------|
-| `server/index.ts` | All backend logic: REST routes, WebSocket handlers, DB abstraction |
-| `server/db.json` | Local JSON database (dev / no-Supabase fallback) |
-| `src/App.tsx` | Root state, WebSocket lifecycle, routing |
-| `src/components/EventDetail.tsx` | Core voting/commenting/lock UX |
-| `src/utils/date.ts` | Vietnamese datetime formatter used across components |
+| Path                             | Role                                                               |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `server/index.ts`                | All backend logic: REST routes, WebSocket handlers, DB abstraction |
+| `server/db.json`                 | Local JSON database (dev / no-Supabase fallback)                   |
+| `src/App.tsx`                    | Root state, WebSocket lifecycle, routing                           |
+| `src/components/EventDetail.tsx` | Core voting/commenting/lock UX                                     |
+| `src/utils/date.ts`              | Vietnamese datetime formatter used across components               |

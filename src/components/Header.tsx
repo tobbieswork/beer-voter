@@ -1,4 +1,4 @@
-import { User } from '../App';
+import { User } from '../types';
 
 interface HeaderProps {
   currentUser: User | null;
@@ -29,12 +29,22 @@ export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps
             <span>
               <strong>{currentUser.nickname || currentUser.name}</strong>
               {currentUser.realName && (
-                <span className="user-realname-header" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '0.4rem', fontWeight: 400 }}>
+                <span
+                  className="user-realname-header"
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--text-secondary)',
+                    marginLeft: '0.4rem',
+                    fontWeight: 400,
+                  }}
+                >
                   ({currentUser.realName})
                 </span>
               )}
             </span>
-            <span className={`role-badge ${currentUser.authMethod === 'google' ? 'google' : 'guest'}`}>
+            <span
+              className={`role-badge ${currentUser.authMethod === 'google' ? 'google' : 'guest'}`}
+            >
               {currentUser.authMethod === 'google' ? 'Google' : 'Chiến Hữu'}
             </span>
             {onSignOut && (

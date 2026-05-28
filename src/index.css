@@ -7,25 +7,26 @@
   --bg-card: rgba(23, 26, 33, 0.65);
   --bg-card-hover: rgba(30, 34, 43, 0.8);
   --bg-input: rgba(13, 15, 19, 0.8);
-  
+
   --accent-gold: #ffb000;
   --accent-gold-hover: #d97706;
   --accent-amber: #f59e0b;
   --accent-amber-glow: rgba(245, 158, 11, 0.2);
   --accent-green: #10b981;
   --accent-red: #ef4444;
-  
+
   --border-glass: rgba(255, 255, 255, 0.06);
   --border-glass-active: rgba(255, 176, 0, 0.3);
-  
+
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
-  
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --font-sans:
+    'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --shadow-gold: 0 0 15px rgba(255, 176, 0, 0.15);
-  
+
   font-family: var(--font-sans);
   color-scheme: dark;
   background-color: var(--bg-primary);
@@ -74,7 +75,10 @@ a {
   text-decoration: none;
 }
 
-button, input, textarea, select {
+button,
+input,
+textarea,
+select {
   font-family: inherit;
   outline: none;
 }

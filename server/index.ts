@@ -18,16 +18,18 @@ const DB_PATH = path.join(__dirname, 'db.json');
 const app = express();
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
   : null;
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!allowedOrigins || !origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
-  }
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!allowedOrigins || !origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+  })
+);
 
 app.use(express.json());
 
@@ -98,16 +100,24 @@ export interface DatabaseSchema {
   comments: DBComment[];
 }
 
+// Supabase response wrapper
+interface SupabaseDataRow {
+  key: string;
+  value: DatabaseSchema;
+}
+
 let cacheDB: DatabaseSchema = { events: [], options: [], votes: [], comments: [] };
-let isLoaded = false;
+let _isLoaded = false;
 let isWriting = false;
 let pendingWrite = false;
 
 // Pin token store - single-process, survives server restart (same as cacheDB)
 const pinTokens = new Map<string, { eventId: string; expiresAt: number }>();
-const PIN_TOKEN_TTL = 24*60*60*1000;
+const PIN_TOKEN_TTL = 24 * 60 * 60 * 1000;
 
-function sanitizeEvent(event: DBEvent): Omit<DBEvent, 'creatorToken' | 'partyPinHash'> & { hasPin: boolean } {
+function sanitizeEvent(
+  event: DBEvent
+): Omit<DBEvent, 'creatorToken' | 'partyPinHash'> & { hasPin: boolean } {
   const { creatorToken: _t, partyPinHash: _p, ...rest } = event;
   return { ...rest, hasPin: !!event.partyPinHash };
 }
@@ -156,31 +166,33 @@ async function initDB() {
     try {
       const response = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data?key=eq.main_db`, {
         headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`
-        }
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
       });
       if (response.ok) {
-        const data = await response.json() as any[];
+        const data = (await response.json()) as SupabaseDataRow[];
         if (data && data.length > 0) {
           cacheDB = data[0].value as DatabaseSchema;
-          console.log(`✅ Đã tải thành công DB từ Supabase. Số lượng kèo: ${cacheDB.events.length}`);
-          isLoaded = true;
+          console.log(
+            `✅ Đã tải thành công DB từ Supabase. Số lượng kèo: ${cacheDB.events.length}`
+          );
+          _isLoaded = true;
           return;
         } else {
           console.log('ℹ️ Chưa có dữ liệu trên Supabase. Tiến hành khởi tạo bản ghi trống...');
           const res = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data`, {
             method: 'POST',
             headers: {
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
               'Content-Type': 'application/json',
-              'Prefer': 'resolution=merge-duplicates'
+              Prefer: 'resolution=merge-duplicates',
             },
-            body: JSON.stringify({ key: 'main_db', value: cacheDB })
+            body: JSON.stringify({ key: 'main_db', value: cacheDB }),
           });
           if (res.ok) console.log('✅ Khởi tạo bản ghi trống trên Supabase thành công!');
-          isLoaded = true;
+          _isLoaded = true;
           return;
         }
       } else {
@@ -203,7 +215,7 @@ async function initDB() {
   } catch (error) {
     console.error('❌ Lỗi đọc database file JSON:', error);
   }
-  isLoaded = true;
+  _isLoaded = true;
 }
 
 async function syncDB() {
@@ -222,14 +234,15 @@ async function syncDB() {
       const res = await fetch(`${supabaseUrl}/rest/v1/beer_voter_data`, {
         method: 'POST',
         headers: {
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${supabaseKey}`,
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
+          Prefer: 'resolution=merge-duplicates',
         },
-        body: JSON.stringify({ key: 'main_db', value: cacheDB })
+        body: JSON.stringify({ key: 'main_db', value: cacheDB }),
       });
-      if (!res.ok) console.error(`❌ Lỗi đồng bộ Supabase Cloud DB: ${res.status} ${res.statusText}`);
+      if (!res.ok)
+        console.error(`❌ Lỗi đồng bộ Supabase Cloud DB: ${res.status} ${res.statusText}`);
     } else {
       fs.writeFileSync(DB_PATH, JSON.stringify(cacheDB, null, 2), 'utf8');
     }
@@ -251,13 +264,13 @@ function writeDB(data: DatabaseSchema): void {
 }
 
 function getEventDetail(db: DatabaseSchema, eventId: string) {
-  const event = db.events.find(e => e.id === eventId);
+  const event = db.events.find((e) => e.id === eventId);
   if (!event) return null;
   return {
     ...sanitizeEvent(event),
-    options: db.options.filter(o => o.eventId === eventId),
-    votes: db.votes.filter(v => v.eventId === eventId),
-    comments: db.comments.filter(c => c.eventId === eventId)
+    options: db.options.filter((o) => o.eventId === eventId),
+    votes: db.votes.filter((v) => v.eventId === eventId),
+    comments: db.comments.filter((c) => c.eventId === eventId),
   };
 }
 
@@ -265,14 +278,15 @@ function getEventDetail(db: DatabaseSchema, eventId: string) {
 
 app.get('/api/events', (_req: Request, res: Response) => {
   const db = readDB();
-  const summaryEvents = db.events.map(event => {
-    const votesCount = db.votes.filter(v => v.eventId === event.id).length;
-    const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
-    const optionsCount = db.options.filter(o => o.eventId === event.id).length;
+  const summaryEvents = db.events.map((event) => {
+    const votesCount = db.votes.filter((v) => v.eventId === event.id).length;
+    const commentsCount = db.comments.filter((c) => c.eventId === event.id).length;
+    const optionsCount = db.options.filter((o) => o.eventId === event.id).length;
     return { ...sanitizeEvent(event), votesCount, commentsCount, optionsCount };
   });
   summaryEvents.sort((a, b) => {
-    if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (a.status === b.status)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return a.status === 'voting' ? -1 : 1;
   });
   res.json(summaryEvents);
@@ -282,7 +296,7 @@ app.get('/api/events/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const pinToken = req.headers['x-pin-token'] as string | undefined;
   const db = readDB();
-  const event = db.events.find(e => e.id === id);
+  const event = db.events.find((e) => e.id === id);
   if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
   if (!isPinAuthorized(event, pinToken)) {
     return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
@@ -292,7 +306,18 @@ app.get('/api/events/:id', (req: Request, res: Response) => {
 });
 
 app.post('/api/events', (req: Request, res: Response) => {
-  const { title, creatorId, creatorName, creatorNickname, creatorRealName, creatorUsername, dateOptions, locationOptions, beerOptions, partyPin } = req.body;
+  const {
+    title,
+    creatorId,
+    creatorName,
+    creatorNickname,
+    creatorRealName,
+    creatorUsername,
+    dateOptions,
+    locationOptions,
+    beerOptions,
+    partyPin,
+  } = req.body;
 
   if (!title || !creatorId || !creatorName) {
     return res.status(400).json({ message: 'Tên kèo, ID người tạo và tên người tạo là bắt buộc!' });
@@ -305,7 +330,8 @@ app.post('/api/events', (req: Request, res: Response) => {
   const eventId = randomUUID();
   const creatorToken = randomUUID();
 
-  const pinHash = partyPin && /^\d{6}$/.test(String(partyPin)) ? hashPin(String(partyPin)) : undefined;
+  const pinHash =
+    partyPin && /^\d{6}$/.test(String(partyPin)) ? hashPin(String(partyPin)) : undefined;
 
   const newEvent: DBEvent = {
     id: eventId,
@@ -322,7 +348,7 @@ app.post('/api/events', (req: Request, res: Response) => {
     lockedAt: null,
     finalDateTime: null,
     finalLocation: null,
-    finalBeerStyle: null
+    finalBeerStyle: null,
   };
 
   db.events.push(newEvent);
@@ -340,13 +366,13 @@ app.post('/api/events', (req: Request, res: Response) => {
       creatorNickname: creatorNickname || creatorName,
       creatorRealName: creatorRealName || '',
       creatorUsername: creatorUsername || '',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
   };
 
-  if (Array.isArray(dateOptions)) dateOptions.forEach(opt => addOption(opt, 'datetime'));
-  if (Array.isArray(locationOptions)) locationOptions.forEach(opt => addOption(opt, 'location'));
-  if (Array.isArray(beerOptions)) beerOptions.forEach(opt => addOption(opt, 'beer'));
+  if (Array.isArray(dateOptions)) dateOptions.forEach((opt) => addOption(opt, 'datetime'));
+  if (Array.isArray(locationOptions)) locationOptions.forEach((opt) => addOption(opt, 'location'));
+  if (Array.isArray(beerOptions)) beerOptions.forEach((opt) => addOption(opt, 'beer'));
 
   writeDB(db);
   res.status(201).json({ ...withoutPinHash(newEvent), creatorToken });
@@ -359,8 +385,9 @@ app.post('/api/events/:id/verify-pin', (req: Request, res: Response) => {
     return res.status(400).json({ valid: false, message: 'PIN phải là 6 chữ số!' });
   }
   const db = readDB();
-  const event = db.events.find(e => e.id === id);
-  if (!event) return res.status(404).json({ valid: false, message: 'Không tìm thấy kèo nhậu này!' });
+  const event = db.events.find((e) => e.id === id);
+  if (!event)
+    return res.status(404).json({ valid: false, message: 'Không tìm thấy kèo nhậu này!' });
   if (!event.partyPinHash) {
     return res.json({ valid: true, pinToken: generatePinToken(id) });
   }
@@ -374,9 +401,13 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
   const { credential } = req.body;
   if (!credential) return res.status(400).json({ message: 'Missing credential' });
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (!clientId) return res.status(500).json({ message: 'Google auth is not configured on this server' });
+  if (!clientId)
+    return res.status(500).json({ message: 'Google auth is not configured on this server' });
   try {
-    const ticket = await googleOAuthClient.verifyIdToken({ idToken: credential, audience: clientId });
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
     const payload = ticket.getPayload();
     if (!payload) throw new Error('Empty payload');
     res.json({
@@ -385,7 +416,7 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
       name: payload.name || '',
       given_name: payload.given_name || '',
       family_name: payload.family_name || '',
-      picture: payload.picture || ''
+      picture: payload.picture || '',
     });
   } catch (e) {
     console.error('Google token verification failed:', e);
@@ -398,7 +429,7 @@ app.delete('/api/events/:id', (req: Request, res: Response) => {
   const { creatorToken, userId } = req.body;
 
   const db = readDB();
-  const eventIndex = db.events.findIndex(e => e.id === id);
+  const eventIndex = db.events.findIndex((e) => e.id === id);
   if (eventIndex === -1) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
 
   const event = db.events[eventIndex];
@@ -409,9 +440,9 @@ app.delete('/api/events/:id', (req: Request, res: Response) => {
   if (!authorized) return res.status(403).json({ message: 'Bạn không có quyền xóa kèo nhậu này!' });
 
   db.events.splice(eventIndex, 1);
-  db.options = db.options.filter(o => o.eventId !== id);
-  db.votes = db.votes.filter(v => v.eventId !== id);
-  db.comments = db.comments.filter(c => c.eventId !== id);
+  db.options = db.options.filter((o) => o.eventId !== id);
+  db.votes = db.votes.filter((v) => v.eventId !== id);
+  db.comments = db.comments.filter((c) => c.eventId !== id);
 
   writeDB(db);
   broadcastEventDeleted(id);
@@ -439,7 +470,7 @@ function broadcastEventUpdate(eventId: string): void {
   if (!eventDetail) return;
 
   const message = JSON.stringify({ type: 'EVENT_UPDATED', eventId, eventData: eventDetail });
-  wss.clients.forEach(client => {
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const info = clients.get(client);
       if (info && (info.currentEventId === eventId || info.currentEventId === 'dashboard')) {
@@ -451,19 +482,20 @@ function broadcastEventUpdate(eventId: string): void {
 
 function broadcastDashboardUpdate(): void {
   const db = readDB();
-  const summaryEvents = db.events.map(event => {
-    const votesCount = db.votes.filter(v => v.eventId === event.id).length;
-    const commentsCount = db.comments.filter(c => c.eventId === event.id).length;
-    const optionsCount = db.options.filter(o => o.eventId === event.id).length;
+  const summaryEvents = db.events.map((event) => {
+    const votesCount = db.votes.filter((v) => v.eventId === event.id).length;
+    const commentsCount = db.comments.filter((c) => c.eventId === event.id).length;
+    const optionsCount = db.options.filter((o) => o.eventId === event.id).length;
     return { ...sanitizeEvent(event), votesCount, commentsCount, optionsCount };
   });
   summaryEvents.sort((a, b) => {
-    if (a.status === b.status) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (a.status === b.status)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     return a.status === 'voting' ? -1 : 1;
   });
 
   const message = JSON.stringify({ type: 'DASHBOARD_UPDATED', events: summaryEvents });
-  wss.clients.forEach(client => {
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const info = clients.get(client);
       if (info && info.currentEventId === 'dashboard') client.send(message);
@@ -473,7 +505,7 @@ function broadcastDashboardUpdate(): void {
 
 function broadcastEventDeleted(eventId: string): void {
   const message = JSON.stringify({ type: 'EVENT_DELETED', eventId });
-  wss.clients.forEach(client => {
+  wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const info = clients.get(client);
       if (info && (info.currentEventId === eventId || info.currentEventId === 'dashboard')) {
@@ -497,7 +529,7 @@ wss.on('connection', (ws: WebSocket, req) => {
 
       switch (action.type) {
         case 'JOIN_EVENT': {
-          const event_join = readDB().events.find(e => e.id === action.eventId);
+          const event_join = readDB().events.find((e) => e.id === action.eventId);
           if (event_join && event_join.partyPinHash) {
             if (!isPinAuthorized(event_join, action.pinToken)) {
               console.warn(`PIN denied JOIN_EVENT for ${action.eventId}`);
@@ -515,9 +547,18 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'VOTE_TOGGLE': {
-          const { eventId, optionId, userId, userName, userNickname, userRealName, userEmail, pinToken } = action;
+          const {
+            eventId,
+            optionId,
+            userId,
+            userName,
+            userNickname,
+            userRealName,
+            userEmail,
+            pinToken,
+          } = action;
           if (!eventId || !optionId || !userId) break;
-          const voteEvent = readDB().events.find(e => e.id === eventId);
+          const voteEvent = readDB().events.find((e) => e.id === eventId);
           const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
           if (!isPinAuthorized(voteEvent, effectiveToken)) break;
 
@@ -526,11 +567,11 @@ wss.on('connection', (ws: WebSocket, req) => {
           clientInfo.lastActionAt = now;
 
           const db = readDB();
-          const event = db.events.find(e => e.id === eventId);
+          const event = db.events.find((e) => e.id === eventId);
           if (event?.status === 'locked') break;
 
           const existingVoteIndex = db.votes.findIndex(
-            v => v.eventId === eventId && v.optionId === optionId && v.userId === userId
+            (v) => v.eventId === eventId && v.optionId === optionId && v.userId === userId
           );
 
           if (existingVoteIndex > -1) {
@@ -545,7 +586,7 @@ wss.on('connection', (ws: WebSocket, req) => {
               userNickname: userNickname || userName,
               userRealName: userRealName || '',
               userEmail: userEmail || '',
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
             });
           }
 
@@ -556,9 +597,27 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'ADD_OPTION': {
-          const { eventId, optType, value, creatorId, creatorName, userNickname, userRealName, userUsername, userEmail, pinToken } = action;
-          if (!eventId || !value || typeof value !== 'string' || value.trim().length === 0 || value.trim().length > 200) break;
-          const addOptEvent = readDB().events.find(e => e.id === eventId);
+          const {
+            eventId,
+            optType,
+            value,
+            creatorId,
+            creatorName,
+            userNickname,
+            userRealName,
+            userUsername,
+            userEmail,
+            pinToken,
+          } = action;
+          if (
+            !eventId ||
+            !value ||
+            typeof value !== 'string' ||
+            value.trim().length === 0 ||
+            value.trim().length > 200
+          )
+            break;
+          const addOptEvent = readDB().events.find((e) => e.id === eventId);
           const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
           if (!isPinAuthorized(addOptEvent, effectiveToken)) break;
 
@@ -567,7 +626,7 @@ wss.on('connection', (ws: WebSocket, req) => {
           clientInfo.lastActionAt = now;
 
           const db = readDB();
-          const event = db.events.find(e => e.id === eventId);
+          const event = db.events.find((e) => e.id === eventId);
           if (event?.status === 'locked') break;
 
           const optId = randomUUID();
@@ -581,7 +640,7 @@ wss.on('connection', (ws: WebSocket, req) => {
             creatorNickname: userNickname || creatorName,
             creatorRealName: userRealName || '',
             creatorUsername: userUsername || userEmail || '',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           };
 
           db.options.push(newOption);
@@ -594,7 +653,7 @@ wss.on('connection', (ws: WebSocket, req) => {
             userNickname: userNickname || creatorName,
             userRealName: userRealName || '',
             userEmail: userEmail || '',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           });
 
           writeDB(db);
@@ -604,11 +663,28 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'ADD_COMMENT': {
-          const { eventId, userId, userName, userRole, content, userNickname, userRealName, userEmail, pinToken } = action;
-          const commentEvent = readDB().events.find(e => e.id === eventId);
+          const {
+            eventId,
+            userId,
+            userName,
+            userRole,
+            content,
+            userNickname,
+            userRealName,
+            userEmail,
+            pinToken,
+          } = action;
+          const commentEvent = readDB().events.find((e) => e.id === eventId);
           const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
           if (!isPinAuthorized(commentEvent, effectiveToken)) break;
-          if (!eventId || !content || typeof content !== 'string' || content.trim().length === 0 || content.trim().length > 500) break;
+          if (
+            !eventId ||
+            !content ||
+            typeof content !== 'string' ||
+            content.trim().length === 0 ||
+            content.trim().length > 500
+          )
+            break;
 
           const now = Date.now();
           if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -625,7 +701,7 @@ wss.on('connection', (ws: WebSocket, req) => {
             userNickname: userNickname || userName,
             userRealName: userRealName || '',
             userEmail: userEmail || '',
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           });
 
           writeDB(db);
@@ -635,8 +711,16 @@ wss.on('connection', (ws: WebSocket, req) => {
         }
 
         case 'LOCK_EVENT': {
-          const { eventId, userId, creatorToken, finalDateTime, finalLocation, finalBeerStyle, pinToken } = action;
-          const lockEvent = readDB().events.find(e => e.id === eventId);
+          const {
+            eventId,
+            userId,
+            creatorToken,
+            finalDateTime,
+            finalLocation,
+            finalBeerStyle,
+            pinToken,
+          } = action;
+          const lockEvent = readDB().events.find((e) => e.id === eventId);
           const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
           if (!isPinAuthorized(lockEvent, effectiveToken)) break;
 
@@ -645,7 +729,7 @@ wss.on('connection', (ws: WebSocket, req) => {
           clientInfo.lastActionAt = now;
 
           const db = readDB();
-          const eventIndex = db.events.findIndex(e => e.id === eventId);
+          const eventIndex = db.events.findIndex((e) => e.id === eventId);
           if (eventIndex === -1) break;
 
           const event = db.events[eventIndex];
@@ -673,7 +757,7 @@ wss.on('connection', (ws: WebSocket, req) => {
 
         case 'UNLOCK_EVENT': {
           const { eventId, userId, creatorToken, pinToken } = action;
-          const unlockEvent = readDB().events.find(e => e.id === eventId);
+          const unlockEvent = readDB().events.find((e) => e.id === eventId);
           const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
           if (!isPinAuthorized(unlockEvent, effectiveToken)) break;
 
@@ -682,7 +766,7 @@ wss.on('connection', (ws: WebSocket, req) => {
           clientInfo.lastActionAt = now;
 
           const db = readDB();
-          const eventIndex = db.events.findIndex(e => e.id === eventId);
+          const eventIndex = db.events.findIndex((e) => e.id === eventId);
           if (eventIndex === -1) break;
 
           const event = db.events[eventIndex];
@@ -733,15 +817,19 @@ if (fs.existsSync(distPath)) {
 
 const PORT = process.env.PORT || 3001;
 
-initDB().then(() => {
-  server.listen(PORT, () => {
-    console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
-    console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
-    console.log(`👉 WebSockets: ws://localhost:${PORT}`);
+initDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
+      console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
+      console.log(`👉 WebSockets: ws://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Không thể khởi động server do lỗi DB:', err);
+    server.listen(PORT, () => {
+      console.log(
+        `⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`
+      );
+    });
   });
-}).catch(err => {
-  console.error('❌ Không thể khởi động server do lỗi DB:', err);
-  server.listen(PORT, () => {
-    console.log(`⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`);
-  });
-});

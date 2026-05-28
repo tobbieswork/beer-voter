@@ -9,82 +9,7 @@ import GuestJoinModal from './components/GuestJoinModal';
 import CreateEvent from './components/CreateEvent';
 import PartyPinModal from './components/PartyPinModal';
 
-export interface User {
-  id: string;
-  nickname: string;
-  realName: string;
-  username: string;
-  name: string;
-  role?: string;
-  email?: string;
-  avatar?: string;
-  googleId?: string;
-  authMethod?: 'google' | 'guest';
-}
-
-export interface EventOption {
-  id: string;
-  eventId: string;
-  type: 'datetime' | 'location' | 'beer';
-  value: string;
-  creatorId: string;
-  creatorName: string;
-  creatorNickname?: string;
-  creatorRealName?: string;
-  creatorUsername?: string;
-  creatorEmail?: string;
-  createdAt: string;
-}
-
-export interface EventVote {
-  id: string;
-  eventId: string;
-  optionId: string;
-  userId: string;
-  userName: string;
-  userNickname?: string;
-  userRealName?: string;
-  userUsername?: string;
-  userEmail?: string;
-  createdAt: string;
-}
-
-export interface EventComment {
-  id: string;
-  eventId: string;
-  userId: string;
-  userName: string;
-  userRole?: string;
-  content: string;
-  userNickname?: string;
-  userRealName?: string;
-  userUsername?: string;
-  userEmail?: string;
-  createdAt: string;
-}
-
-export interface EventData {
-  id: string;
-  title: string;
-  creatorId: string;
-  creatorName: string;
-  creatorNickname?: string;
-  creatorRealName?: string;
-  creatorUsername?: string;
-  status: 'voting' | 'locked';
-  hasPin?: boolean;
-  createdAt: string;
-  lockedAt?: string | null;
-  finalDateTime?: string | null;
-  finalLocation?: string | null;
-  finalBeerStyle?: string | null;
-  votesCount?: number;
-  commentsCount?: number;
-  optionsCount?: number;
-  options?: EventOption[];
-  votes?: EventVote[];
-  comments?: EventComment[];
-}
+import { User, EventData, OptionPayload, CommentPayload, LockPayload } from './types';
 
 function getVisitedEvents(): string[] {
   try {
@@ -139,7 +64,9 @@ function getInitialUser(): User | null {
   const username = localStorage.getItem('beervote_user_username');
   const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
   const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
-  const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as 'google' | 'guest';
+  const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as
+    | 'google'
+    | 'guest';
   if (userId && nickname) {
     return {
       id: userId,
@@ -149,7 +76,7 @@ function getInitialUser(): User | null {
       name: realName ? `${nickname} (${realName})` : nickname,
       avatar,
       googleId,
-      authMethod
+      authMethod,
     };
   }
   return null;
@@ -168,24 +95,30 @@ function saveUserToStorage(user: User) {
 }
 
 function clearUserFromStorage() {
-  ['beervote_user_id', 'beervote_user_nickname', 'beervote_user_real_name',
-   'beervote_user_username', 'beervote_user_avatar', 'beervote_user_google_id',
-   'beervote_user_auth_method'].forEach(k => localStorage.removeItem(k));
+  [
+    'beervote_user_id',
+    'beervote_user_nickname',
+    'beervote_user_real_name',
+    'beervote_user_username',
+    'beervote_user_avatar',
+    'beervote_user_google_id',
+    'beervote_user_auth_method',
+  ].forEach((k) => localStorage.removeItem(k));
 }
 
 export default function App() {
   const [events, setEvents] = useState<EventData[]>([]);
-  const [visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
-  
+  const [_visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
+
   const [currentEventId, setCurrentEventId] = useState<string | null>(() => {
     // Đọc eventId từ URL lúc khởi chạy
     const params = new URLSearchParams(window.location.search);
     return params.get('eventId') || null;
   });
-  
+
   const [currentEventData, setCurrentEventData] = useState<EventData | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(() => getInitialUser());
-  
+
   // Trạng thái Modal
   const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(() => {
     const user = getInitialUser();
@@ -201,20 +134,23 @@ export default function App() {
   const connectWsRef = useRef<(() => void) | null>(null);
 
   // 1. Tự động đồng bộ URL (Router mini)
-  const navigateToEvent = (eventId: string | null) => {
-    setCurrentEventId(eventId);
-    const newUrl = eventId 
-      ? `${window.location.origin}${window.location.pathname}?eventId=${eventId}`
-      : `${window.location.origin}${window.location.pathname}`;
-    window.history.pushState({ eventId }, '', newUrl);
+  const navigateToEvent = useCallback(
+    (eventId: string | null) => {
+      setCurrentEventId(eventId);
+      const newUrl = eventId
+        ? `${window.location.origin}${window.location.pathname}?eventId=${eventId}`
+        : `${window.location.origin}${window.location.pathname}`;
+      window.history.pushState({ eventId }, '', newUrl);
 
-    // Sync modal state on navigation
-    if (eventId && !currentUser) {
-      setIsJoinModalOpen(true);
-    } else {
-      setIsJoinModalOpen(false);
-    }
-  };
+      // Sync modal state on navigation
+      if (eventId && !currentUser) {
+        setIsJoinModalOpen(true);
+      } else {
+        setIsJoinModalOpen(false);
+      }
+    },
+    [currentUser]
+  );
 
   // Lắng nghe nút Back/Forward của trình duyệt
   useEffect(() => {
@@ -222,7 +158,7 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const eventId = params.get('eventId') || null;
       setCurrentEventId(eventId);
-      
+
       if (eventId && !currentUser) {
         setIsJoinModalOpen(true);
       } else {
@@ -277,7 +213,9 @@ export default function App() {
       // Only send JOIN_EVENT immediately if we already have a valid PIN token.
       // Otherwise, defer to PIN gating effect or ws.onopen handler.
       if (pinToken && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken }));
+        wsRef.current.send(
+          JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken })
+        );
       }
     } else {
       setVisitedEventIds(getVisitedEvents());
@@ -329,7 +267,13 @@ export default function App() {
 
       // Đăng ký phòng khi kết nối mở
       if (currentEventId) {
-        ws.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken: getPinToken(currentEventId) }));
+        ws.send(
+          JSON.stringify({
+            type: 'JOIN_EVENT',
+            eventId: currentEventId,
+            pinToken: getPinToken(currentEventId),
+          })
+        );
       } else {
         ws.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
       }
@@ -349,7 +293,7 @@ export default function App() {
             setEvents(message.events);
           }
         } else if (message.type === 'EVENT_DELETED') {
-          setEvents(prev => prev.filter(e => e.id !== message.eventId));
+          setEvents((prev) => prev.filter((e) => e.id !== message.eventId));
           if (message.eventId === currentEventId) {
             navigateToEvent(null);
           }
@@ -373,7 +317,7 @@ export default function App() {
       console.error('Lỗi kết nối WebSocket:', err);
       ws.close();
     };
-  }, [currentEventId]);
+  }, [currentEventId, navigateToEvent]);
 
   useEffect(() => {
     connectWsRef.current = connectWebSocket;
@@ -387,83 +331,98 @@ export default function App() {
   }, [connectWebSocket]);
 
   // 4. Thao tác gửi dữ liệu qua WebSockets
-  const handleVoteToggle = (eventId: string, optionId: string, userId?: string, userName?: string) => {
+  const handleVoteToggle = (
+    eventId: string,
+    optionId: string,
+    userId?: string,
+    userName?: string
+  ) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: 'VOTE_TOGGLE',
-        eventId,
-        optionId,
-        userId: userId || currentUser.id,
-        userName: userName || currentUser.name,
-        userNickname: currentUser.nickname || userName || currentUser.name,
-        userRealName: currentUser.realName || '',
-        userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || '',
-        pinToken: getPinToken(eventId) || ''
-      }));
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'VOTE_TOGGLE',
+          eventId,
+          optionId,
+          userId: userId || currentUser.id,
+          userName: userName || currentUser.name,
+          userNickname: currentUser.nickname || userName || currentUser.name,
+          userRealName: currentUser.realName || '',
+          userUsername: currentUser.username || '',
+          userEmail: currentUser.email || currentUser.username || '',
+          pinToken: getPinToken(eventId) || '',
+        })
+      );
     } else {
       alert('Mất kết nối WebSocket tới Server. Vui lòng đợi trong giây lát!');
     }
   };
 
-  const handleAddOption = (optionData: any) => {
+  const handleAddOption = (optionData: OptionPayload | null) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
     }
+    if (!optionData) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: 'ADD_OPTION',
-        ...optionData,
-        creatorId: currentUser.id,
-        creatorName: currentUser.name,
-        userNickname: currentUser.nickname || currentUser.name,
-        userRealName: currentUser.realName || '',
-        userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || '',
-        pinToken: getPinToken(optionData.eventId) || ''
-      }));
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'ADD_OPTION',
+          ...optionData,
+          creatorId: currentUser.id,
+          creatorName: currentUser.name,
+          userNickname: currentUser.nickname || currentUser.name,
+          userRealName: currentUser.realName || '',
+          userUsername: currentUser.username || '',
+          userEmail: currentUser.email || currentUser.username || '',
+          pinToken: getPinToken(optionData.eventId) || '',
+        })
+      );
     }
   };
 
-  const handleAddComment = (commentData: any) => {
+  const handleAddComment = (commentData: CommentPayload | null) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
     }
+    if (!commentData) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: 'ADD_COMMENT',
-        ...commentData,
-        userId: currentUser.id,
-        userName: currentUser.name,
-        userNickname: currentUser.nickname || currentUser.name,
-        userRealName: currentUser.realName || '',
-        userUsername: currentUser.username || '',
-        userEmail: currentUser.email || currentUser.username || '',
-        pinToken: getPinToken(commentData.eventId) || ''
-      }));
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'ADD_COMMENT',
+          ...commentData,
+          userId: currentUser.id,
+          userName: currentUser.name,
+          userNickname: currentUser.nickname || currentUser.name,
+          userRealName: currentUser.realName || '',
+          userUsername: currentUser.username || '',
+          userEmail: currentUser.email || currentUser.username || '',
+          pinToken: getPinToken(commentData.eventId) || '',
+        })
+      );
     }
   };
 
-  const handleLockEvent = (lockData: any) => {
+  const handleLockEvent = (lockData: LockPayload) => {
     if (!currentUser) {
       setIsJoinModalOpen(true);
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const creatorToken = localStorage.getItem(`beervote_creator_token_${lockData.eventId}`) || '';
-      wsRef.current.send(JSON.stringify({
-        type: 'LOCK_EVENT',
-        ...lockData,
-        userId: currentUser.id,
-        creatorToken,
-        pinToken: getPinToken(lockData.eventId) || ''
-      }));
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'LOCK_EVENT',
+          ...lockData,
+          userId: currentUser.id,
+          creatorToken,
+          pinToken: getPinToken(lockData.eventId) || '',
+        })
+      );
     }
   };
 
@@ -471,13 +430,15 @@ export default function App() {
     if (!currentUser) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
-      wsRef.current.send(JSON.stringify({
-        type: 'UNLOCK_EVENT',
-        eventId,
-        userId: currentUser.id,
-        creatorToken,
-        pinToken: getPinToken(eventId) || ''
-      }));
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'UNLOCK_EVENT',
+          eventId,
+          userId: currentUser.id,
+          creatorToken,
+          pinToken: getPinToken(eventId) || '',
+        })
+      );
     }
   };
 
@@ -488,11 +449,11 @@ export default function App() {
       const res = await fetch(`/api/events/${eventId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creatorToken, userId: currentUser.id })
+        body: JSON.stringify({ creatorToken, userId: currentUser.id }),
       });
       if (res.ok) {
         navigateToEvent(null);
-        setEvents(prev => prev.filter(e => e.id !== eventId));
+        setEvents((prev) => prev.filter((e) => e.id !== eventId));
       } else {
         alert('Không thể xóa kèo nhậu này. Bạn có phải Chủ Kèo không?');
       }
@@ -511,12 +472,23 @@ export default function App() {
     }
   };
 
-  const handleGuestJoinSubmit = ({ nickname, realName, username }: { nickname: string; realName: string; username: string }) => {
+  const handleGuestJoinSubmit = ({
+    nickname,
+    realName,
+    username,
+  }: {
+    nickname: string;
+    realName: string;
+    username: string;
+  }) => {
     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
     const user: User = {
-      id: userId, nickname, realName, username,
+      id: userId,
+      nickname,
+      realName,
+      username,
       name: realName ? `${nickname} (${realName})` : nickname,
-      authMethod: 'guest'
+      authMethod: 'guest',
     };
     saveUserToStorage(user);
     setCurrentUser(user);
@@ -527,7 +499,19 @@ export default function App() {
     }
   };
 
-  const handleGoogleAuthSuccess = ({ sub, email, name, given_name, picture }: { sub: string; email: string; name: string; given_name: string; picture: string }) => {
+  const handleGoogleAuthSuccess = ({
+    sub,
+    email,
+    name,
+    given_name,
+    picture,
+  }: {
+    sub: string;
+    email: string;
+    name: string;
+    given_name: string;
+    picture: string;
+  }) => {
     const displayName = given_name || name || email;
     const realName = name || given_name || '';
     const user: User = {
@@ -539,7 +523,7 @@ export default function App() {
       email,
       avatar: picture,
       googleId: sub,
-      authMethod: 'google'
+      authMethod: 'google',
     };
     saveUserToStorage(user);
     setCurrentUser(user);
@@ -560,31 +544,31 @@ export default function App() {
   const getUsedNicknames = (eventData: EventData | null) => {
     if (!eventData) return [];
     const names = new Set<string>();
-    
+
     if (eventData.options) {
-      eventData.options.forEach(opt => {
+      eventData.options.forEach((opt) => {
         if (opt.creatorNickname) {
           names.add(opt.creatorNickname);
         }
       });
     }
-    
+
     if (eventData.votes) {
-      eventData.votes.forEach(v => {
+      eventData.votes.forEach((v) => {
         if (v.userNickname) {
           names.add(v.userNickname);
         }
       });
     }
-    
+
     if (eventData.comments) {
-      eventData.comments.forEach(c => {
+      eventData.comments.forEach((c) => {
         if (c.userNickname) {
           names.add(c.userNickname);
         }
       });
     }
-    
+
     return Array.from(names);
   };
 
@@ -613,7 +597,9 @@ export default function App() {
               fetchEventDetail(currentEventId);
               // Send JOIN_EVENT with pinToken now that we have it
               if (wsRef.current?.readyState === WebSocket.OPEN) {
-                wsRef.current.send(JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken }));
+                wsRef.current.send(
+                  JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken })
+                );
               }
             }}
             onBack={() => navigateToEvent(null)}
@@ -650,7 +636,7 @@ export default function App() {
       />
 
       {/* Modal tạo Kèo mới dành cho mọi người */}
-      <CreateEvent 
+      <CreateEvent
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateSuccess={(newEventId) => {

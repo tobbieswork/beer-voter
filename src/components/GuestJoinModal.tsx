@@ -16,17 +16,28 @@ const FUNNY_NAMES = [
   'Thánh Trôi Mồi 🌭',
   'Bóng Ma Góc Quán 👻',
   'Lão Đại Hớp Cạn 👴',
-  'Đệ Nhất Uống Nước Ngọt 🥤'
+  'Đệ Nhất Uống Nước Ngọt 🥤',
 ];
 
 interface GuestJoinModalProps {
   isOpen: boolean;
   onSubmit: (data: { nickname: string; realName: string; username: string }) => void;
-  onGoogleSuccess: (data: { sub: string; email: string; name: string; given_name: string; picture: string }) => void;
+  onGoogleSuccess: (data: {
+    sub: string;
+    email: string;
+    name: string;
+    given_name: string;
+    picture: string;
+  }) => void;
   usedNicknames?: string[];
 }
 
-export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, usedNicknames = [] }: GuestJoinModalProps) {
+export default function GuestJoinModal({
+  isOpen,
+  onSubmit,
+  onGoogleSuccess,
+  usedNicknames = [],
+}: GuestJoinModalProps) {
   const [mode, setMode] = useState<'choose' | 'guest'>('choose');
   const [nickname, setNickname] = useState('');
   const [realName, setRealName] = useState('');
@@ -48,7 +59,7 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response.credential })
+        body: JSON.stringify({ credential: response.credential }),
       });
       if (!res.ok) throw new Error('Verification failed');
       const data = await res.json();
@@ -57,7 +68,7 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
         email: data.email,
         name: data.name,
         given_name: data.given_name,
-        picture: data.picture
+        picture: data.picture,
       });
     } catch {
       // Fallback: decode JWT client-side if server not configured
@@ -69,10 +80,12 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
           email: payload.email || '',
           name: payload.name || '',
           given_name: payload.given_name || '',
-          picture: payload.picture || ''
+          picture: payload.picture || '',
         });
       } catch {
-        setGoogleError('Đăng nhập Google thất bại. Vui lòng thử lại hoặc tham gia với tư cách khách!');
+        setGoogleError(
+          'Đăng nhập Google thất bại. Vui lòng thử lại hoặc tham gia với tư cách khách!'
+        );
       }
     } finally {
       setIsVerifying(false);
@@ -102,8 +115,8 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
   };
 
   const sortedNames = [...FUNNY_NAMES].sort((a, b) => {
-    const aUsed = usedNicknames.some(un => un.trim().toLowerCase() === a.trim().toLowerCase());
-    const bUsed = usedNicknames.some(un => un.trim().toLowerCase() === b.trim().toLowerCase());
+    const aUsed = usedNicknames.some((un) => un.trim().toLowerCase() === a.trim().toLowerCase());
+    const bUsed = usedNicknames.some((un) => un.trim().toLowerCase() === b.trim().toLowerCase());
     if (aUsed && !bUsed) return 1;
     if (!aUsed && bUsed) return -1;
     return 0;
@@ -117,7 +130,9 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
 
         {mode === 'choose' && (
           <>
-            <p className="modal-desc">Chọn cách tham gia để bắt đầu bình chọn và chém gió cùng anh em.</p>
+            <p className="modal-desc">
+              Chọn cách tham gia để bắt đầu bình chọn và chém gió cùng anh em.
+            </p>
 
             <div className="join-mode-divider">
               <span>Đăng nhập nhanh</span>
@@ -125,13 +140,19 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
 
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
               {isVerifying ? (
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '1rem' }}>
+                <div
+                  style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '1rem' }}
+                >
                   Đang xác thực Google...
                 </div>
               ) : (
                 <GoogleLogin
                   onSuccess={handleGoogleCredential}
-                  onError={() => setGoogleError('Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!')}
+                  onError={() =>
+                    setGoogleError(
+                      'Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!'
+                    )
+                  }
                   text="continue_with"
                   shape="rectangular"
                   theme="filled_black"
@@ -164,14 +185,11 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
         {mode === 'guest' && (
           <>
             <p className="modal-desc">
-              Cung cấp thông tin của bạn để bắt đầu tham gia bình chọn, đề xuất quán nhậu và chém gió cùng anh em.
+              Cung cấp thông tin của bạn để bắt đầu tham gia bình chọn, đề xuất quán nhậu và chém
+              gió cùng anh em.
             </p>
             <form onSubmit={handleSubmit}>
-              {error && (
-                <div className="modal-error-box animate-fade-in">
-                  ⚠️ {error}
-                </div>
-              )}
+              {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
 
               <div className="form-group">
                 <label htmlFor="guest-nickname">Biệt Danh Của Bạn</label>
@@ -180,7 +198,10 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
                   id="guest-nickname"
                   placeholder="Ví dụ: Chiến Thần Diệt Mồi, Hùng Beer Thủ..."
                   value={nickname}
-                  onChange={(e) => { setNickname(e.target.value); if (error) setError(''); }}
+                  onChange={(e) => {
+                    setNickname(e.target.value);
+                    if (error) setError('');
+                  }}
                   maxLength={25}
                   autoFocus
                   required
@@ -194,7 +215,10 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
                   id="guest-realname"
                   placeholder="Ví dụ: Nguyễn Văn Hùng..."
                   value={realName}
-                  onChange={(e) => { setRealName(e.target.value); if (error) setError(''); }}
+                  onChange={(e) => {
+                    setRealName(e.target.value);
+                    if (error) setError('');
+                  }}
                   maxLength={30}
                   required
                 />
@@ -207,19 +231,42 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
                   id="guest-username"
                   placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
                   value={username}
-                  onChange={(e) => { setUsername(e.target.value); if (error) setError(''); }}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    if (error) setError('');
+                  }}
                   maxLength={50}
                   required
                 />
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.6rem' }}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-muted)',
+                    fontWeight: 600,
+                    display: 'block',
+                    marginBottom: '0.6rem',
+                  }}
+                >
                   💡 Gợi ý biệt danh chưa sử dụng (✨ là còn trống):
                 </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: '120px', overflowY: 'auto', paddingRight: '0.2rem' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    maxHeight: '120px',
+                    overflowY: 'auto',
+                    paddingRight: '0.2rem',
+                  }}
+                >
                   {sortedNames.map((fn, idx) => {
-                    const isUsed = usedNicknames.some(un => un.trim().toLowerCase() === fn.trim().toLowerCase());
+                    const isUsed = usedNicknames.some(
+                      (un) => un.trim().toLowerCase() === fn.trim().toLowerCase()
+                    );
                     return (
                       <button
                         key={idx}
@@ -227,7 +274,11 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
                         className={isUsed ? 'badge-funny-used' : 'badge-funny-unused'}
                         onClick={() => !isUsed && handleSelectFunnyName(fn)}
                         disabled={isUsed}
-                        title={isUsed ? 'Biệt danh này đã có người chọn trong kèo nhậu này!' : 'Bấm để chọn biệt danh này'}
+                        title={
+                          isUsed
+                            ? 'Biệt danh này đã có người chọn trong kèo nhậu này!'
+                            : 'Bấm để chọn biệt danh này'
+                        }
                       >
                         {isUsed ? `${fn} 🛑 (Đã dùng)` : `✨ ${fn}`}
                       </button>
@@ -236,11 +287,23 @@ export default function GuestJoinModal({ isOpen, onSubmit, onGoogleSuccess, used
                 </div>
               </div>
 
-              <div className="form-actions-modal" style={{ flexDirection: 'column', gap: '0.5rem' }}>
-                <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              <div
+                className="form-actions-modal"
+                style={{ flexDirection: 'column', gap: '0.5rem' }}
+              >
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
                   🍻 XÁC NHẬN THÔNG TIN
                 </button>
-                <button type="button" className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setMode('choose')}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => setMode('choose')}
+                >
                   ← Quay Lại
                 </button>
               </div>

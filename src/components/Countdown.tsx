@@ -66,9 +66,20 @@ export default function Countdown({ targetDate }: CountdownProps) {
 
   if (timeLeft.isOver) {
     return (
-      <div className="countdown-container card-pub" style={{ border: '1px solid var(--accent-gold)' }}>
+      <div
+        className="countdown-container card-pub"
+        style={{ border: '1px solid var(--accent-gold)' }}
+      >
         <div className="countdown-box-title">🍻 ĐÃ ĐẾN GIỜ NHẬU! 🍻</div>
-        <div style={{ textAlign: 'center', fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-gold)', margin: '1rem 0' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '1.2rem',
+            fontWeight: 800,
+            color: 'var(--accent-gold)',
+            margin: '1rem 0',
+          }}
+        >
           ZÔ ZÔ ZÔ! ANH EM LÊN ĐỒ VÀ CẠN LY THÔI!
         </div>
         <p className="countdown-slogan">Đứa nào chưa đến thì giục giã mau lên nha! 🚀</p>
@@ -79,7 +90,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
   return (
     <div className="countdown-container card-pub">
       <div className="countdown-box-title">⏳ Đếm Ngược Đến Giờ G ⏳</div>
-      
+
       <div className="countdown-grid">
         <div className="countdown-segment">
           <div className="countdown-digit">{padZero(timeLeft.days || 0)}</div>
