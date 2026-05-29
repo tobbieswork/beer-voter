@@ -224,7 +224,7 @@ export default function CreateEvent({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub max-h-[90vh] overflow-auto" style={{ maxWidth: '600px' }}>
+      <div className="modal-pub max-h-[90svh] overflow-auto" style={{ maxWidth: '600px' }}>
         <h3 className="modal-title text-[1.6rem]">🍻 Tạo Kèo Nhậu Mới 🍻</h3>
         <p className="modal-desc mb-4">
           Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo

@@ -603,43 +603,53 @@ export default function EventDetail({
             </h4>
 
             {/* Danh sách bình luận */}
-            <div className="comments-list">
+            <div className="flex flex-col gap-[0.85rem] max-h-[380px] overflow-y-auto pr-1 mb-4 max-[480px]:max-h-[280px] max-[480px]:gap-[0.65rem]">
               {comments.map((cmt) => (
-                <div key={cmt.id} className="comment-item">
+                <div
+                  key={cmt.id}
+                  className="flex gap-3 p-[0.85rem_1rem] rounded-[16px] border border-glass bg-white/[0.02] max-[480px]:gap-2 max-[480px]:p-[0.7rem_0.85rem] max-[480px]:rounded-[12px]"
+                >
                   <div
-                    className="comment-avatar"
+                    className="w-8 h-8 rounded-full bg-[linear-gradient(135deg,#1f222a,#3a3f4d)] flex items-center justify-center text-[0.85rem] font-bold text-white flex-shrink-0 max-[480px]:hidden"
                     style={{ backgroundColor: getAvatarColor(cmt.userNickname || cmt.userName) }}
                   >
                     {getInitial(cmt.userNickname || cmt.userName)}
                   </div>
-                  <div className="comment-main">
-                    <div className="comment-header">
-                      <div className="comment-author-info flex flex-col items-start gap-[0.1rem]">
+                  <div className="flex flex-col gap-[0.2rem] flex-1">
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-col items-start gap-[0.1rem]">
                         <div className="flex items-center gap-2">
-                          <span className="comment-author-name">
+                          <span className="font-semibold text-[0.9rem] text-white max-[480px]:text-[0.8rem]">
                             {cmt.userNickname || cmt.userName}
                           </span>
                           <span
-                            className={`role-badge ${cmt.userId === eventData.creatorId ? 'admin' : 'guest'}`}
+                            className={`max-[480px]:hidden role-badge ${cmt.userId === eventData.creatorId ? 'admin' : 'guest'}`}
                           >
                             {cmt.userId === eventData.creatorId ? 'Chủ Kèo' : 'Chiến Hữu'}
                           </span>
                         </div>
-                        {(cmt.userRealName || cmt.userUsername || cmt.userEmail) && (
-                          <span className="comment-author-sub text-muted text-[0.75rem]">
-                            {cmt.userRealName ? `${cmt.userRealName} — ` : ''}
+                        {cmt.userRealName && (
+                          <span className="inline-block mt-[0.05rem] text-[0.72rem] text-text-muted normal-font-weight">
+                            {cmt.userRealName}
+                          </span>
+                        )}
+                        {(cmt.userUsername || cmt.userEmail) && (
+                          <span className="inline-block mt-[0.05rem] text-[0.72rem] text-text-muted normal-font-weight max-[480px]:hidden">
+                            {cmt.userRealName ? '—' : ''}
                             {cmt.userUsername || cmt.userEmail || 'Guest'}
                           </span>
                         )}
                       </div>
-                      <span className="comment-time">
+                      <span className="text-[0.7rem] text-text-muted">
                         {new Date(cmt.createdAt).toLocaleTimeString('vi-VN', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
                       </span>
                     </div>
-                    <p className="comment-content mt-1.5">{cmt.content}</p>
+                    <p className="mt-1.5 text-[0.92rem] text-text-primary leading-[1.4] break-words max-[480px]:text-[0.82rem]">
+                      {cmt.content}
+                    </p>
                   </div>
                 </div>
               ))}
