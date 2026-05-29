@@ -83,9 +83,16 @@ export default function PartyPinModal({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub max-w-[400px] text-center">
+      <div
+        className="modal-pub max-w-[400px] text-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pin-modal-title"
+      >
         <div className="pin-modal-header">🔐</div>
-        <h3 className="modal-title">Kèo Nhậu Riêng Tư</h3>
+        <h3 className="modal-title" id="pin-modal-title">
+          Kèo Nhậu Riêng Tư
+        </h3>
         <p className="modal-desc">
           {eventTitle ? (
             <>
@@ -117,6 +124,7 @@ export default function PartyPinModal({
               onPaste={handlePaste}
               className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
               disabled={isChecking}
+              aria-label={`Số thứ ${i + 1} của mật khẩu 6 số`}
             />
           ))}
         </div>

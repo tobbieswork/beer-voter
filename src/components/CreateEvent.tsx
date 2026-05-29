@@ -224,8 +224,16 @@ export default function CreateEvent({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub max-h-[90svh] overflow-auto" style={{ maxWidth: '600px' }}>
-        <h3 className="modal-title text-[1.6rem]">🍻 Tạo Kèo Nhậu Mới 🍻</h3>
+      <div
+        className="modal-pub max-h-[90svh] overflow-auto"
+        style={{ maxWidth: '600px' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-modal-title"
+      >
+        <h3 className="modal-title text-[1.6rem]" id="create-modal-title">
+          🍻 Tạo Kèo Nhậu Mới 🍻
+        </h3>
         <p className="modal-desc mb-4">
           Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
           này sẽ mặc định làm <strong>Chủ Kèo</strong>.
@@ -298,9 +306,9 @@ export default function CreateEvent({
                 </button>
               ))}
             </div>
-            <span className="btn-add-opt-row" onClick={() => addOptField('date')}>
+            <button type="button" className="btn-add-opt-row" onClick={() => addOptField('date')}>
               ➕ Thêm Lịch Khác
-            </span>
+            </button>
           </div>
 
           {/* Đề xuất Địa điểm */}
@@ -341,9 +349,13 @@ export default function CreateEvent({
                 </button>
               ))}
             </div>
-            <span className="btn-add-opt-row" onClick={() => addOptField('location')}>
+            <button
+              type="button"
+              className="btn-add-opt-row"
+              onClick={() => addOptField('location')}
+            >
               ➕ Thêm Địa Điểm Khác
-            </span>
+            </button>
           </div>
 
           {/* Đề xuất Loại Bia */}
@@ -384,9 +396,9 @@ export default function CreateEvent({
                 </button>
               ))}
             </div>
-            <span className="btn-add-opt-row" onClick={() => addOptField('beer')}>
+            <button type="button" className="btn-add-opt-row" onClick={() => addOptField('beer')}>
               ➕ Thêm Loại Bia Khác
-            </span>
+            </button>
           </div>
 
           {/* Mật Khẩu Bảo Vệ (tùy chọn) */}

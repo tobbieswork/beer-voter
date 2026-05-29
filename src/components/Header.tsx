@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { User } from '../types';
 
 interface HeaderProps {
@@ -7,6 +8,8 @@ interface HeaderProps {
 }
 
 export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps) {
+  const [showQrModal, setShowQrModal] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between border-b border-glass bg-bg-primary/75 backdrop-blur-md px-4 py-3 sm:px-8 sm:py-4 max-[360px]:px-2 max-[360px]:py-2">
       <button
@@ -47,13 +50,23 @@ export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps
           </div>
 
           <span
-            className={`role-badge max-[360px]:hidden ${currentUser.authMethod === 'google' ? 'role-badge.google' : 'role-badge.guest'}`}
+            className={`role-badge max-[360px]:hidden ${currentUser.authMethod === 'google' ? 'google' : 'guest'}`}
           >
             <span className="hidden text-current sm:inline">
               {currentUser.authMethod === 'google' ? 'Google' : 'Chiến Hữu'}
             </span>
             <span className="sm:hidden">✓</span>
           </span>
+
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded-full bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-gold max-[360px]:h-5 max-[360px]:w-5"
+            onClick={() => setShowQrModal(true)}
+            title="Đăng nhập thiết bị khác bằng QR"
+            aria-label="Đăng nhập thiết bị khác bằng QR"
+          >
+            📱
+          </button>
 
           {onSignOut && (
             <button
@@ -79,6 +92,51 @@ export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {showQrModal && currentUser && (
+        <div className="modal-overlay z-50">
+          <div
+            className="modal-pub max-w-[400px] text-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qr-modal-title"
+          >
+            <div className="text-3xl mb-2">📱</div>
+            <h3 className="modal-title" id="qr-modal-title">
+              Đăng Nhập Thiết Bị Khác
+            </h3>
+            <p className="modal-desc text-[0.9rem] mb-4">
+              Dùng <strong>Camera điện thoại</strong> của bạn để quét mã QR dưới đây và đăng nhập
+              nhanh không cần nhập mật khẩu.
+            </p>
+
+            <div className="flex justify-center bg-white p-3 rounded-2xl mb-4 w-[200px] h-[200px] mx-auto shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                  `${window.location.origin}${window.location.pathname}?authData=${btoa(
+                    unescape(encodeURIComponent(JSON.stringify(currentUser)))
+                  )}`
+                )}`}
+                alt="Mã QR Đăng Nhập"
+                className="w-[180px] h-[180px] object-contain"
+              />
+            </div>
+
+            <div className="text-xs text-text-secondary bg-white/5 border border-glass rounded-lg p-2.5 mb-4 text-left">
+              💡 <strong>Gợi ý:</strong> Mã QR này chứa thông tin tài khoản Khách hoặc Google của
+              bạn để tự động khôi phục lịch sử sòng nhậu tức thì.
+            </div>
+
+            <button
+              type="button"
+              className="btn-primary w-full justify-center"
+              onClick={() => setShowQrModal(false)}
+            >
+              Đóng Cửa Sổ
+            </button>
+          </div>
         </div>
       )}
     </header>

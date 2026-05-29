@@ -21,7 +21,7 @@ const FUNNY_NAMES = [
 
 interface GuestJoinModalProps {
   isOpen: boolean;
-  onSubmit: (data: { nickname: string; realName: string; username: string }) => void;
+  onSubmit: (data: { id?: string; nickname: string; realName: string; username: string }) => void;
   onGoogleSuccess: (data: {
     sub: string;
     email: string;
@@ -38,13 +38,16 @@ export default function GuestJoinModal({
   onGoogleSuccess,
   usedNicknames = [],
 }: GuestJoinModalProps) {
-  const [mode, setMode] = useState<'choose' | 'guest'>('choose');
+  const [mode, setMode] = useState<'choose' | 'guest' | 'guest-login'>('choose');
   const [nickname, setNickname] = useState('');
   const [realName, setRealName] = useState('');
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [googleError, setGoogleError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
 
@@ -92,7 +95,7 @@ export default function GuestJoinModal({
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) {
       setError('Vui lòng nhập biệt danh để anh em dễ gọi nhé!');
@@ -106,7 +109,84 @@ export default function GuestJoinModal({
       setError('Vui lòng nhập Tên đăng nhập hoặc Email để phân biệt với người trùng tên!');
       return;
     }
-    onSubmit({ nickname: nickname.trim(), realName: realName.trim(), username: username.trim() });
+    if (!password || password.length < 4) {
+      setError('Vui lòng nhập mật khẩu tối thiểu 4 ký tự để bảo vệ tài khoản!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/register-guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nickname: nickname.trim(),
+          realName: realName.trim(),
+          username: username.trim(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Đăng ký tài khoản Khách thất bại!');
+      }
+
+      onSubmit({
+        id: data.id,
+        nickname: data.nickname,
+        realName: data.realName,
+        username: data.username,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Không thể đăng ký Khách mới. Thử lại nhé!';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) {
+      setError('Vui lòng nhập Tên đăng nhập hoặc Email của bạn!');
+      return;
+    }
+    if (!password) {
+      setError('Vui lòng nhập mật khẩu!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Đăng nhập Khách cũ thất bại!');
+      }
+
+      onSubmit({
+        id: data.id,
+        nickname: data.nickname,
+        realName: data.realName,
+        username: data.username,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Sai tên đăng nhập hoặc mật khẩu!';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSelectFunnyName = (funnyName: string) => {
@@ -124,9 +204,11 @@ export default function GuestJoinModal({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub">
+      <div className="modal-pub" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
         <div className="modal-icon-large">🍻</div>
-        <h3 className="modal-title">Vào Sòng Nhậu BeerVote!</h3>
+        <h3 className="modal-title" id="join-modal-title">
+          Vào Sòng Nhậu BeerVote!
+        </h3>
 
         {mode === 'choose' && (
           <>
@@ -163,42 +245,88 @@ export default function GuestJoinModal({
             )}
 
             <div className="join-mode-divider">
-              <span>Hoặc tham gia với tư cách Khách</span>
+              <span>Hoặc dành cho Khách (Chiến Hữu)</span>
             </div>
 
-            <button
-              className="btn-secondary w-full justify-center min-h-[44px]"
-              onClick={() => setMode('guest')}
-            >
-              👤 Tiếp Tục Không Cần Đăng Nhập
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                className="btn-primary w-full justify-center min-h-[44px]"
+                onClick={() => {
+                  setError('');
+                  setPassword('');
+                  setShowPassword(false);
+                  setMode('guest');
+                }}
+              >
+                👤 Tạo Tài Khoản Khách Mới
+              </button>
+              <button
+                className="btn-secondary w-full justify-center min-h-[44px]"
+                onClick={() => {
+                  setError('');
+                  setPassword('');
+                  setShowPassword(false);
+                  setMode('guest-login');
+                }}
+              >
+                🔑 Đăng Nhập Khách Cũ (Đa thiết bị)
+              </button>
+            </div>
           </>
         )}
 
         {mode === 'guest' && (
           <>
             <p className="modal-desc">
-              Cung cấp thông tin của bạn để bắt đầu tham gia bình chọn, đề xuất quán nhậu và chém
-              gió cùng anh em.
+              Cung cấp thông tin của bạn và tạo mật khẩu để có thể khôi phục tài khoản trên mọi
+              thiết bị khác.
             </p>
             <form onSubmit={handleSubmit}>
               {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
 
               <div className="form-group">
-                <label htmlFor="guest-nickname">Biệt Danh Của Bạn</label>
+                <label htmlFor="guest-username">Tên đăng nhập / Email</label>
                 <input
                   type="text"
-                  id="guest-nickname"
-                  placeholder="Ví dụ: Chiến Thần Diệt Mồi, Hùng Beer Thủ..."
-                  value={nickname}
+                  id="guest-username"
+                  placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
+                  value={username}
                   onChange={(e) => {
-                    setNickname(e.target.value);
+                    setUsername(e.target.value);
                     if (error) setError('');
                   }}
-                  maxLength={25}
+                  maxLength={50}
                   autoFocus
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="guest-password">Mật khẩu bảo mật</label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="guest-password"
+                    placeholder="Mật khẩu tối thiểu 4 ký tự..."
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError('');
+                    }}
+                    minLength={4}
+                    className="w-full pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 bg-transparent border-none text-base cursor-pointer outline-none select-none p-0 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                  >
+                    {showPassword ? '👁️' : '🙈'}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
@@ -218,17 +346,17 @@ export default function GuestJoinModal({
               </div>
 
               <div className="form-group">
-                <label htmlFor="guest-username">Tên đăng nhập / Email</label>
+                <label htmlFor="guest-nickname">Biệt Danh Của Bạn</label>
                 <input
                   type="text"
-                  id="guest-username"
-                  placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
-                  value={username}
+                  id="guest-nickname"
+                  placeholder="Ví dụ: Chiến Thần Diệt Mồi, Hùng Beer Thủ..."
+                  value={nickname}
                   onChange={(e) => {
-                    setUsername(e.target.value);
+                    setNickname(e.target.value);
                     if (error) setError('');
                   }}
-                  maxLength={50}
+                  maxLength={25}
                   required
                 />
               </div>
@@ -263,10 +391,116 @@ export default function GuestJoinModal({
               </div>
 
               <div className="form-actions-vertical gap-2">
-                <button type="submit" className="btn-primary">
-                  🍻 XÁC NHẬN THÔNG TIN
+                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'ĐANG ĐĂNG KÝ...' : '🍻 XÁC NHẬN ĐĂNG KÝ'}
                 </button>
-                <button type="button" className="btn-secondary" onClick={() => setMode('choose')}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setError('');
+                    setPassword('');
+                    setShowPassword(false);
+                    setMode('guest-login');
+                  }}
+                >
+                  🔑 Bạn đã có tài khoản cũ? Đăng Nhập
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setError('');
+                    setPassword('');
+                    setShowPassword(false);
+                    setMode('choose');
+                  }}
+                >
+                  ← Quay Lại
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {mode === 'guest-login' && (
+          <>
+            <p className="modal-desc">
+              Nhập tên đăng nhập và mật khẩu Khách cũ của bạn để đồng bộ toàn bộ lịch sử vote/chat.
+            </p>
+            <form onSubmit={handleLoginSubmit}>
+              {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
+
+              <div className="form-group">
+                <label htmlFor="login-username">Tên đăng nhập / Email cũ</label>
+                <input
+                  type="text"
+                  id="login-username"
+                  placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    if (error) setError('');
+                  }}
+                  maxLength={50}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="login-password">Mật khẩu tài khoản</label>
+                <div className="relative flex items-center">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="login-password"
+                    placeholder="Nhập mật khẩu..."
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError('');
+                    }}
+                    className="w-full pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 bg-transparent border-none text-base cursor-pointer outline-none select-none p-0 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+                  >
+                    {showPassword ? '👁️' : '🙈'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-actions-vertical gap-2 mt-4">
+                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'ĐANG ĐĂNG NHẬP...' : '🔓 ĐĂNG NHẬP KHÁCH CŨ'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setError('');
+                    setPassword('');
+                    setShowPassword(false);
+                    setMode('guest');
+                  }}
+                >
+                  👤 Tạo Tài Khoản Khách Mới
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    setError('');
+                    setPassword('');
+                    setShowPassword(false);
+                    setMode('choose');
+                  }}
+                >
                   ← Quay Lại
                 </button>
               </div>

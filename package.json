@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "vite",
-    "server": "tsx server/index.ts",
+    "server": "tsx watch server/index.ts",
     "build": "vite build",
     "start": "tsx server/index.ts",
     "lint": "eslint .",
