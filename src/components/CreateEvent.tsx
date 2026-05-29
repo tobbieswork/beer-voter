@@ -1,12 +1,12 @@
 import { useState, FormEvent } from 'react';
-import { User } from '../App';
+import { User } from '../types';
 
 const TITLE_PRESETS = [
   'Họp mặt cuối tuần 🍻',
   'Mừng lương về 🎉',
   'Giải nhiệt mùa hè 🌞',
   'Thứ Sáu bùng nổ 🚀',
-  'Bàn mưu tính kế 🧠'
+  'Bàn mưu tính kế 🧠',
 ];
 
 const LOCATION_PRESETS = [
@@ -14,7 +14,7 @@ const LOCATION_PRESETS = [
   'Quán Lẩu Dê Đồng Quê 🐐',
   'Beer Club Sôi Động 🎶',
   'Nướng & Beer Gió Lộng 💨',
-  'Quán Ốc Đêm Ấm Cúng 🐚'
+  'Quán Ốc Đêm Ấm Cúng 🐚',
 ];
 
 const BEER_PRESETS = [
@@ -22,7 +22,7 @@ const BEER_PRESETS = [
   'Bia thủ công IPA thơm nồng, chill chill 🌾',
   'Bia tháp Tiger Bạc kéo pháo 🐯',
   'Bia tươi Tiệp thơm đậm vị 🇨🇿',
-  'Bia úp ngược đa sắc màu 🍹'
+  'Bia úp ngược đa sắc màu 🍹',
 ];
 
 interface CreateEventProps {
@@ -32,11 +32,17 @@ interface CreateEventProps {
   currentUser: User | null;
 }
 
-export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentUser }: CreateEventProps) {
+export default function CreateEvent({
+  isOpen,
+  onClose,
+  onCreateSuccess,
+  currentUser,
+}: CreateEventProps) {
   const [title, setTitle] = useState('');
   const [dateOpts, setDateOpts] = useState<string[]>(['']);
   const [locOpts, setLocOpts] = useState<string[]>(['']);
   const [beerOpts, setBeerOpts] = useState<string[]>(['']);
+  const [partyPin, setPartyPin] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,7 +50,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
 
   // Tính toán các gợi ý ngày giờ động dựa trên thời gian thực
   const getDynamicDatePresets = () => {
-    const getQuickDate = (daysAhead: number, hourStr = "19:30") => {
+    const getQuickDate = (daysAhead: number, hourStr = '19:30') => {
       const d = new Date();
       d.setDate(d.getDate() + daysAhead);
       const yyyy = d.getFullYear();
@@ -53,7 +59,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       return `${yyyy}-${mm}-${dd}T${hourStr}`;
     };
 
-    const getUpcomingDay = (dayOfWeek: number, hourStr = "19:30") => {
+    const getUpcomingDay = (dayOfWeek: number, hourStr = '19:30') => {
       const d = new Date();
       const currentDay = d.getDay(); // 0 là Chủ Nhật, 5 là Thứ Sáu, 6 là Thứ Bảy
       let daysAhead = (dayOfWeek - currentDay + 7) % 7;
@@ -69,7 +75,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       { label: 'Hôm nay (19:30) 🕒', value: getQuickDate(0) },
       { label: 'Ngày mai (19:30) 🌅', value: getQuickDate(1) },
       { label: 'Thứ Sáu này (19:30) ⚡', value: getUpcomingDay(5) },
-      { label: 'Thứ Bảy này (18:00) 🥳', value: getUpcomingDay(6, "18:00") }
+      { label: 'Thứ Bảy này (18:00) 🥳', value: getUpcomingDay(6, '18:00') },
     ];
   };
 
@@ -81,7 +87,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       setTitle(value);
       return;
     }
-    
+
     let opts: string[], setOpts: (o: string[]) => void;
     if (type === 'date') {
       opts = dateOpts;
@@ -95,7 +101,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
     }
 
     // Điền vào ô trống đầu tiên hoặc tạo mới
-    const emptyIndex = opts.findIndex(o => o.trim() === '');
+    const emptyIndex = opts.findIndex((o) => o.trim() === '');
     if (emptyIndex > -1) {
       const updateOpts = [...opts];
       updateOpts[emptyIndex] = value;
@@ -157,12 +163,19 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       return;
     }
 
-    const filteredDates = dateOpts.filter(o => o.trim() !== '');
-    const filteredLocs = locOpts.filter(o => o.trim() !== '');
-    const filteredBeers = beerOpts.filter(o => o.trim() !== '');
+    if (partyPin && !/^\d{6}$/.test(partyPin)) {
+      setError('Mật khẩu phải là đúng 6 chữ số (để trống nếu không cần)!');
+      return;
+    }
+
+    const filteredDates = dateOpts.filter((o) => o.trim() !== '');
+    const filteredLocs = locOpts.filter((o) => o.trim() !== '');
+    const filteredBeers = beerOpts.filter((o) => o.trim() !== '');
 
     if (filteredDates.length === 0 || filteredLocs.length === 0 || filteredBeers.length === 0) {
-      setError('Vui lòng nhập/chọn ít nhất 1 đề xuất ban đầu cho mỗi mục (Ngày/Giờ, Địa điểm, Loại bia)!');
+      setError(
+        'Vui lòng nhập/chọn ít nhất 1 đề xuất ban đầu cho mỗi mục (Ngày/Giờ, Địa điểm, Loại bia)!'
+      );
       return;
     }
 
@@ -186,8 +199,9 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
           creatorUsername: currentUser.username,
           dateOptions: filteredDates,
           locationOptions: filteredLocs,
-          beerOptions: filteredBeers
-        })
+          beerOptions: filteredBeers,
+          ...(partyPin ? { partyPin } : {}),
+        }),
       });
 
       if (!response.ok) {
@@ -195,6 +209,9 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
       }
 
       const newEvent = await response.json();
+      if (newEvent.creatorToken) {
+        localStorage.setItem(`beervote_creator_token_${newEvent.id}`, newEvent.creatorToken);
+      }
       onCreateSuccess(newEvent.id);
       onClose();
     } catch (err) {
@@ -207,17 +224,14 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
 
   return (
     <div className="modal-overlay">
-      <div className="modal-pub" style={{ maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 className="modal-title" style={{ fontSize: '1.6rem' }}>🍻 Tạo Kèo Nhậu Mới 🍻</h3>
-        <p className="modal-desc" style={{ marginBottom: '1rem' }}>
-          Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo này sẽ mặc định làm <strong>Chủ Kèo</strong>.
+      <div className="modal-pub max-h-[90svh] overflow-auto" style={{ maxWidth: '600px' }}>
+        <h3 className="modal-title text-[1.6rem]">🍻 Tạo Kèo Nhậu Mới 🍻</h3>
+        <p className="modal-desc mb-4">
+          Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
+          này sẽ mặc định làm <strong>Chủ Kèo</strong>.
         </p>
 
-        {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--accent-red)', padding: '0.75rem', borderRadius: '10px', color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 600 }}>
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="modal-error-box mb-4">⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* Tên Kèo */}
@@ -233,13 +247,12 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
               required
             />
             {/* Presets cho Tên Kèo */}
-            <div className="presets-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
+            <div className="presets-container">
               {TITLE_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'title')}
                 >
                   {preset}
@@ -249,7 +262,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
           </div>
 
           {/* Đề xuất Ngày/Giờ */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Lịch Trình Đề Xuất (Ngày & Giờ)</label>
             <div className="options-input-list">
               {dateOpts.map((opt, index) => (
@@ -261,7 +274,11 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
                     required={index === 0}
                   />
                   {dateOpts.length > 1 && (
-                    <button type="button" className="btn-remove-opt" onClick={() => removeOptField(index, 'date')}>
+                    <button
+                      type="button"
+                      className="btn-remove-opt"
+                      onClick={() => removeOptField(index, 'date')}
+                    >
                       🗑️
                     </button>
                   )}
@@ -269,13 +286,12 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
               ))}
             </div>
             {/* Presets cho Lịch Trình */}
-            <div className="presets-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+            <div className="presets-container my-2">
               {datePresets.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset.value, 'date')}
                 >
                   {preset.label}
@@ -288,7 +304,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
           </div>
 
           {/* Đề xuất Địa điểm */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Địa Điểm Đề Xuất</label>
             <div className="options-input-list">
               {locOpts.map((opt, index) => (
@@ -301,7 +317,11 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
                     required={index === 0}
                   />
                   {locOpts.length > 1 && (
-                    <button type="button" className="btn-remove-opt" onClick={() => removeOptField(index, 'location')}>
+                    <button
+                      type="button"
+                      className="btn-remove-opt"
+                      onClick={() => removeOptField(index, 'location')}
+                    >
                       🗑️
                     </button>
                   )}
@@ -309,13 +329,12 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
               ))}
             </div>
             {/* Presets cho Địa Điểm */}
-            <div className="presets-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+            <div className="presets-container my-2">
               {LOCATION_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'location')}
                 >
                   {preset}
@@ -328,7 +347,7 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
           </div>
 
           {/* Đề xuất Loại Bia */}
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-group mb-6">
             <label>Loại Bia / Phong Cách Quán</label>
             <div className="options-input-list">
               {beerOpts.map((opt, index) => (
@@ -341,7 +360,11 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
                     required={index === 0}
                   />
                   {beerOpts.length > 1 && (
-                    <button type="button" className="btn-remove-opt" onClick={() => removeOptField(index, 'beer')}>
+                    <button
+                      type="button"
+                      className="btn-remove-opt"
+                      onClick={() => removeOptField(index, 'beer')}
+                    >
                       🗑️
                     </button>
                   )}
@@ -349,13 +372,12 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
               ))}
             </div>
             {/* Presets cho Loại Bia */}
-            <div className="presets-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+            <div className="presets-container my-2">
               {BEER_PRESETS.map((preset, idx) => (
                 <button
                   key={idx}
                   type="button"
                   className="quick-chat-tag"
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
                   onClick={() => handleSelectPreset(preset, 'beer')}
                 >
                   {preset}
@@ -367,8 +389,39 @@ export default function CreateEvent({ isOpen, onClose, onCreateSuccess, currentU
             </span>
           </div>
 
+          {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
+          <div className="form-group mb-6">
+            <label htmlFor="party-pin">
+              🔐 Mật Khẩu Bảo Vệ Kèo <span className="font-normal text-muted">(tùy chọn)</span>
+            </label>
+            <input
+              type="text"
+              id="party-pin"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Để trống nếu kèo công khai, hoặc nhập đúng 6 chữ số..."
+              value={partyPin}
+              onChange={(e) => setPartyPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength={6}
+            />
+            {partyPin && (
+              <span
+                className={`block text-[0.75rem] pt-1 ${partyPin.length === 6 ? 'text-green' : 'text-muted'}`}
+              >
+                {partyPin.length === 6
+                  ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
+                  : `Còn thiếu ${6 - partyPin.length} chữ số`}
+              </span>
+            )}
+          </div>
+
           <div className="form-actions-modal">
-            <button type="button" className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Hủy Bỏ
             </button>
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
