@@ -128,6 +128,40 @@ export default function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState<boolean>(false);
   const [showPinModal, setShowPinModal] = useState<boolean>(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  }, []);
+
+  // Check authData on startup
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authData = params.get('authData');
+    if (authData) {
+      try {
+        const decodedUser = JSON.parse(decodeURIComponent(escape(atob(authData))));
+        if (decodedUser && decodedUser.id && decodedUser.nickname) {
+          saveUserToStorage(decodedUser);
+          setCurrentUser(decodedUser);
+
+          // Clean the authData query param while preserving others like eventId
+          params.delete('authData');
+          const cleanSearch = params.toString();
+          const newUrl = cleanSearch
+            ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
+            : `${window.location.origin}${window.location.pathname}`;
+
+          window.history.replaceState({}, '', newUrl);
+          showToast('🍻 Đăng nhập qua mã QR thành công!');
+          setIsJoinModalOpen(false);
+        }
+      } catch (e) {
+        console.error('Lỗi giải mã QR Auth:', e);
+      }
+    }
+  }, [showToast]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -473,15 +507,17 @@ export default function App() {
   };
 
   const handleGuestJoinSubmit = ({
+    id,
     nickname,
     realName,
     username,
   }: {
+    id?: string;
     nickname: string;
     realName: string;
     username: string;
   }) => {
-    const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
+    const userId = id || 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
     const user: User = {
       id: userId,
       nickname,
@@ -583,6 +619,8 @@ export default function App() {
         onGoHome={() => navigateToEvent(null)}
         onSignOut={currentUser ? handleSignOut : undefined}
       />
+
+      {toastMsg && <div className="toast-msg">{toastMsg}</div>}
 
       {/* Phần nội dung chính của sòng nhậu */}
       <main className="main-content">

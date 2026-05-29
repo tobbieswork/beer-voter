@@ -93,11 +93,21 @@ export interface DBComment {
   createdAt: string;
 }
 
+export interface DBGuest {
+  id: string;
+  username: string;
+  nickname: string;
+  realName: string;
+  passwordHash: string; // SHA-256
+  createdAt: string;
+}
+
 export interface DatabaseSchema {
   events: DBEvent[];
   options: DBOption[];
   votes: DBVote[];
   comments: DBComment[];
+  guests?: DBGuest[];
 }
 
 // Supabase response wrapper
@@ -106,7 +116,7 @@ interface SupabaseDataRow {
   value: DatabaseSchema;
 }
 
-let cacheDB: DatabaseSchema = { events: [], options: [], votes: [], comments: [] };
+let cacheDB: DatabaseSchema = { events: [], options: [], votes: [], comments: [], guests: [] };
 let _isLoaded = false;
 let isWriting = false;
 let pendingWrite = false;
@@ -174,6 +184,7 @@ async function initDB() {
         const data = (await response.json()) as SupabaseDataRow[];
         if (data && data.length > 0) {
           cacheDB = data[0].value as DatabaseSchema;
+          if (!cacheDB.guests) cacheDB.guests = [];
           console.log(
             `✅ Đã tải thành công DB từ Supabase. Số lượng kèo: ${cacheDB.events.length}`
           );
@@ -210,6 +221,7 @@ async function initDB() {
     } else {
       const data = fs.readFileSync(DB_PATH, 'utf8');
       cacheDB = JSON.parse(data) as DatabaseSchema;
+      if (!cacheDB.guests) cacheDB.guests = [];
     }
     console.log(`✅ Đã tải thành công DB từ file local. Số lượng kèo: ${cacheDB.events.length}`);
   } catch (error) {
@@ -422,6 +434,73 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
     console.error('Google token verification failed:', e);
     res.status(401).json({ message: 'Invalid Google token' });
   }
+});
+
+app.post('/api/auth/register-guest', (req: Request, res: Response) => {
+  const { nickname, realName, username, password } = req.body;
+  if (!nickname || !realName || !username || !password) {
+    return res.status(400).json({ message: 'Vui lòng điền đầy đủ tất cả thông tin!' });
+  }
+
+  const db = readDB();
+  if (!db.guests) db.guests = [];
+
+  const lowerUsername = username.trim().toLowerCase();
+  const exists = db.guests.some((g) => g.username.toLowerCase() === lowerUsername);
+  if (exists) {
+    return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.' });
+  }
+
+  const id = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
+  const passwordHash = hashPin(password);
+
+  const newGuest: DBGuest = {
+    id,
+    nickname: nickname.trim(),
+    realName: realName.trim(),
+    username: username.trim(),
+    passwordHash,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.guests.push(newGuest);
+  writeDB(db);
+
+  res.status(201).json({
+    id: newGuest.id,
+    nickname: newGuest.nickname,
+    realName: newGuest.realName,
+    username: newGuest.username,
+  });
+});
+
+app.post('/api/auth/guest', (req: Request, res: Response) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ tài khoản và mật khẩu!' });
+  }
+
+  const db = readDB();
+  if (!db.guests) db.guests = [];
+
+  const lowerUsername = username.trim().toLowerCase();
+  const guest = db.guests.find((g) => g.username.toLowerCase() === lowerUsername);
+
+  if (!guest) {
+    return res.status(404).json({ message: 'Không tìm thấy tài khoản Khách này!' });
+  }
+
+  const passwordHash = hashPin(password);
+  if (guest.passwordHash !== passwordHash) {
+    return res.status(401).json({ message: 'Mật khẩu không chính xác!' });
+  }
+
+  res.json({
+    id: guest.id,
+    nickname: guest.nickname,
+    realName: guest.realName,
+    username: guest.username,
+  });
 });
 
 app.delete('/api/events/:id', (req: Request, res: Response) => {

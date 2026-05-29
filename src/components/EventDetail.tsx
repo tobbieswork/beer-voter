@@ -467,9 +467,9 @@ export default function EventDetail({
       {toastMsg && <div className="toast-msg">{toastMsg}</div>}
 
       {/* Nút quay lại */}
-      <span className="back-link" onClick={onBack}>
+      <button className="back-link" type="button" onClick={onBack}>
         ⬅️ Quay lại danh sách kèo
-      </span>
+      </button>
 
       {/* Banner nếu Kèo Đã Chốt */}
       {status === 'locked' && eventData.finalDateTime && (

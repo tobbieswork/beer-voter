@@ -65,9 +65,67 @@
       "creatorRealName": "sss Tester sss",
       "creatorUsername": "tester101",
       "createdAt": "2026-05-28T11:11:09.519Z"
+    },
+    {
+      "id": "9f873524-9918-4f8e-ad5e-06fa0d1ab572",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "datetime",
+      "value": "2026-05-29T23:44",
+      "creatorId": "usr_1780073022568_y03",
+      "creatorName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "creatorNickname": "Thánh Trôi Mồi 🌭",
+      "creatorRealName": "Nguyễn Đăng Phát",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-29T16:44:07.687Z"
+    },
+    {
+      "id": "12db7e46-49e7-47e5-a615-a96962ebec2d",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "type": "beer",
+      "value": "Tiger Bạc 🐯",
+      "creatorId": "usr_1780073022568_y03",
+      "creatorName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "creatorNickname": "Thánh Trôi Mồi 🌭",
+      "creatorRealName": "Nguyễn Đăng Phát",
+      "creatorUsername": "phatnd12",
+      "createdAt": "2026-05-29T16:44:24.533Z"
     }
   ],
-  "votes": [],
+  "votes": [
+    {
+      "id": "497bf113-4c05-4895-8e64-c05b05d2da15",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "optionId": "9f873524-9918-4f8e-ad5e-06fa0d1ab572",
+      "userId": "usr_1780073022568_y03",
+      "userName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "userNickname": "Thánh Trôi Mồi 🌭",
+      "userRealName": "Nguyễn Đăng Phát",
+      "userEmail": "phatnd12",
+      "createdAt": "2026-05-29T16:44:07.687Z"
+    },
+    {
+      "id": "75cae8f5-ca3c-4117-97ec-347adbe79c98",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "optionId": "ecc23bfa-4e97-4694-81dd-ecf8e4a54e77",
+      "userId": "usr_1780073022568_y03",
+      "userName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "userNickname": "Thánh Trôi Mồi 🌭",
+      "userRealName": "Nguyễn Đăng Phát",
+      "userEmail": "phatnd12",
+      "createdAt": "2026-05-29T16:44:19.847Z"
+    },
+    {
+      "id": "4a11edc2-902a-400a-8b74-e462eedf4af1",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "optionId": "12db7e46-49e7-47e5-a615-a96962ebec2d",
+      "userId": "usr_1780073022568_y03",
+      "userName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "userNickname": "Thánh Trôi Mồi 🌭",
+      "userRealName": "Nguyễn Đăng Phát",
+      "userEmail": "phatnd12",
+      "createdAt": "2026-05-29T16:44:24.533Z"
+    }
+  ],
   "comments": [
     {
       "id": "b3fec1e5-f65b-489e-a9f2-cefbe086bb08",
@@ -90,6 +148,27 @@
       "userRealName": "sss Tester sss",
       "userEmail": "tester101",
       "createdAt": "2026-05-28T11:11:43.569Z"
+    },
+    {
+      "id": "fbd03696-8632-414b-9eae-aec56aeff4ff",
+      "eventId": "3cb00ced-104b-41ca-a590-1b28f04639ff",
+      "userId": "usr_1780073022568_y03",
+      "userName": "Thánh Trôi Mồi 🌭 (Nguyễn Đăng Phát)",
+      "content": "💸 Kèo này tao bao... ly đầu tiên! 😂",
+      "userNickname": "Thánh Trôi Mồi 🌭",
+      "userRealName": "Nguyễn Đăng Phát",
+      "userEmail": "phatnd12",
+      "createdAt": "2026-05-29T16:43:53.167Z"
+    }
+  ],
+  "guests": [
+    {
+      "id": "usr_1780073022568_y03",
+      "nickname": "Thánh Trôi Mồi 🌭",
+      "realName": "Nguyễn Đăng Phát",
+      "username": "phatnd12",
+      "passwordHash": "42b84e337e66c51633df3f2a18fb245b66a01772a1aae71a26175fc1fd33cbe9",
+      "createdAt": "2026-05-29T16:43:42.569Z"
     }
   ]
 }
