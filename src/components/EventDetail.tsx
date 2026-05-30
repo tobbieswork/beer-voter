@@ -89,6 +89,7 @@ export default function EventDetail({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [showPartyPin, setShowPartyPin] = useState(false);
 
   // State phục vụ modal chốt kèo của Admin
   const [finalDateTime, setFinalDateTime] = useState('');
@@ -573,9 +574,29 @@ export default function EventDetail({
                           }}
                         >
                           <span className="text-[0.85rem] text-gold">🔐 PIN bảo vệ sòng:</span>
-                          <strong className="text-xl tracking-widest text-gold font-mono">
-                            {eventData.partyPin}
-                          </strong>
+                          <div className="flex items-center gap-2">
+                            <strong className="text-xl tracking-widest text-gold font-mono">
+                              {showPartyPin ? eventData.partyPin : '••••••'}
+                            </strong>
+                            <button
+                              type="button"
+                              onClick={() => setShowPartyPin(!showPartyPin)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--accent-gold)',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                fontSize: '1.1rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title={showPartyPin ? 'Ẩn mã PIN' : 'Xem mã PIN'}
+                            >
+                              {showPartyPin ? '👁️' : '👁️‍🗨️'}
+                            </button>
+                          </div>
                         </div>
                       )}
                       {status === 'voting' && (
