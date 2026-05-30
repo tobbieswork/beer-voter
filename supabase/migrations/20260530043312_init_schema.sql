@@ -67,3 +67,4 @@ CREATE TABLE IF NOT EXISTS public.guests (
     password_hash text NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+    -- Test trigger CD 
