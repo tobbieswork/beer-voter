@@ -9,6 +9,7 @@ export interface DBEvent {
   creatorRealName?: string;
   creatorUsername?: string;
   creatorToken?: string;
+  partyPin?: string;
   partyPinHash?: string;
   status: 'voting' | 'locked';
   createdAt: string;

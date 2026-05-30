@@ -220,9 +220,13 @@ export default function App() {
   const fetchEventDetail = useCallback(async (id: string) => {
     try {
       const pinToken = getPinToken(id);
+      const creatorToken = localStorage.getItem(`beervote_creator_token_${id}`);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (pinToken) {
         headers['X-Pin-Token'] = pinToken;
+      }
+      if (creatorToken) {
+        headers['X-Creator-Token'] = creatorToken;
       }
       const response = await fetch(`/api/events/${id}`, { headers });
       if (response.ok) {
@@ -243,12 +247,14 @@ export default function App() {
       addVisitedEvent(currentEventId);
       setVisitedEventIds(getVisitedEvents());
       const pinToken = getPinToken(currentEventId);
+      const creatorToken = localStorage.getItem(`beervote_creator_token_${currentEventId}`);
       fetchEventDetail(currentEventId);
-      // Only send JOIN_EVENT immediately if we already have a valid PIN token.
+      // Only send JOIN_EVENT immediately if we already have a valid PIN token or are the creator.
       // Otherwise, defer to PIN gating effect or ws.onopen handler.
-      if (pinToken && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      const isCreator = !!creatorToken;
+      if ((pinToken || isCreator) && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
-          JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken })
+          JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken, creatorToken })
         );
       }
     } else {
@@ -269,8 +275,9 @@ export default function App() {
       return;
     }
     if (currentEventData.hasPin) {
+      const isCreator = !!localStorage.getItem(`beervote_creator_token_${currentEventId}`);
       const token = getPinToken(currentEventId);
-      setShowPinModal(!token);
+      setShowPinModal(!token && !isCreator);
     } else {
       setShowPinModal(false);
     }
@@ -306,6 +313,7 @@ export default function App() {
             type: 'JOIN_EVENT',
             eventId: currentEventId,
             pinToken: getPinToken(currentEventId),
+            creatorToken: localStorage.getItem(`beervote_creator_token_${currentEventId}`),
           })
         );
       } else {

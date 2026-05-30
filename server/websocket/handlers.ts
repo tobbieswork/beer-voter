@@ -23,11 +23,12 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
     case 'JOIN_EVENT': {
       const event_join = readDB().events.find((e) => e.id === action.eventId);
       if (event_join && event_join.partyPinHash) {
-        if (!isPinAuthorized(event_join, action.pinToken)) {
+        const isCreator = action.creatorToken && action.creatorToken === event_join.creatorToken;
+        if (!isCreator && !isPinAuthorized(event_join, action.pinToken)) {
           console.warn(`PIN denied JOIN_EVENT for ${action.eventId}`);
           break;
         }
-        clientInfo.verifiedPinTokens.set(action.eventId, action.pinToken);
+        clientInfo.verifiedPinTokens.set(action.eventId, action.pinToken || '');
       }
       clientInfo.currentEventId = action.eventId;
       break;

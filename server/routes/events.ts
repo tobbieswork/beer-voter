@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import {
@@ -38,13 +39,20 @@ router.get('/', (_req: Request, res: Response) => {
 router.get('/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const pinToken = req.headers['x-pin-token'] as string | undefined;
+  const creatorToken = req.headers['x-creator-token'] as string | undefined;
   const db = readDB();
   const event = db.events.find((e) => e.id === id);
   if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
-  if (!isPinAuthorized(event, pinToken)) {
+
+  const isCreator = creatorToken && creatorToken === event.creatorToken;
+  if (!isCreator && !isPinAuthorized(event, pinToken)) {
     return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
   }
+
   const eventDetail = getEventDetail(db, id);
+  if (eventDetail && isCreator) {
+    (eventDetail as any).partyPin = event.partyPin;
+  }
   res.json(eventDetail);
 });
 

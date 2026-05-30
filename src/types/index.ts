@@ -62,6 +62,7 @@ export interface EventData {
   creatorUsername?: string;
   status: 'voting' | 'locked';
   hasPin?: boolean;
+  partyPin?: string;
   createdAt: string;
   lockedAt?: string | null;
   finalDateTime?: string | null;

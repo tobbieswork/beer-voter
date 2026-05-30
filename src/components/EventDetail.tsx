@@ -554,6 +554,22 @@ export default function EventDetail({
             <div className="admin-action-box">
               {currentUser && currentUser.id === eventData.creatorId ? (
                 <>
+                  {eventData.partyPin && (
+                    <div
+                      className="mb-4 flex items-center justify-between"
+                      style={{
+                        backgroundColor: 'rgba(255, 176, 0, 0.1)',
+                        border: '1px solid var(--accent-gold)',
+                        borderRadius: '12px',
+                        padding: '0.75rem 1rem',
+                      }}
+                    >
+                      <span className="text-[0.85rem] text-gold">🔐 PIN bảo vệ kèo:</span>
+                      <strong className="text-xl tracking-widest text-gold font-mono">
+                        {eventData.partyPin}
+                      </strong>
+                    </div>
+                  )}
                   {status === 'voting' && (
                     <button className="btn-lock" onClick={handleOpenLockModal}>
                       🔒 Chốt Kèo Tới Bến
