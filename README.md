@@ -85,13 +85,14 @@ Phù hợp khi bạn bè đang ở nhà riêng, ở xa và cần lên kế hoạ
 
 Ứng dụng hỗ trợ cấu trúc dữ liệu chế độ kép vô cùng linh hoạt và mạnh mẽ:
 
-* **Chế độ Cloud (Production)**: Đồng bộ trực tiếp lên hệ cơ sở dữ liệu quan hệ **Supabase (PostgreSQL)** thông qua 5 bảng quan hệ chuẩn hóa: `events`, `options`, `votes`, `comments`, và `guests`.
-* **Chế độ Local (Development)**: Lưu trữ dự phòng tự động dưới dạng file JSON `server/db.json` giúp bạn lập trình ngoại tuyến (offline) dễ dàng không cần cài đặt.
-* **Hệ thống CI/CD Database**: Cấu hình tự động đồng bộ hóa cấu trúc bảng từ thư mục `supabase/migrations/` lên Cloud Supabase qua **GitHub Actions** cho 2 môi trường Dev và Main (Prod).
+- **Chế độ Cloud (Production)**: Đồng bộ trực tiếp lên hệ cơ sở dữ liệu quan hệ **Supabase (PostgreSQL)** thông qua 5 bảng quan hệ chuẩn hóa: `events`, `options`, `votes`, `comments`, và `guests`.
+- **Chế độ Local (Development)**: Lưu trữ dự phòng tự động dưới dạng file JSON `server/db.json` giúp bạn lập trình ngoại tuyến (offline) dễ dàng không cần cài đặt.
+- **Hệ thống CI/CD Database**: Cấu hình tự động đồng bộ hóa cấu trúc bảng từ thư mục `supabase/migrations/` lên Cloud Supabase qua **GitHub Actions** cho 2 môi trường Dev và Main (Prod).
 
 > 📘 Để xem chi tiết cách cấu hình, gỡ lỗi và quy trình nâng cấp cấu trúc bảng tự động, vui lòng đọc các tài liệu sau:
-> * [Cẩm nang Vận hành & Thay đổi Database (docs/database_playbook.md)](./docs/database_playbook.md)
-> * [Hướng dẫn cấu hình CI/CD Database (docs/supabase_github_cd_guide.md)](./docs/supabase_github_cd_guide.md)
+>
+> - [Cẩm nang Vận hành & Thay đổi Database (docs/database_playbook.md)](./docs/database_playbook.md)
+> - [Hướng dẫn cấu hình CI/CD Database (docs/supabase_github_cd_guide.md)](./docs/supabase_github_cd_guide.md)
 
 ---
 
