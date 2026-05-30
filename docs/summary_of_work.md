@@ -61,27 +61,31 @@ Mang lại trải nghiệm đăng nhập nhanh không ma sát (Frictionless) khi
 Để giải quyết triệt để sự cố mất dữ liệu khi redeploy trên Render.com, đồng thời chuẩn bị cho sự mở rộng mạnh mẽ lâu dài của BeerVote, chúng tôi đã thực hiện một đợt nâng cấp kỹ thuật toàn diện và đột phá ở phía Backend:
 
 ### 5.1 Nâng Cấp Sang Cơ Sở Dữ Liệu Quan Hệ (PostgreSQL - Supabase)
-* **Thiết kế 5 bảng quan hệ chuẩn hóa**: Phân rã dữ liệu từ một bản ghi JSON duy nhất sang 5 bảng riêng biệt: `events`, `options`, `votes`, `comments`, và `guests` liên kết với nhau thông qua Khóa ngoại (Foreign Keys).
-* **Tích hợp cơ chế CASCADE**: Xóa một kèo (event) sẽ tự động kích hoạt **`ON DELETE CASCADE`** của cơ sở dữ liệu để tự động dọn sạch các dữ liệu con liên quan (options, votes, comments) trên Supabase một cách tối ưu.
-* **Tích hợp SDK chính thức `@supabase/supabase-js`**: Thay thế các API `fetch` thủ công, giúp mã nguồn tương tác DB trực quan hơn, có tính gợi ý code (IntelliSense) và mang lại tính an toàn kiểu dữ liệu tuyệt đối (Type-Safety).
+
+- **Thiết kế 5 bảng quan hệ chuẩn hóa**: Phân rã dữ liệu từ một bản ghi JSON duy nhất sang 5 bảng riêng biệt: `events`, `options`, `votes`, `comments`, và `guests` liên kết với nhau thông qua Khóa ngoại (Foreign Keys).
+- **Tích hợp cơ chế CASCADE**: Xóa một kèo (event) sẽ tự động kích hoạt **`ON DELETE CASCADE`** của cơ sở dữ liệu để tự động dọn sạch các dữ liệu con liên quan (options, votes, comments) trên Supabase một cách tối ưu.
+- **Tích hợp SDK chính thức `@supabase/supabase-js`**: Thay thế các API `fetch` thủ công, giúp mã nguồn tương tác DB trực quan hơn, có tính gợi ý code (IntelliSense) và mang lại tính an toàn kiểu dữ liệu tuyệt đối (Type-Safety).
 
 ### 5.2 Tái Cấu Trúc Backend Model Modular
+
 Chúng tôi đã chia tách file dồn nén ban đầu `server/index.ts` (~915 dòng) thành các Module chuyên nghiệp, phân tách rõ ràng nhiệm vụ (Separation of Concerns):
-* **`server/db/` (Lớp Cơ sở dữ liệu)**:
-  * `client.ts`: Khởi tạo và cấu hình Supabase Client SDK.
-  * `types.ts`: Định nghĩa tập trung các interfaces database.
-  * `store.ts`: Quản lý in-memory cache, Pin tokens và các hàm CRUD (Local + Cloud) trừu tượng.
-  * `migration.ts`: Script di cư dữ liệu thông minh.
-* **`server/routes/` (Lớp REST APIs)**:
-  * `auth.ts`: Xử lý APIs Google OAuth và Tài khoản khách.
-  * `events.ts`: Xử lý APIs danh sách kèo, tạo kèo, xác thực mã PIN và xóa kèo.
-* **`server/websocket/` (Lớp Real-time WebSockets)**:
-  * `server.ts`: Server WS và quản lý các kết nối khách hàng cùng hàm quảng bá (broadcast).
-  * `handlers.ts`: Xử lý các thông điệp thời gian thực (Vote, Option, Comment, Lock kèo).
+
+- **`server/db/` (Lớp Cơ sở dữ liệu)**:
+  - `client.ts`: Khởi tạo và cấu hình Supabase Client SDK.
+  - `types.ts`: Định nghĩa tập trung các interfaces database.
+  - `store.ts`: Quản lý in-memory cache, Pin tokens và các hàm CRUD (Local + Cloud) trừu tượng.
+  - `migration.ts`: Script di cư dữ liệu thông minh.
+- **`server/routes/` (Lớp REST APIs)**:
+  - `auth.ts`: Xử lý APIs Google OAuth và Tài khoản khách.
+  - `events.ts`: Xử lý APIs danh sách kèo, tạo kèo, xác thực mã PIN và xóa kèo.
+- **`server/websocket/` (Lớp Real-time WebSockets)**:
+  - `server.ts`: Server WS và quản lý các kết nối khách hàng cùng hàm quảng bá (broadcast).
+  - `handlers.ts`: Xử lý các thông điệp thời gian thực (Vote, Option, Comment, Lock kèo).
 
 ### 5.3 Kịch Bản Tự Động Di Cư Dữ Liệu (Zero Data Loss Migration)
-* Triển khai script tự động phát hiện dữ liệu cũ dạng JSON blob `main_db` từ bảng cũ `beer_voter_data` ngay khi khởi động server mới lần đầu tiên.
-* Server tự động bóc tách, ánh xạ kiểu dữ liệu sang cấu trúc Quan hệ PostgreSQL mới và chèn đồng loạt dữ liệu vào 5 bảng mới thành công, bảo toàn 100% dữ liệu cũ của bạn trên cloud.
+
+- Triển khai script tự động phát hiện dữ liệu cũ dạng JSON blob `main_db` từ bảng cũ `beer_voter_data` ngay khi khởi động server mới lần đầu tiên.
+- Server tự động bóc tách, ánh xạ kiểu dữ liệu sang cấu trúc Quan hệ PostgreSQL mới và chèn đồng loạt dữ liệu vào 5 bảng mới thành công, bảo toàn 100% dữ liệu cũ của bạn trên cloud.
 
 ---
 

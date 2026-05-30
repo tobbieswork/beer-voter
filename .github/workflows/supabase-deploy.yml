@@ -1,0 +1,28 @@
+name: Supabase CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'supabase/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Project & Deploy Migrations
+        run: |
+          supabase db push --password "${{ secrets.SUPABASE_DB_PASSWORD }}" --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
