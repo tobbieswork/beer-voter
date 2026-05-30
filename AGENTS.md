@@ -108,6 +108,7 @@ WS URL auto-detects dev vs production: port 5173 → `ws://localhost:3001`, othe
 - `tsconfig.json`: strict mode on, but `noUnusedLocals` and `noUnusedParameters` are `false`
 - `src/vite-env.d.ts` provides `import.meta.env` types — don't delete
 - Both `src/` and `server/` compile under the same tsconfig (bundler module resolution)
+- **Strict Any Type Rule**: Do NOT use `any` types in any backend or frontend TS files. Do NOT use `/* eslint-disable @typescript-eslint/no-explicit-any */` or similar comments to bypass compiler / linter rules. Always specify explicit type interfaces, even for row structures coming from database adapters.
 
 ## Code conventions
 
@@ -161,3 +162,5 @@ These are high-impact changes that would improve developer experience. Not all a
 6. **Add AI agent rules**: `opencode.json` present with reviewer agent. Could add more specialized agents or integrate with `.cursor/rules/`.
 
 7. ✅ **GitHub Actions CI**: `.github/workflows/ci.yml` added. Runs on push/PR to `main`: lint, typecheck, format check, build. Enable branch protection in GitHub settings to require CI passes.
+
+8. **Any Type Cleanliness**: Completed clean-up of `any` types in database, REST handlers, and Websocket event loops. Fully typed row mapping structures to ensure standard compliance.

@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef, KeyboardEvent, ClipboardEvent } from 'react';
 import { User } from '../types';
 
 const TITLE_PRESETS = [
@@ -42,9 +42,37 @@ export default function CreateEvent({
   const [dateOpts, setDateOpts] = useState<string[]>(['']);
   const [locOpts, setLocOpts] = useState<string[]>(['']);
   const [beerOpts, setBeerOpts] = useState<string[]>(['']);
-  const [partyPin, setPartyPin] = useState('');
+  const [pinDigits, setPinDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pinInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handlePinDigitChange = (index: number, value: string) => {
+    const clean = value.replace(/\D/g, '').slice(-1);
+    const next = [...pinDigits];
+    next[index] = clean;
+    setPinDigits(next);
+    setError('');
+    if (clean && index < 5) {
+      pinInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePinKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !pinDigits[index] && index > 0) {
+      pinInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePinPaste = (e: ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      setPinDigits(pasted.split(''));
+      pinInputRefs.current[5]?.focus();
+    }
+    e.preventDefault();
+  };
 
   if (!isOpen) return null;
 
@@ -163,8 +191,9 @@ export default function CreateEvent({
       return;
     }
 
-    if (partyPin && !/^\d{6}$/.test(partyPin)) {
-      setError('Mật khẩu phải là đúng 6 chữ số (để trống nếu không cần)!');
+    const partyPinVal = pinDigits.join('');
+    if (partyPinVal && !/^\d{6}$/.test(partyPinVal)) {
+      setError('Mật khẩu bảo vệ phải đúng 6 chữ số (hoặc để trống)!');
       return;
     }
 
@@ -200,7 +229,7 @@ export default function CreateEvent({
           dateOptions: filteredDates,
           locationOptions: filteredLocs,
           beerOptions: filteredBeers,
-          ...(partyPin ? { partyPin } : {}),
+          ...(partyPinVal.length === 6 ? { partyPin: partyPinVal } : {}),
         }),
       });
 
@@ -403,26 +432,37 @@ export default function CreateEvent({
 
           {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
           <div className="form-group mb-6">
-            <label htmlFor="party-pin">
-              🔐 Mật Khẩu Bảo Vệ Kèo <span className="font-normal text-muted">(tùy chọn)</span>
+            <label>
+              🔐 Mật Khẩu Bảo Vệ Kèo{' '}
+              <span className="font-normal text-muted">(tùy chọn - đúng 6 chữ số)</span>
             </label>
-            <input
-              type="text"
-              id="party-pin"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="Để trống nếu kèo công khai, hoặc nhập đúng 6 chữ số..."
-              value={partyPin}
-              onChange={(e) => setPartyPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              maxLength={6}
-            />
-            {partyPin && (
+            <div className="flex justify-start gap-2 mt-2">
+              {pinDigits.map((d, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    pinInputRefs.current[i] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={d}
+                  onChange={(e) => handlePinDigitChange(i, e.target.value)}
+                  onKeyDown={(e) => handlePinKeyDown(i, e)}
+                  onPaste={handlePinPaste}
+                  className="h-12 w-10 rounded-xl border border-glass bg-white/5 text-2xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
+                  aria-label={`Số thứ ${i + 1} của mật khẩu 6 số bảo vệ kèo`}
+                />
+              ))}
+            </div>
+            {pinDigits.some((d) => d !== '') && (
               <span
-                className={`block text-[0.75rem] pt-1 ${partyPin.length === 6 ? 'text-green' : 'text-muted'}`}
+                className={`block text-[0.75rem] pt-2 ${pinDigits.every((d) => d !== '') ? 'text-green' : 'text-muted'}`}
               >
-                {partyPin.length === 6
+                {pinDigits.every((d) => d !== '')
                   ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
-                  : `Còn thiếu ${6 - partyPin.length} chữ số`}
+                  : `Còn thiếu ${6 - pinDigits.filter((d) => d !== '').length} chữ số`}
               </span>
             )}
           </div>
