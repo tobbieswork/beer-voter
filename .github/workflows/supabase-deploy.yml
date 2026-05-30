@@ -21,8 +21,20 @@ jobs:
         with:
           version: latest
 
+      - name: Set Environment Variables
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_DB_PASSWORD_MAIN }}" >> $GITHUB_ENV
+            echo "PROJECT_REF=${{ secrets.SUPABASE_PROJECT_REF_MAIN }}" >> $GITHUB_ENV
+            echo "🚀 Đang chuẩn bị deploy lên môi trường PRODUCTION (Main)..."
+          else
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_DB_PASSWORD_DEV }}" >> $GITHUB_ENV
+            echo "PROJECT_REF=${{ secrets.SUPABASE_PROJECT_REF_DEV }}" >> $GITHUB_ENV
+            echo "🛠️ Đang chuẩn bị deploy lên môi trường DEVELOPMENT (Dev)..."
+          fi
+
       - name: Link Project & Deploy Migrations
         run: |
-          supabase db push --password "${{ secrets.SUPABASE_DB_PASSWORD }}" --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+          supabase db push --password "${{ env.DB_PASSWORD }}" --project-ref "${{ env.PROJECT_REF }}"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
