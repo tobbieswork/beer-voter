@@ -92,6 +92,7 @@ router.post('/', async (req: Request, res: Response) => {
     creatorRealName: creatorRealName || '',
     creatorUsername: creatorUsername || '',
     creatorToken,
+    partyPin: partyPin && /^\d{6}$/.test(String(partyPin)) ? String(partyPin) : undefined,
     partyPinHash: pinHash,
     status: 'voting',
     createdAt: new Date().toISOString(),
