@@ -81,16 +81,17 @@ Phù hợp khi bạn bè đang ở nhà riêng, ở xa và cần lên kế hoạ
    - Gửi link công cộng này cho bạn bè.
    - Bạn bè ở bất kỳ đâu trên thế giới chỉ cần click vào link là có thể truy cập sòng nhậu BeerVote trên điện thoại di động cá nhân và đồng bộ real-time 100%!
 
----
+## 📂 Cơ Cấu Dữ Liệu & Quản Trị Hệ Thống (Dual-Mode Database)
 
-## 📂 Cơ Cấu Dữ Liệu (`server/db.json`)
+Ứng dụng hỗ trợ cấu trúc dữ liệu chế độ kép vô cùng linh hoạt và mạnh mẽ:
 
-Dữ liệu sòng nhậu được lưu trữ tập trung trên đĩa dưới định dạng file JSON dễ quản lý:
+* **Chế độ Cloud (Production)**: Đồng bộ trực tiếp lên hệ cơ sở dữ liệu quan hệ **Supabase (PostgreSQL)** thông qua 5 bảng quan hệ chuẩn hóa: `events`, `options`, `votes`, `comments`, và `guests`.
+* **Chế độ Local (Development)**: Lưu trữ dự phòng tự động dưới dạng file JSON `server/db.json` giúp bạn lập trình ngoại tuyến (offline) dễ dàng không cần cài đặt.
+* **Hệ thống CI/CD Database**: Cấu hình tự động đồng bộ hóa cấu trúc bảng từ thư mục `supabase/migrations/` lên Cloud Supabase qua **GitHub Actions** cho 2 môi trường Dev và Main (Prod).
 
-- `events`: Thông tin kèo nhậu (Tên kèo, người tạo, trạng thái, lịch chốt).
-- `options`: Các đề xuất Ngày/Giờ, Địa điểm, Loại bia.
-- `votes`: Bình chọn của từng thành viên cho các lựa chọn.
-- `comments`: Phòng chat thảo luận náo nhiệt của anh em.
+> 📘 Để xem chi tiết cách cấu hình, gỡ lỗi và quy trình nâng cấp cấu trúc bảng tự động, vui lòng đọc các tài liệu sau:
+> * [Cẩm nang Vận hành & Thay đổi Database (docs/database_playbook.md)](./docs/database_playbook.md)
+> * [Hướng dẫn cấu hình CI/CD Database (docs/supabase_github_cd_guide.md)](./docs/supabase_github_cd_guide.md)
 
 ---
 
