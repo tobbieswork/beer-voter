@@ -552,50 +552,62 @@ export default function EventDetail({
             <h4 className="section-card-title text-[1rem] mb-3.5">⚙️ Bảng Điều Khiển Sòng Nhậu</h4>
 
             <div className="admin-action-box">
-              {currentUser && currentUser.id === eventData.creatorId ? (
-                <>
-                  {eventData.partyPin && (
-                    <div
-                      className="mb-4 flex items-center justify-between"
-                      style={{
-                        backgroundColor: 'rgba(255, 176, 0, 0.1)',
-                        border: '1px solid var(--accent-gold)',
-                        borderRadius: '12px',
-                        padding: '0.75rem 1rem',
-                      }}
-                    >
-                      <span className="text-[0.85rem] text-gold">🔐 PIN bảo vệ kèo:</span>
-                      <strong className="text-xl tracking-widest text-gold font-mono">
-                        {eventData.partyPin}
-                      </strong>
-                    </div>
-                  )}
-                  {status === 'voting' && (
-                    <button className="btn-lock" onClick={handleOpenLockModal}>
-                      🔒 Chốt Kèo Tới Bến
-                    </button>
-                  )}
-                  {status === 'locked' && (
-                    <button className="btn-secondary w-full mb-2" onClick={handleUnlock}>
-                      🔓 Mở Lại Bình Chọn
-                    </button>
-                  )}
-                  <button
-                    className="btn-outline-danger w-full"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    🗑️ Xóa Kèo Này
-                  </button>
-                </>
-              ) : status === 'voting' ? (
-                <div className="info-box-muted">
-                  🔒 Chỉ{' '}
-                  <strong>Chủ Kèo ({eventData.creatorNickname || eventData.creatorName})</strong>{' '}
-                  mới có quyền chốt kèo này.
-                </div>
-              ) : (
-                <div className="info-box-green">✅ Kèo nhậu này đã đóng băng bình chọn.</div>
-              )}
+              {(() => {
+                const isCreatorTokenMatched = !!localStorage.getItem(
+                  `beervote_creator_token_${eventId}`
+                );
+                const isCreatorIdMatched = currentUser && currentUser.id === eventData.creatorId;
+                const isCreator = isCreatorTokenMatched || isCreatorIdMatched;
+
+                if (isCreator) {
+                  return (
+                    <>
+                      {eventData.partyPin && (
+                        <div
+                          className="mb-4 flex items-center justify-between"
+                          style={{
+                            backgroundColor: 'rgba(255, 176, 0, 0.1)',
+                            border: '1px solid var(--accent-gold)',
+                            borderRadius: '12px',
+                            padding: '0.75rem 1rem',
+                          }}
+                        >
+                          <span className="text-[0.85rem] text-gold">🔐 PIN bảo vệ sòng:</span>
+                          <strong className="text-xl tracking-widest text-gold font-mono">
+                            {eventData.partyPin}
+                          </strong>
+                        </div>
+                      )}
+                      {status === 'voting' && (
+                        <button className="btn-lock" onClick={handleOpenLockModal}>
+                          🔒 Chốt Kèo Tới Bến
+                        </button>
+                      )}
+                      {status === 'locked' && (
+                        <button className="btn-secondary w-full mb-2" onClick={handleUnlock}>
+                          🔓 Mở Lại Bình Chọn
+                        </button>
+                      )}
+                      <button
+                        className="btn-outline-danger w-full"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        🗑️ Xóa Kèo Này
+                      </button>
+                    </>
+                  );
+                }
+
+                return status === 'voting' ? (
+                  <div className="info-box-muted">
+                    🔒 Chỉ{' '}
+                    <strong>Chủ Kèo ({eventData.creatorNickname || eventData.creatorName})</strong>{' '}
+                    mới có quyền chốt kèo này.
+                  </div>
+                ) : (
+                  <div className="info-box-green">✅ Kèo nhậu này đã đóng băng bình chọn.</div>
+                );
+              })()}
 
               {/* Hộp chia sẻ link */}
               <div className="share-link-box">
