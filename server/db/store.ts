@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -26,6 +25,72 @@ const PIN_TOKEN_TTL = 24 * 60 * 60 * 1000;
 
 // ================= BỘ CHUYỂN ĐỔI KIỂU DỮ LIỆU (Mappers) =================
 
+export interface RowEvent {
+  id: string;
+  title: string;
+  creator_id: string;
+  creator_name: string;
+  creator_nickname?: string | null;
+  creator_real_name?: string | null;
+  creator_username?: string | null;
+  creator_token?: string | null;
+  party_pin?: string | null;
+  party_pin_hash?: string | null;
+  status: string;
+  created_at: string;
+  locked_at?: string | null;
+  final_date_time?: string | null;
+  final_location?: string | null;
+  final_beer_style?: string | null;
+}
+
+export interface RowOption {
+  id: string;
+  event_id: string;
+  type: string;
+  value: string;
+  creator_id: string;
+  creator_name: string;
+  creator_nickname?: string | null;
+  creator_real_name?: string | null;
+  creator_username?: string | null;
+  created_at: string;
+}
+
+export interface RowVote {
+  id: string;
+  event_id: string;
+  option_id: string;
+  user_id: string;
+  user_name: string;
+  user_nickname?: string | null;
+  user_real_name?: string | null;
+  user_email?: string | null;
+  created_at: string;
+}
+
+export interface RowComment {
+  id: string;
+  event_id: string;
+  user_id: string;
+  user_name: string;
+  user_role?: string | null;
+  content: string;
+  user_nickname?: string | null;
+  user_real_name?: string | null;
+  user_email?: string | null;
+  created_at: string;
+}
+
+export interface RowGuest {
+  id: string;
+  username: string;
+  nickname: string;
+  real_name: string;
+  password_hash: string;
+  created_at: string;
+}
+
 export function toDbEvent(e: DBEvent) {
   return {
     id: e.id,
@@ -47,7 +112,7 @@ export function toDbEvent(e: DBEvent) {
   };
 }
 
-export function fromDbEvent(r: any): DBEvent {
+export function fromDbEvent(r: RowEvent): DBEvent {
   return {
     id: r.id,
     title: r.title,
@@ -83,7 +148,7 @@ export function toDbOption(o: DBOption) {
   };
 }
 
-export function fromDbOption(r: any): DBOption {
+export function fromDbOption(r: RowOption): DBOption {
   return {
     id: r.id,
     eventId: r.event_id,
@@ -112,7 +177,7 @@ export function toDbVote(v: DBVote) {
   };
 }
 
-export function fromDbVote(r: any): DBVote {
+export function fromDbVote(r: RowVote): DBVote {
   return {
     id: r.id,
     eventId: r.event_id,
@@ -141,7 +206,7 @@ export function toDbComment(c: DBComment) {
   };
 }
 
-export function fromDbComment(r: any): DBComment {
+export function fromDbComment(r: RowComment): DBComment {
   return {
     id: r.id,
     eventId: r.event_id,
@@ -167,7 +232,7 @@ export function toDbGuest(g: DBGuest) {
   };
 }
 
-export function fromDbGuest(r: any): DBGuest {
+export function fromDbGuest(r: RowGuest): DBGuest {
   return {
     id: r.id,
     username: r.username,
@@ -350,7 +415,7 @@ export async function updateEventStatus(
   });
 
   if (supabase) {
-    const updateData: any = {};
+    const updateData: Partial<RowEvent> = {};
     if (fields.status !== undefined) updateData.status = fields.status;
     if (fields.lockedAt !== undefined) updateData.locked_at = fields.lockedAt;
     if (fields.finalDateTime !== undefined) updateData.final_date_time = fields.finalDateTime;

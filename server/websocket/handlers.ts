@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import {
@@ -15,12 +14,36 @@ import { clients, broadcastEventUpdate, broadcastDashboardUpdate } from './serve
 
 const RATE_LIMIT_MS = 500;
 
-export async function handleWebSocketMessage(ws: WebSocket, action: any): Promise<void> {
+export interface WSAction {
+  type: string;
+  eventId?: string;
+  pinToken?: string;
+  creatorToken?: string;
+  optionId?: string;
+  userId?: string;
+  userName?: string;
+  creatorId?: string;
+  creatorName?: string;
+  userNickname?: string;
+  userRealName?: string;
+  userUsername?: string;
+  userEmail?: string;
+  optType?: 'datetime' | 'location' | 'beer';
+  value?: string;
+  userRole?: string;
+  content?: string;
+  finalDateTime?: string;
+  finalLocation?: string;
+  finalBeerStyle?: string;
+}
+
+export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): Promise<void> {
   const clientInfo = clients.get(ws);
   if (!clientInfo) return;
 
   switch (action.type) {
     case 'JOIN_EVENT': {
+      if (!action.eventId) break;
       const event_join = readDB().events.find((e) => e.id === action.eventId);
       if (event_join && event_join.partyPinHash) {
         const isCreator = action.creatorToken && action.creatorToken === event_join.creatorToken;
@@ -50,7 +73,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
         userEmail,
         pinToken,
       } = action;
-      if (!eventId || !optionId || !userId) break;
+      if (!eventId || !optionId || !userId || !userName) break;
       const voteEvent = readDB().events.find((e) => e.id === eventId);
       const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
       if (!isPinAuthorized(voteEvent, effectiveToken)) break;
@@ -103,10 +126,13 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
       } = action;
       if (
         !eventId ||
+        !optType ||
         !value ||
         typeof value !== 'string' ||
         value.trim().length === 0 ||
-        value.trim().length > 200
+        value.trim().length > 200 ||
+        !creatorId ||
+        !creatorName
       )
         break;
       const addOptEvent = readDB().events.find((e) => e.id === eventId);
@@ -165,17 +191,19 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
         userEmail,
         pinToken,
       } = action;
-      const commentEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(commentEvent, effectiveToken)) break;
       if (
         !eventId ||
+        !userId ||
+        !userName ||
         !content ||
         typeof content !== 'string' ||
         content.trim().length === 0 ||
         content.trim().length > 500
       )
         break;
+      const commentEvent = readDB().events.find((e) => e.id === eventId);
+      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
+      if (!isPinAuthorized(commentEvent, effectiveToken)) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -186,7 +214,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
         eventId,
         userId,
         userName,
-        userRole,
+        userRole: userRole || '',
         content: content.trim(),
         userNickname: userNickname || userName,
         userRealName: userRealName || '',
@@ -209,6 +237,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
         finalBeerStyle,
         pinToken,
       } = action;
+      if (!eventId || !finalDateTime || !finalLocation || !finalBeerStyle) break;
       const lockEvent = readDB().events.find((e) => e.id === eventId);
       const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
       if (!isPinAuthorized(lockEvent, effectiveToken)) break;
@@ -246,6 +275,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: any): Promis
 
     case 'UNLOCK_EVENT': {
       const { eventId, userId, creatorToken, pinToken } = action;
+      if (!eventId) break;
       const unlockEvent = readDB().events.find((e) => e.id === eventId);
       const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
       if (!isPinAuthorized(unlockEvent, effectiveToken)) break;

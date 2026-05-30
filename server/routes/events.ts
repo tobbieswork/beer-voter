@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import {
@@ -51,7 +50,7 @@ router.get('/:id', (req: Request, res: Response) => {
 
   const eventDetail = getEventDetail(db, id);
   if (eventDetail && isCreator) {
-    (eventDetail as any).partyPin = event.partyPin;
+    eventDetail.partyPin = event.partyPin;
   }
   res.json(eventDetail);
 });
