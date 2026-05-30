@@ -35,6 +35,7 @@ jobs:
 
       - name: Link Project & Deploy Migrations
         run: |
-          supabase db push --password "${{ env.DB_PASSWORD }}" --project-ref "${{ env.PROJECT_REF }}"
+          supabase link --project-ref "${{ env.PROJECT_REF }}" --password "${{ env.DB_PASSWORD }}"
+          supabase db push --password "${{ env.DB_PASSWORD }}"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
