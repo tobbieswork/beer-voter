@@ -33,6 +33,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API kiểm tra tình trạng server (ping)
 app.get('/api/ping', (_req: Request, res: Response) => {

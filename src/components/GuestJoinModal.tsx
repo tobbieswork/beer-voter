@@ -234,6 +234,8 @@ export default function GuestJoinModal({
                       'Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!'
                     )
                   }
+                  ux_mode="redirect"
+                  login_uri={`${window.location.origin}/api/auth/google/callback`}
                   text="continue_with"
                   shape="rectangular"
                   theme="filled_black"
