@@ -689,6 +689,7 @@ export default function App() {
         currentUser={currentUser}
         onGoHome={() => navigateToEvent(null)}
         onSignOut={currentUser ? handleSignOut : undefined}
+        onSignIn={() => setIsJoinModalOpen(true)}
       />
 
       {toastMsg && <div className="toast-msg">{toastMsg}</div>}
