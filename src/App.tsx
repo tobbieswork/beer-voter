@@ -64,6 +64,7 @@ function getInitialUser(): User | null {
   const username = localStorage.getItem('beervote_user_username');
   const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
   const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
+  const googleToken = localStorage.getItem('beervote_user_google_token') || undefined;
   const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as
     | 'google'
     | 'guest';
@@ -77,6 +78,7 @@ function getInitialUser(): User | null {
       avatar,
       googleId,
       authMethod,
+      googleToken,
     };
   }
   return null;
@@ -91,6 +93,8 @@ function saveUserToStorage(user: User) {
   else localStorage.removeItem('beervote_user_avatar');
   if (user.googleId) localStorage.setItem('beervote_user_google_id', user.googleId);
   else localStorage.removeItem('beervote_user_google_id');
+  if (user.googleToken) localStorage.setItem('beervote_user_google_token', user.googleToken);
+  else localStorage.removeItem('beervote_user_google_token');
   localStorage.setItem('beervote_user_auth_method', user.authMethod || 'guest');
 }
 
@@ -103,6 +107,7 @@ function clearUserFromStorage() {
     'beervote_user_avatar',
     'beervote_user_google_id',
     'beervote_user_auth_method',
+    'beervote_user_google_token',
   ].forEach((k) => localStorage.removeItem(k));
 }
 
