@@ -239,6 +239,25 @@ export default function App() {
         if (response.ok) {
           const data = await response.json();
           setCurrentEventData(data);
+          // If we are verified as creator via userId/Google on another device, send JOIN_EVENT now that data is loaded
+          const isCreator = !!creatorToken || (currentUser && currentUser.id === data.creatorId);
+          if (
+            isCreator &&
+            !creatorToken &&
+            wsRef.current &&
+            wsRef.current.readyState === WebSocket.OPEN
+          ) {
+            wsRef.current.send(
+              JSON.stringify({
+                type: 'JOIN_EVENT',
+                eventId: id,
+                pinToken,
+                creatorToken,
+                userId: currentUser?.id,
+                googleToken: currentUser?.googleToken,
+              })
+            );
+          }
         } else if (response.status === 403) {
           clearPinToken(id);
           setShowPinModal(true);
@@ -273,9 +292,7 @@ export default function App() {
       fetchEventDetail(currentEventId);
       // Only send JOIN_EVENT immediately if we already have a valid PIN token or are the creator.
       // Otherwise, defer to PIN gating effect or ws.onopen handler.
-      const isCreator =
-        !!creatorToken ||
-        (currentUser && currentEventData && currentUser.id === currentEventData.creatorId);
+      const isCreator = !!creatorToken;
       if ((pinToken || isCreator) && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
           JSON.stringify({
@@ -297,7 +314,7 @@ export default function App() {
         wsRef.current.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
       }
     }
-  }, [currentEventId, fetchEventDetail, fetchEvents, currentUser, currentEventData]);
+  }, [currentEventId, fetchEventDetail, fetchEvents, currentUser]);
 
   // PIN gating: show PIN modal if event is protected and token not present
   useEffect(() => {
