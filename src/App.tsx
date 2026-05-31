@@ -253,6 +253,19 @@ export default function App() {
   // Tải dữ liệu khi chuyển trang
   useEffect(() => {
     if (currentEventId) {
+      // Check for creatorToken query parameter to securely sync creator status
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCreatorToken = urlParams.get('creatorToken');
+      if (urlCreatorToken) {
+        localStorage.setItem(`beervote_creator_token_${currentEventId}`, urlCreatorToken);
+        // Clean URL to keep it secure
+        urlParams.delete('creatorToken');
+        const newSearch = urlParams.toString();
+        const newPath =
+          window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+        window.history.replaceState(null, '', newPath);
+      }
+
       addVisitedEvent(currentEventId);
       setVisitedEventIds(getVisitedEvents());
       const pinToken = getPinToken(currentEventId);
