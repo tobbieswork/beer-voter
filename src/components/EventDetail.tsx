@@ -99,13 +99,18 @@ export default function EventDetail({
   const [finalBeerStyle, setFinalBeerStyle] = useState('');
 
   const commentsEndRef = useRef<HTMLDivElement | null>(null);
+  const commentsLength = eventData?.comments?.length || 0;
+  const prevCommentsLengthRef = useRef(commentsLength);
 
-  // Cuộn xuống cuối khi có comment mới
+  // Cuộn xuống cuối khi có comment mới thực sự được thêm vào
   useEffect(() => {
-    if (commentsEndRef.current) {
-      commentsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (commentsLength > prevCommentsLengthRef.current) {
+      if (commentsEndRef.current) {
+        commentsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  }, [eventData?.comments]);
+    prevCommentsLengthRef.current = commentsLength;
+  }, [commentsLength]);
 
   if (!eventData) {
     return (
