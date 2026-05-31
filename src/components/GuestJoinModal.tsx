@@ -28,6 +28,7 @@ interface GuestJoinModalProps {
     name: string;
     given_name: string;
     picture: string;
+    credential: string;
   }) => void;
   usedNicknames?: string[];
 }
@@ -72,6 +73,7 @@ export default function GuestJoinModal({
         name: data.name,
         given_name: data.given_name,
         picture: data.picture,
+        credential: response.credential,
       });
     } catch {
       // Fallback: decode JWT client-side if server not configured
@@ -84,6 +86,7 @@ export default function GuestJoinModal({
           name: payload.name || '',
           given_name: payload.given_name || '',
           picture: payload.picture || '',
+          credential: response.credential,
         });
       } catch {
         setGoogleError(

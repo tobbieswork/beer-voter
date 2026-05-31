@@ -217,29 +217,38 @@ export default function App() {
     }
   }, []);
 
-  const fetchEventDetail = useCallback(async (id: string) => {
-    try {
-      const pinToken = getPinToken(id);
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${id}`);
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (pinToken) {
-        headers['X-Pin-Token'] = pinToken;
+  const fetchEventDetail = useCallback(
+    async (id: string) => {
+      try {
+        const pinToken = getPinToken(id);
+        const creatorToken = localStorage.getItem(`beervote_creator_token_${id}`);
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (pinToken) {
+          headers['X-Pin-Token'] = pinToken;
+        }
+        if (creatorToken) {
+          headers['X-Creator-Token'] = creatorToken;
+        }
+        if (currentUser?.id) {
+          headers['X-User-Id'] = currentUser.id;
+        }
+        if (currentUser?.googleToken) {
+          headers['X-Google-Token'] = currentUser.googleToken;
+        }
+        const response = await fetch(`/api/events/${id}`, { headers });
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentEventData(data);
+        } else if (response.status === 403) {
+          clearPinToken(id);
+          setShowPinModal(true);
+        }
+      } catch (error) {
+        console.error(`Không thể gọi API lấy chi tiết kèo ${id}:`, error);
       }
-      if (creatorToken) {
-        headers['X-Creator-Token'] = creatorToken;
-      }
-      const response = await fetch(`/api/events/${id}`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentEventData(data);
-      } else if (response.status === 403) {
-        clearPinToken(id);
-        setShowPinModal(true);
-      }
-    } catch (error) {
-      console.error(`Không thể gọi API lấy chi tiết kèo ${id}:`, error);
-    }
-  }, []);
+    },
+    [currentUser]
+  );
 
   // Tải dữ liệu khi chuyển trang
   useEffect(() => {
@@ -251,10 +260,19 @@ export default function App() {
       fetchEventDetail(currentEventId);
       // Only send JOIN_EVENT immediately if we already have a valid PIN token or are the creator.
       // Otherwise, defer to PIN gating effect or ws.onopen handler.
-      const isCreator = !!creatorToken;
+      const isCreator =
+        !!creatorToken ||
+        (currentUser && currentEventData && currentUser.id === currentEventData.creatorId);
       if ((pinToken || isCreator) && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
-          JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken, creatorToken })
+          JSON.stringify({
+            type: 'JOIN_EVENT',
+            eventId: currentEventId,
+            pinToken,
+            creatorToken,
+            userId: currentUser?.id,
+            googleToken: currentUser?.googleToken,
+          })
         );
       }
     } else {
@@ -266,7 +284,7 @@ export default function App() {
         wsRef.current.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
       }
     }
-  }, [currentEventId, fetchEventDetail, fetchEvents]);
+  }, [currentEventId, fetchEventDetail, fetchEvents, currentUser, currentEventData]);
 
   // PIN gating: show PIN modal if event is protected and token not present
   useEffect(() => {
@@ -275,13 +293,17 @@ export default function App() {
       return;
     }
     if (currentEventData.hasPin) {
-      const isCreator = !!localStorage.getItem(`beervote_creator_token_${currentEventId}`);
+      const isCreatorTokenMatched = !!localStorage.getItem(
+        `beervote_creator_token_${currentEventId}`
+      );
+      const isCreatorIdMatched = currentUser && currentUser.id === currentEventData.creatorId;
+      const isCreator = isCreatorTokenMatched || isCreatorIdMatched;
       const token = getPinToken(currentEventId);
       setShowPinModal(!token && !isCreator);
     } else {
       setShowPinModal(false);
     }
-  }, [currentEventId, currentEventData]);
+  }, [currentEventId, currentEventData, currentUser]);
 
   // 3. Thiết lập Kết nối WebSockets Real-time
   const connectWebSocket = useCallback(() => {
@@ -314,6 +336,8 @@ export default function App() {
             eventId: currentEventId,
             pinToken: getPinToken(currentEventId),
             creatorToken: localStorage.getItem(`beervote_creator_token_${currentEventId}`),
+            userId: currentUser?.id,
+            googleToken: currentUser?.googleToken,
           })
         );
       } else {
@@ -359,7 +383,7 @@ export default function App() {
       console.error('Lỗi kết nối WebSocket:', err);
       ws.close();
     };
-  }, [currentEventId, navigateToEvent]);
+  }, [currentEventId, navigateToEvent, currentUser?.id, currentUser?.googleToken]);
 
   useEffect(() => {
     connectWsRef.current = connectWebSocket;
@@ -463,6 +487,7 @@ export default function App() {
           userId: currentUser.id,
           creatorToken,
           pinToken: getPinToken(lockData.eventId) || '',
+          googleToken: currentUser.googleToken,
         })
       );
     }
@@ -479,6 +504,7 @@ export default function App() {
           userId: currentUser.id,
           creatorToken,
           pinToken: getPinToken(eventId) || '',
+          googleToken: currentUser.googleToken,
         })
       );
     }
@@ -491,7 +517,11 @@ export default function App() {
       const res = await fetch(`/api/events/${eventId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creatorToken, userId: currentUser.id }),
+        body: JSON.stringify({
+          creatorToken,
+          userId: currentUser.id,
+          googleToken: currentUser.googleToken,
+        }),
       });
       if (res.ok) {
         navigateToEvent(null);
@@ -549,12 +579,14 @@ export default function App() {
     name,
     given_name,
     picture,
+    credential,
   }: {
     sub: string;
     email: string;
     name: string;
     given_name: string;
     picture: string;
+    credential: string;
   }) => {
     const displayName = given_name || name || email;
     const realName = name || given_name || '';
@@ -568,6 +600,7 @@ export default function App() {
       avatar: picture,
       googleId: sub,
       authMethod: 'google',
+      googleToken: credential,
     };
     saveUserToStorage(user);
     setCurrentUser(user);
@@ -644,7 +677,13 @@ export default function App() {
               // Send JOIN_EVENT with pinToken now that we have it
               if (wsRef.current?.readyState === WebSocket.OPEN) {
                 wsRef.current.send(
-                  JSON.stringify({ type: 'JOIN_EVENT', eventId: currentEventId, pinToken })
+                  JSON.stringify({
+                    type: 'JOIN_EVENT',
+                    eventId: currentEventId,
+                    pinToken,
+                    userId: currentUser?.id,
+                    googleToken: currentUser?.googleToken,
+                  })
                 );
               }
             }}
