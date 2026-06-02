@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
+import QRCode from 'qrcode';
 import Countdown from './Countdown';
 import { formatVietnameseDateTime } from '../utils/date';
 import {
@@ -92,6 +93,17 @@ export default function EventDetail({
   const [showPartyPin, setShowPartyPin] = useState(false);
   const [showSyncSection, setShowSyncSection] = useState(false);
   const [copiedSync, setCopiedSync] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`);
+    if (showSyncSection && creatorToken) {
+      const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
+      QRCode.toDataURL(syncUrl, { width: 180, margin: 1 })
+        .then((url) => setQrDataUrl(url))
+        .catch((err) => console.error('Lỗi tạo mã QR:', err));
+    }
+  }, [showSyncSection, eventId]);
 
   // State phục vụ modal chốt kèo của Admin
   const [finalDateTime, setFinalDateTime] = useState('');
@@ -564,8 +576,12 @@ export default function EventDetail({
                 const isCreatorTokenMatched = !!localStorage.getItem(
                   `beervote_creator_token_${eventId}`
                 );
-                const isCreatorIdMatched = currentUser && currentUser.id === eventData.creatorId;
-                const isCreator = isCreatorTokenMatched || isCreatorIdMatched;
+                const isGoogleCreatorMatched =
+                  currentUser &&
+                  currentUser.authMethod === 'google' &&
+                  currentUser.googleId &&
+                  `google_${currentUser.googleId}` === eventData.creatorId;
+                const isCreator = isCreatorTokenMatched || isGoogleCreatorMatched;
 
                 if (isCreator) {
                   return (
@@ -640,7 +656,6 @@ export default function EventDetail({
                                 `beervote_creator_token_${eventId}`
                               );
                               const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
-                              const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(syncUrl)}`;
 
                               const handleCopyLink = () => {
                                 navigator.clipboard.writeText(syncUrl);
@@ -664,13 +679,19 @@ export default function EventDetail({
                                     className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
                                     style={{ maxWidth: '196px' }}
                                   >
-                                    <img
-                                      src={qrImageUrl}
-                                      alt="QR Đồng Bộ"
-                                      width={180}
-                                      height={180}
-                                      style={{ display: 'block' }}
-                                    />
+                                    {qrDataUrl ? (
+                                      <img
+                                        src={qrDataUrl}
+                                        alt="QR Đồng Bộ"
+                                        width={180}
+                                        height={180}
+                                        style={{ display: 'block' }}
+                                      />
+                                    ) : (
+                                      <div className="text-secondary text-xs p-4">
+                                        Đang tạo mã QR...
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <input

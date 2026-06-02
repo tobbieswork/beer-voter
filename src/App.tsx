@@ -169,53 +169,46 @@ export default function App() {
 
     const googleLogin = params.get('googleLogin');
     if (googleLogin === 'true') {
-      try {
-        const sub = params.get('sub') || '';
-        const email = params.get('email') || '';
-        const name = params.get('name') || '';
-        const given_name = params.get('given_name') || '';
-        const picture = params.get('picture') || '';
-        const credential = params.get('credential') || '';
+      fetch('/api/auth/session')
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch session');
+          return res.json();
+        })
+        .then((data) => {
+          const { sub, email, name, given_name, picture, credential } = data;
+          if (sub && credential) {
+            const displayName = given_name || name || email;
+            const realName = name || given_name || '';
+            const user: User = {
+              id: 'google_' + sub,
+              nickname: displayName,
+              realName,
+              username: email,
+              name: realName ? `${displayName} (${realName})` : displayName,
+              email,
+              avatar: picture,
+              googleId: sub,
+              authMethod: 'google',
+              googleToken: credential,
+            };
+            saveUserToStorage(user);
+            setCurrentUser(user);
 
-        if (sub && credential) {
-          const displayName = given_name || name || email;
-          const realName = name || given_name || '';
-          const user: User = {
-            id: 'google_' + sub,
-            nickname: displayName,
-            realName,
-            username: email,
-            name: realName ? `${displayName} (${realName})` : displayName,
-            email,
-            avatar: picture,
-            googleId: sub,
-            authMethod: 'google',
-            googleToken: credential,
-          };
-          saveUserToStorage(user);
-          setCurrentUser(user);
+            // Clean the query parameters
+            params.delete('googleLogin');
+            const cleanSearch = params.toString();
+            const newUrl = cleanSearch
+              ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
+              : `${window.location.origin}${window.location.pathname}`;
 
-          // Clean the query parameters
-          params.delete('googleLogin');
-          params.delete('sub');
-          params.delete('email');
-          params.delete('name');
-          params.delete('given_name');
-          params.delete('picture');
-          params.delete('credential');
-
-          const cleanSearch = params.toString();
-          const newUrl = cleanSearch
-            ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
-            : `${window.location.origin}${window.location.pathname}`;
-
-          window.history.replaceState({}, '', newUrl);
-          showToast('🍻 Đăng nhập Google thành công!');
-          setIsJoinModalOpen(false);
-        }
-      } catch (err) {
-        console.error('Lỗi xử lý Google redirect callback:', err);
-      }
+            window.history.replaceState({}, '', newUrl);
+            showToast('🍻 Đăng nhập Google thành công!');
+            setIsJoinModalOpen(false);
+          }
+        })
+        .catch((err) => {
+          console.error('Lỗi xử lý Google redirect callback:', err);
+        });
     }
   }, [showToast]);
 

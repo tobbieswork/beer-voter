@@ -29,13 +29,13 @@ Below are the most high-frequency commands categorized by task.
 
 Instead of manually pushing a branch, going to github.com, and clicking buttons to open a PR, you can do it all in one or two commands:
 
-| Command | Action | Useful Flags |
-| :--- | :--- | :--- |
-| `gh pr create` | Creates a Pull Request from your current branch | `--web` (opens browser), `--fill` (auto-uses commits for title/body), `--draft` |
-| `gh pr status` | Shows status of PRs relevant to you | None |
-| `gh pr list` | Lists open PRs in the repository | `--author "<username>"`, `--state open/closed` |
-| `gh pr checkout <pr-number>` | Checks out a pull request locally | None |
-| `gh pr merge <pr-number>` | Merges a pull request | `--merge`, `--squash`, `--rebase`, `--delete-branch` |
+| Command                      | Action                                          | Useful Flags                                                                    |
+| :--------------------------- | :---------------------------------------------- | :------------------------------------------------------------------------------ |
+| `gh pr create`               | Creates a Pull Request from your current branch | `--web` (opens browser), `--fill` (auto-uses commits for title/body), `--draft` |
+| `gh pr status`               | Shows status of PRs relevant to you             | None                                                                            |
+| `gh pr list`                 | Lists open PRs in the repository                | `--author "<username>"`, `--state open/closed`                                  |
+| `gh pr checkout <pr-number>` | Checks out a pull request locally               | None                                                                            |
+| `gh pr merge <pr-number>`    | Merges a pull request                           | `--merge`, `--squash`, `--rebase`, `--delete-branch`                            |
 
 ### 🐛 Issue Management
 
@@ -74,6 +74,7 @@ gh workflow run deploy.yml --ref main
 You can write simple shell scripts to automate sequential operations. Here are two highly useful automation templates.
 
 ### Template A: The "One-Key PR" Script (`git-pr.sh`)
+
 This script formats, lints, typechecks, stages, commits, pushes, and creates a GitHub pull request automatically.
 
 ```bash
@@ -114,6 +115,7 @@ echo "✅ Done!"
 ```
 
 ### Template B: Automatic Hotfix / Fast-Merge Script (`git-hotfix.sh`)
+
 For small changes or fixes, this script commits, pushes, creates a PR, and immediately merges it once status checks pass.
 
 ```bash

@@ -21,6 +21,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "google-auth-library": "^10.6.2",
+    "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "ws": "^8.17.0"
@@ -30,6 +31,7 @@
     "@tailwindcss/postcss": "^4.3.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/ws": "^8.5.10",
