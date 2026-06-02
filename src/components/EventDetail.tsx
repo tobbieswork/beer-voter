@@ -90,6 +90,8 @@ export default function EventDetail({
   const [isDeleting, setIsDeleting] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [showPartyPin, setShowPartyPin] = useState(false);
+  const [showSyncSection, setShowSyncSection] = useState(false);
+  const [copiedSync, setCopiedSync] = useState(false);
 
   // State phục vụ modal chốt kèo của Admin
   const [finalDateTime, setFinalDateTime] = useState('');
@@ -97,13 +99,18 @@ export default function EventDetail({
   const [finalBeerStyle, setFinalBeerStyle] = useState('');
 
   const commentsEndRef = useRef<HTMLDivElement | null>(null);
+  const commentsLength = eventData?.comments?.length || 0;
+  const prevCommentsLengthRef = useRef(commentsLength);
 
-  // Cuộn xuống cuối khi có comment mới
+  // Cuộn xuống cuối khi có comment mới thực sự được thêm vào
   useEffect(() => {
-    if (commentsEndRef.current) {
-      commentsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (commentsLength > prevCommentsLengthRef.current) {
+      if (commentsEndRef.current) {
+        commentsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  }, [eventData?.comments]);
+    prevCommentsLengthRef.current = commentsLength;
+  }, [commentsLength]);
 
   if (!eventData) {
     return (
@@ -608,6 +615,88 @@ export default function EventDetail({
                         <button className="btn-secondary w-full mb-2" onClick={handleUnlock}>
                           🔓 Mở Lại Bình Chọn
                         </button>
+                      )}
+                      {isCreatorTokenMatched && (
+                        <div className="mt-3.5 mb-2.5">
+                          <button
+                            type="button"
+                            className="btn-secondary w-full"
+                            style={{
+                              backgroundColor: 'rgba(255, 176, 0, 0.05)',
+                              border: '1px solid rgba(255, 176, 0, 0.3)',
+                              color: 'var(--accent-gold)',
+                            }}
+                            onClick={() => setShowSyncSection(!showSyncSection)}
+                          >
+                            🔗{' '}
+                            {showSyncSection
+                              ? 'Ẩn Mã Đồng Bộ Thiết Bị'
+                              : 'Đồng Bộ Thiết Bị Khác (QR)'}
+                          </button>
+
+                          {showSyncSection &&
+                            (() => {
+                              const creatorToken = localStorage.getItem(
+                                `beervote_creator_token_${eventId}`
+                              );
+                              const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
+                              const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(syncUrl)}`;
+
+                              const handleCopyLink = () => {
+                                navigator.clipboard.writeText(syncUrl);
+                                setCopiedSync(true);
+                                setTimeout(() => setCopiedSync(false), 2000);
+                              };
+
+                              return (
+                                <div
+                                  className="mt-3 p-4 text-center rounded-[12px]"
+                                  style={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                                    border: '1px dashed rgba(255, 176, 0, 0.2)',
+                                  }}
+                                >
+                                  <p className="text-[0.8rem] text-text-muted mb-3 leading-relaxed">
+                                    Quét mã QR bằng điện thoại hoặc sao chép liên kết này mở ở thiết
+                                    bị khác để cấp quyền Chủ Kèo mà không cần đăng nhập:
+                                  </p>
+                                  <div
+                                    className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
+                                    style={{ maxWidth: '196px' }}
+                                  >
+                                    <img
+                                      src={qrImageUrl}
+                                      alt="QR Đồng Bộ"
+                                      width={180}
+                                      height={180}
+                                      style={{ display: 'block' }}
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      value={syncUrl}
+                                      className="form-control text-xs font-mono py-1.5 opacity-80"
+                                      style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                        color: 'var(--text-main)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                      }}
+                                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={handleCopyLink}
+                                      className="btn-success text-xs py-1.5 px-3 whitespace-nowrap"
+                                    >
+                                      {copiedSync ? 'Đã chép! ✓' : 'Sao chép'}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                        </div>
                       )}
                       <button
                         className="btn-outline-danger w-full"

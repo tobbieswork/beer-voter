@@ -3,9 +3,42 @@ import { Router, Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { readDB, insertGuest, hashPin } from '../db/store.js';
 import { DBGuest } from '../db/types.js';
+import { verifyGoogleToken } from '../utils/auth.js';
 
 const router = Router();
 const googleOAuthClient = new OAuth2Client();
+
+// Google OAuth Redirect Callback
+router.post('/google/callback', async (req: Request, res: Response) => {
+  const { credential } = req.body;
+  if (!credential) {
+    return res.status(400).send('Không nhận được thông tin xác thực Google.');
+  }
+
+  const googleSub = await verifyGoogleToken(credential);
+  if (!googleSub) {
+    return res.status(401).send('Xác thực token Google thất bại.');
+  }
+
+  try {
+    const parts = credential.split('.');
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+
+    const redirectUrl =
+      `/?googleLogin=true` +
+      `&sub=${encodeURIComponent(payload.sub)}` +
+      `&email=${encodeURIComponent(payload.email || '')}` +
+      `&name=${encodeURIComponent(payload.name || '')}` +
+      `&given_name=${encodeURIComponent(payload.given_name || '')}` +
+      `&picture=${encodeURIComponent(payload.picture || '')}` +
+      `&credential=${encodeURIComponent(credential)}`;
+
+    res.redirect(redirectUrl);
+  } catch (err) {
+    console.error('Lỗi phân tích JWT trong Google redirect callback:', err);
+    res.status(500).send('Lỗi máy chủ khi xử lý đăng nhập Google.');
+  }
+});
 
 // Google OAuth Login
 router.post('/google', async (req: Request, res: Response) => {

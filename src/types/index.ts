@@ -9,6 +9,7 @@ export interface User {
   avatar?: string;
   googleId?: string;
   authMethod?: 'google' | 'guest';
+  googleToken?: string;
 }
 
 export interface EventOption {

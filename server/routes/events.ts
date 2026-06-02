@@ -14,6 +14,7 @@ import {
 import { DBEvent, DBOption } from '../db/types.js';
 import { supabase } from '../db/client.js';
 import { broadcastEventDeleted, broadcastDashboardUpdate } from '../websocket/server.js';
+import { verifyGoogleToken } from '../utils/auth.js';
 
 const router = Router();
 
@@ -35,15 +36,27 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 // Lấy chi tiết kèo nhậu (Event detail)
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const pinToken = req.headers['x-pin-token'] as string | undefined;
   const creatorToken = req.headers['x-creator-token'] as string | undefined;
+  const userId = req.headers['x-user-id'] as string | undefined;
+  const googleToken = req.headers['x-google-token'] as string | undefined;
   const db = readDB();
   const event = db.events.find((e) => e.id === id);
   if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
 
-  const isCreator = creatorToken && creatorToken === event.creatorToken;
+  let isCreator = !!(creatorToken && creatorToken === event.creatorToken);
+
+  if (!isCreator && googleToken && userId && userId === event.creatorId) {
+    if (userId.startsWith('google_')) {
+      const googleSub = await verifyGoogleToken(googleToken);
+      if (googleSub && `google_${googleSub}` === event.creatorId) {
+        isCreator = true;
+      }
+    }
+  }
+
   if (!isCreator && !isPinAuthorized(event, pinToken)) {
     return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
   }
@@ -160,16 +173,23 @@ router.post('/:id/verify-pin', (req: Request, res: Response) => {
 // Xóa kèo nhậu
 router.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { creatorToken, userId } = req.body;
+  const { creatorToken, userId, googleToken } = req.body;
 
   const db = readDB();
   const eventIndex = db.events.findIndex((e) => e.id === id);
   if (eventIndex === -1) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
 
   const event = db.events[eventIndex];
-  const authorized = event.creatorToken
-    ? event.creatorToken === creatorToken
-    : event.creatorId === userId;
+  let authorized = !!(event.creatorToken && event.creatorToken === creatorToken);
+
+  if (!authorized && googleToken && userId && userId === event.creatorId) {
+    if (userId.startsWith('google_')) {
+      const googleSub = await verifyGoogleToken(googleToken);
+      if (googleSub && `google_${googleSub}` === event.creatorId) {
+        authorized = true;
+      }
+    }
+  }
 
   if (!authorized) return res.status(403).json({ message: 'Bạn không có quyền xóa kèo nhậu này!' });
 

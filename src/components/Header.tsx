@@ -5,9 +5,10 @@ interface HeaderProps {
   currentUser: User | null;
   onGoHome: () => void;
   onSignOut?: () => void;
+  onSignIn?: () => void;
 }
 
-export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps) {
+export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: HeaderProps) {
   const [showQrModal, setShowQrModal] = useState(false);
 
   return (
@@ -23,6 +24,20 @@ export default function Header({ currentUser, onGoHome, onSignOut }: HeaderProps
           BeerVote
         </span>
       </button>
+
+      {!currentUser && onSignIn && (
+        <button
+          type="button"
+          onClick={onSignIn}
+          className="btn-primary px-4 py-1.5 text-xs sm:text-sm rounded-full"
+          style={{
+            minWidth: 'auto',
+            width: 'auto',
+          }}
+        >
+          🔑 Đăng Nhập
+        </button>
+      )}
 
       {currentUser && (
         <div className="flex items-center gap-2 rounded-full border border-glass bg-white/5 px-2 py-1 sm:px-4 sm:py-2 max-[360px]:px-1 max-[360px]:py-0.5 max-[640px]:min-w-0 max-[640px]:flex-1">
