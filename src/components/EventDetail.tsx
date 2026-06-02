@@ -905,28 +905,30 @@ export default function EventDetail({
       {showDeleteConfirm && (
         <div className="modal-overlay">
           <div className="modal-pub max-w-[420px]">
-            <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
-            <p className="modal-desc">
-              Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
-              chat chit sẽ bị xóa vĩnh viễn!
-            </p>
-            <div className="form-actions-modal">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
-                Hủy Bỏ
-              </button>
-              <button
-                type="button"
-                className="btn-danger"
-                onClick={handleDeleteConfirmed}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
-              </button>
+            <div className="modal-pub-body">
+              <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
+              <p className="modal-desc">
+                Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
+                chat chit sẽ bị xóa vĩnh viễn!
+              </p>
+              <div className="form-actions-modal">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleDeleteConfirmed}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -936,64 +938,66 @@ export default function EventDetail({
       {showLockModal && (
         <div className="modal-overlay">
           <div className="modal-pub max-w-[500px]">
-            <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
-            <p className="modal-desc">
-              Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể điều
-              chỉnh lại thông tin trước khi chốt chính thức!
-            </p>
+            <div className="modal-pub-body">
+              <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
+              <p className="modal-desc">
+                Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể
+                điều chỉnh lại thông tin trước khi chốt chính thức!
+              </p>
 
-            <div className="form-group">
-              <label htmlFor="final-date">📅 Chốt Lịch Trình (Ngày & Giờ)</label>
-              <input
-                type="datetime-local"
-                id="final-date"
-                value={finalDateTime}
-                onChange={(e) => setFinalDateTime(e.target.value)}
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-date">📅 Chốt Lịch Trình (Ngày & Giờ)</label>
+                <input
+                  type="datetime-local"
+                  id="final-date"
+                  value={finalDateTime}
+                  onChange={(e) => setFinalDateTime(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="final-location">📍 Chốt Địa Điểm Nhậu</label>
-              <input
-                type="text"
-                id="final-location"
-                value={finalLocation}
-                onChange={(e) => setFinalLocation(e.target.value)}
-                placeholder="Ví dụ: Lẩu Dê Đồng Quê"
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-location">📍 Chốt Địa Điểm Nhậu</label>
+                <input
+                  type="text"
+                  id="final-location"
+                  value={finalLocation}
+                  onChange={(e) => setFinalLocation(e.target.value)}
+                  placeholder="Ví dụ: Lẩu Dê Đồng Quê"
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="final-beer">🍻 Chốt Loại Bia / Vibe Quán</label>
-              <input
-                type="text"
-                id="final-beer"
-                value={finalBeerStyle}
-                onChange={(e) => setFinalBeerStyle(e.target.value)}
-                placeholder="Ví dụ: Bia thủ công IPA thơm nồng"
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-beer">🍻 Chốt Loại Bia / Vibe Quán</label>
+                <input
+                  type="text"
+                  id="final-beer"
+                  value={finalBeerStyle}
+                  onChange={(e) => setFinalBeerStyle(e.target.value)}
+                  placeholder="Ví dụ: Bia thủ công IPA thơm nồng"
+                  required
+                />
+              </div>
 
-            <div className="warning-box mb-4">
-              ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng vote
-              và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược sẽ kích
-              hoạt ngay lập tức!
-            </div>
+              <div className="warning-box mb-4">
+                ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng
+                vote và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược
+                sẽ kích hoạt ngay lập tức!
+              </div>
 
-            <div className="form-actions-modal">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowLockModal(false)}
-              >
-                Hủy Bỏ
-              </button>
-              <button type="button" className="btn-success" onClick={handleConfirmLock}>
-                🍻 Xác Nhận Chốt Luôn!
-              </button>
+              <div className="form-actions-modal">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowLockModal(false)}
+                >
+                  Hủy Bỏ
+                </button>
+                <button type="button" className="btn-success" onClick={handleConfirmLock}>
+                  🍻 Xác Nhận Chốt Luôn!
+                </button>
+              </div>
             </div>
           </div>
         </div>
