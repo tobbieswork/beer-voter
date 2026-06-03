@@ -172,14 +172,9 @@ export default function EventDetail({
   // Lấy chữ cái đầu làm avatar
   const getInitial = (name: string) => {
     if (!name) return '?';
-    // Loại bỏ dấu và lấy ký tự đầu tiên
-    const cleanName = name.replace(/[^a-zA-Z0-9\s]/g, '').trim();
-    if (!cleanName) return name.substring(0, 1).toUpperCase();
-    const parts = cleanName.split(' ');
-    if (parts.length > 1) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return cleanName.substring(0, 2).toUpperCase();
+    // Lấy ký tự đầu tiên
+    const initial = name.trim().charAt(0);
+    return initial.toUpperCase();
   };
 
   // Sao chép link chia sẻ
@@ -364,12 +359,7 @@ export default function EventDetail({
                         key={v.id}
                         className="avatar-bubble"
                         style={{ backgroundColor: getAvatarColor(v.userNickname || v.userName) }}
-                        title={
-                          `${v.userNickname || v.userName}` +
-                          (v.userRealName
-                            ? ` (${v.userRealName} - ${v.userUsername || v.userEmail || 'Guest'})`
-                            : '')
-                        }
+                        title={v.userNickname || v.userName}
                       >
                         {getInitial(v.userNickname || v.userName)}
                       </div>
