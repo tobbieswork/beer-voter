@@ -89,61 +89,63 @@ export default function PartyPinModal({
         aria-modal="true"
         aria-labelledby="pin-modal-title"
       >
-        <div className="pin-modal-header">🔐</div>
-        <h3 className="modal-title" id="pin-modal-title">
-          Kèo Nhậu Riêng Tư
-        </h3>
-        <p className="modal-desc">
-          {eventTitle ? (
-            <>
-              <strong>{eventTitle}</strong>
-              <br />
-              Kèo này được bảo vệ bởi mật khẩu.
-            </>
-          ) : (
-            'Nhập mật khẩu 6 số để vào kèo nhậu này.'
-          )}
-        </p>
+        <div className="modal-pub-body">
+          <div className="pin-modal-header">🔐</div>
+          <h3 className="modal-title" id="pin-modal-title">
+            Kèo Nhậu Riêng Tư
+          </h3>
+          <p className="modal-desc">
+            {eventTitle ? (
+              <>
+                <strong>{eventTitle}</strong>
+                <br />
+                Kèo này được bảo vệ bởi mật khẩu.
+              </>
+            ) : (
+              'Nhập mật khẩu 6 số để vào kèo nhậu này.'
+            )}
+          </p>
 
-        {error && <div className="modal-error-box mb-4 flex items-center gap-2">⚠️ {error}</div>}
+          {error && <div className="modal-error-box mb-4 flex items-center gap-2">⚠️ {error}</div>}
 
-        <div className="mb-5 mt-5 flex justify-center gap-2.5">
-          {digits.map((d, i) => (
-            <input
-              key={i}
-              ref={(el) => {
-                inputRefs.current[i] = el;
-              }}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={1}
-              value={d}
-              onChange={(e) => handleDigitChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              onPaste={handlePaste}
-              className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
+          <div className="mb-5 mt-5 flex justify-center gap-2.5">
+            {digits.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => {
+                  inputRefs.current[i] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={1}
+                value={d}
+                onChange={(e) => handleDigitChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                onPaste={handlePaste}
+                className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
+                disabled={isChecking}
+                aria-label={`Số thứ ${i + 1} của mật khẩu 6 số`}
+              />
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              className="btn-primary w-full justify-center min-h-[48px]"
+              onClick={handleSubmit}
+              disabled={isChecking || digits.some((d) => d === '')}
+            >
+              {isChecking ? 'Đang kiểm tra...' : '🔓 Xác Nhận Mật Khẩu'}
+            </button>
+            <button
+              className="btn-secondary w-full justify-center"
+              onClick={onBack}
               disabled={isChecking}
-              aria-label={`Số thứ ${i + 1} của mật khẩu 6 số`}
-            />
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-col gap-2">
-          <button
-            className="btn-primary w-full justify-center min-h-[48px]"
-            onClick={handleSubmit}
-            disabled={isChecking || digits.some((d) => d === '')}
-          >
-            {isChecking ? 'Đang kiểm tra...' : '🔓 Xác Nhận Mật Khẩu'}
-          </button>
-          <button
-            className="btn-secondary w-full justify-center"
-            onClick={onBack}
-            disabled={isChecking}
-          >
-            ← Quay Lại
-          </button>
+            >
+              ← Quay Lại
+            </button>
+          </div>
         </div>
       </div>
     </div>

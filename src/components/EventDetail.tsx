@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
+import QRCode from 'qrcode';
 import Countdown from './Countdown';
 import { formatVietnameseDateTime } from '../utils/date';
 import {
@@ -92,6 +93,17 @@ export default function EventDetail({
   const [showPartyPin, setShowPartyPin] = useState(false);
   const [showSyncSection, setShowSyncSection] = useState(false);
   const [copiedSync, setCopiedSync] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`);
+    if (showSyncSection && creatorToken) {
+      const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
+      QRCode.toDataURL(syncUrl, { width: 180, margin: 1 })
+        .then((url) => setQrDataUrl(url))
+        .catch((err) => console.error('Lỗi tạo mã QR:', err));
+    }
+  }, [showSyncSection, eventId]);
 
   // State phục vụ modal chốt kèo của Admin
   const [finalDateTime, setFinalDateTime] = useState('');
@@ -564,8 +576,12 @@ export default function EventDetail({
                 const isCreatorTokenMatched = !!localStorage.getItem(
                   `beervote_creator_token_${eventId}`
                 );
-                const isCreatorIdMatched = currentUser && currentUser.id === eventData.creatorId;
-                const isCreator = isCreatorTokenMatched || isCreatorIdMatched;
+                const isGoogleCreatorMatched =
+                  currentUser &&
+                  currentUser.authMethod === 'google' &&
+                  currentUser.googleId &&
+                  `google_${currentUser.googleId}` === eventData.creatorId;
+                const isCreator = isCreatorTokenMatched || isGoogleCreatorMatched;
 
                 if (isCreator) {
                   return (
@@ -640,7 +656,6 @@ export default function EventDetail({
                                 `beervote_creator_token_${eventId}`
                               );
                               const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
-                              const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(syncUrl)}`;
 
                               const handleCopyLink = () => {
                                 navigator.clipboard.writeText(syncUrl);
@@ -664,13 +679,19 @@ export default function EventDetail({
                                     className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
                                     style={{ maxWidth: '196px' }}
                                   >
-                                    <img
-                                      src={qrImageUrl}
-                                      alt="QR Đồng Bộ"
-                                      width={180}
-                                      height={180}
-                                      style={{ display: 'block' }}
-                                    />
+                                    {qrDataUrl ? (
+                                      <img
+                                        src={qrDataUrl}
+                                        alt="QR Đồng Bộ"
+                                        width={180}
+                                        height={180}
+                                        style={{ display: 'block' }}
+                                      />
+                                    ) : (
+                                      <div className="text-secondary text-xs p-4">
+                                        Đang tạo mã QR...
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <input
@@ -884,28 +905,30 @@ export default function EventDetail({
       {showDeleteConfirm && (
         <div className="modal-overlay">
           <div className="modal-pub max-w-[420px]">
-            <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
-            <p className="modal-desc">
-              Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
-              chat chit sẽ bị xóa vĩnh viễn!
-            </p>
-            <div className="form-actions-modal">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
-                Hủy Bỏ
-              </button>
-              <button
-                type="button"
-                className="btn-danger"
-                onClick={handleDeleteConfirmed}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
-              </button>
+            <div className="modal-pub-body">
+              <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
+              <p className="modal-desc">
+                Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
+                chat chit sẽ bị xóa vĩnh viễn!
+              </p>
+              <div className="form-actions-modal">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleDeleteConfirmed}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -915,64 +938,66 @@ export default function EventDetail({
       {showLockModal && (
         <div className="modal-overlay">
           <div className="modal-pub max-w-[500px]">
-            <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
-            <p className="modal-desc">
-              Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể điều
-              chỉnh lại thông tin trước khi chốt chính thức!
-            </p>
+            <div className="modal-pub-body">
+              <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
+              <p className="modal-desc">
+                Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể
+                điều chỉnh lại thông tin trước khi chốt chính thức!
+              </p>
 
-            <div className="form-group">
-              <label htmlFor="final-date">📅 Chốt Lịch Trình (Ngày & Giờ)</label>
-              <input
-                type="datetime-local"
-                id="final-date"
-                value={finalDateTime}
-                onChange={(e) => setFinalDateTime(e.target.value)}
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-date">📅 Chốt Lịch Trình (Ngày & Giờ)</label>
+                <input
+                  type="datetime-local"
+                  id="final-date"
+                  value={finalDateTime}
+                  onChange={(e) => setFinalDateTime(e.target.value)}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="final-location">📍 Chốt Địa Điểm Nhậu</label>
-              <input
-                type="text"
-                id="final-location"
-                value={finalLocation}
-                onChange={(e) => setFinalLocation(e.target.value)}
-                placeholder="Ví dụ: Lẩu Dê Đồng Quê"
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-location">📍 Chốt Địa Điểm Nhậu</label>
+                <input
+                  type="text"
+                  id="final-location"
+                  value={finalLocation}
+                  onChange={(e) => setFinalLocation(e.target.value)}
+                  placeholder="Ví dụ: Lẩu Dê Đồng Quê"
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="final-beer">🍻 Chốt Loại Bia / Vibe Quán</label>
-              <input
-                type="text"
-                id="final-beer"
-                value={finalBeerStyle}
-                onChange={(e) => setFinalBeerStyle(e.target.value)}
-                placeholder="Ví dụ: Bia thủ công IPA thơm nồng"
-                required
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="final-beer">🍻 Chốt Loại Bia / Vibe Quán</label>
+                <input
+                  type="text"
+                  id="final-beer"
+                  value={finalBeerStyle}
+                  onChange={(e) => setFinalBeerStyle(e.target.value)}
+                  placeholder="Ví dụ: Bia thủ công IPA thơm nồng"
+                  required
+                />
+              </div>
 
-            <div className="warning-box mb-4">
-              ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng vote
-              và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược sẽ kích
-              hoạt ngay lập tức!
-            </div>
+              <div className="warning-box mb-4">
+                ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng
+                vote và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược
+                sẽ kích hoạt ngay lập tức!
+              </div>
 
-            <div className="form-actions-modal">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setShowLockModal(false)}
-              >
-                Hủy Bỏ
-              </button>
-              <button type="button" className="btn-success" onClick={handleConfirmLock}>
-                🍻 Xác Nhận Chốt Luôn!
-              </button>
+              <div className="form-actions-modal">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowLockModal(false)}
+                >
+                  Hủy Bỏ
+                </button>
+                <button type="button" className="btn-success" onClick={handleConfirmLock}>
+                  🍻 Xác Nhận Chốt Luôn!
+                </button>
+              </div>
             </div>
           </div>
         </div>

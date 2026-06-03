@@ -254,233 +254,235 @@ export default function CreateEvent({
   return (
     <div className="modal-overlay">
       <div
-        className="modal-pub max-h-[90svh] overflow-auto"
+        className="modal-pub"
         style={{ maxWidth: '600px' }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-modal-title"
       >
-        <h3 className="modal-title text-[1.6rem]" id="create-modal-title">
-          🍻 Tạo Kèo Nhậu Mới 🍻
-        </h3>
-        <p className="modal-desc mb-4">
-          Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
-          này sẽ mặc định làm <strong>Chủ Kèo</strong>.
-        </p>
+        <div className="modal-pub-body">
+          <h3 className="modal-title text-[1.6rem]" id="create-modal-title">
+            🍻 Tạo Kèo Nhậu Mới 🍻
+          </h3>
+          <p className="modal-desc mb-4">
+            Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
+            này sẽ mặc định làm <strong>Chủ Kèo</strong>.
+          </p>
 
-        {error && <div className="modal-error-box mb-4">⚠️ {error}</div>}
+          {error && <div className="modal-error-box mb-4">⚠️ {error}</div>}
 
-        <form onSubmit={handleSubmit}>
-          {/* Tên Kèo */}
-          <div className="form-group">
-            <label htmlFor="event-title">Tên Kèo Nhậu</label>
-            <input
-              type="text"
-              id="event-title"
-              placeholder="Ví dụ: Họp mặt cuối tuần, Mừng lương về, Giải nhiệt mùa hè..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={60}
-              required
-            />
-            {/* Presets cho Tên Kèo */}
-            <div className="presets-container">
-              {TITLE_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="quick-chat-tag"
-                  onClick={() => handleSelectPreset(preset, 'title')}
-                >
-                  {preset}
-                </button>
-              ))}
+          <form onSubmit={handleSubmit}>
+            {/* Tên Kèo */}
+            <div className="form-group">
+              <label htmlFor="event-title">Tên Kèo Nhậu</label>
+              <input
+                type="text"
+                id="event-title"
+                placeholder="Ví dụ: Họp mặt cuối tuần, Mừng lương về, Giải nhiệt mùa hè..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={60}
+                required
+              />
+              {/* Presets cho Tên Kèo */}
+              <div className="presets-container">
+                {TITLE_PRESETS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="quick-chat-tag"
+                    onClick={() => handleSelectPreset(preset, 'title')}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Đề xuất Ngày/Giờ */}
-          <div className="form-group mb-6">
-            <label>Lịch Trình Đề Xuất (Ngày & Giờ)</label>
-            <div className="options-input-list">
-              {dateOpts.map((opt, index) => (
-                <div key={index} className="option-input-row">
-                  <input
-                    type="datetime-local"
-                    value={opt}
-                    onChange={(e) => handleOptChange(index, e.target.value, 'date')}
-                    required={index === 0}
-                  />
-                  {dateOpts.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove-opt"
-                      onClick={() => removeOptField(index, 'date')}
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              ))}
+            {/* Đề xuất Ngày/Giờ */}
+            <div className="form-group mb-6">
+              <label>Lịch Trình Đề Xuất (Ngày & Giờ)</label>
+              <div className="options-input-list">
+                {dateOpts.map((opt, index) => (
+                  <div key={index} className="option-input-row">
+                    <input
+                      type="datetime-local"
+                      value={opt}
+                      onChange={(e) => handleOptChange(index, e.target.value, 'date')}
+                      required={index === 0}
+                    />
+                    {dateOpts.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-remove-opt"
+                        onClick={() => removeOptField(index, 'date')}
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Presets cho Lịch Trình */}
+              <div className="presets-container my-2">
+                {datePresets.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="quick-chat-tag"
+                    onClick={() => handleSelectPreset(preset.value, 'date')}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="btn-add-opt-row" onClick={() => addOptField('date')}>
+                ➕ Thêm Lịch Khác
+              </button>
             </div>
-            {/* Presets cho Lịch Trình */}
-            <div className="presets-container my-2">
-              {datePresets.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="quick-chat-tag"
-                  onClick={() => handleSelectPreset(preset.value, 'date')}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-            <button type="button" className="btn-add-opt-row" onClick={() => addOptField('date')}>
-              ➕ Thêm Lịch Khác
-            </button>
-          </div>
 
-          {/* Đề xuất Địa điểm */}
-          <div className="form-group mb-6">
-            <label>Địa Điểm Đề Xuất</label>
-            <div className="options-input-list">
-              {locOpts.map((opt, index) => (
-                <div key={index} className="option-input-row">
-                  <input
-                    type="text"
-                    placeholder="Ví dụ: Bia Hơi Vỉa Hè Bờ Sông"
-                    value={opt}
-                    onChange={(e) => handleOptChange(index, e.target.value, 'location')}
-                    required={index === 0}
-                  />
-                  {locOpts.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove-opt"
-                      onClick={() => removeOptField(index, 'location')}
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            {/* Presets cho Địa Điểm */}
-            <div className="presets-container my-2">
-              {LOCATION_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="quick-chat-tag"
-                  onClick={() => handleSelectPreset(preset, 'location')}
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="btn-add-opt-row"
-              onClick={() => addOptField('location')}
-            >
-              ➕ Thêm Địa Điểm Khác
-            </button>
-          </div>
-
-          {/* Đề xuất Loại Bia */}
-          <div className="form-group mb-6">
-            <label>Loại Bia / Phong Cách Quán</label>
-            <div className="options-input-list">
-              {beerOpts.map((opt, index) => (
-                <div key={index} className="option-input-row">
-                  <input
-                    type="text"
-                    placeholder="Ví dụ: Bia hơi Hà Nội mát lạnh, Bia thủ công..."
-                    value={opt}
-                    onChange={(e) => handleOptChange(index, e.target.value, 'beer')}
-                    required={index === 0}
-                  />
-                  {beerOpts.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove-opt"
-                      onClick={() => removeOptField(index, 'beer')}
-                    >
-                      🗑️
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            {/* Presets cho Loại Bia */}
-            <div className="presets-container my-2">
-              {BEER_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="quick-chat-tag"
-                  onClick={() => handleSelectPreset(preset, 'beer')}
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-            <button type="button" className="btn-add-opt-row" onClick={() => addOptField('beer')}>
-              ➕ Thêm Loại Bia Khác
-            </button>
-          </div>
-
-          {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
-          <div className="form-group mb-6">
-            <label>
-              🔐 Mật Khẩu Bảo Vệ Kèo{' '}
-              <span className="font-normal text-muted">(tùy chọn - đúng 6 chữ số)</span>
-            </label>
-            <div className="flex justify-start gap-2 mt-2">
-              {pinDigits.map((d, i) => (
-                <input
-                  key={i}
-                  ref={(el) => {
-                    pinInputRefs.current[i] = el;
-                  }}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={1}
-                  value={d}
-                  onChange={(e) => handlePinDigitChange(i, e.target.value)}
-                  onKeyDown={(e) => handlePinKeyDown(i, e)}
-                  onPaste={handlePinPaste}
-                  className="h-12 w-10 rounded-xl border border-glass bg-white/5 text-2xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
-                  aria-label={`Số thứ ${i + 1} của mật khẩu 6 số bảo vệ kèo`}
-                />
-              ))}
-            </div>
-            {pinDigits.some((d) => d !== '') && (
-              <span
-                className={`block text-[0.75rem] pt-2 ${pinDigits.every((d) => d !== '') ? 'text-green' : 'text-muted'}`}
+            {/* Đề xuất Địa điểm */}
+            <div className="form-group mb-6">
+              <label>Địa Điểm Đề Xuất</label>
+              <div className="options-input-list">
+                {locOpts.map((opt, index) => (
+                  <div key={index} className="option-input-row">
+                    <input
+                      type="text"
+                      placeholder="Ví dụ: Bia Hơi Vỉa Hè Bờ Sông"
+                      value={opt}
+                      onChange={(e) => handleOptChange(index, e.target.value, 'location')}
+                      required={index === 0}
+                    />
+                    {locOpts.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-remove-opt"
+                        onClick={() => removeOptField(index, 'location')}
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Presets cho Địa Điểm */}
+              <div className="presets-container my-2">
+                {LOCATION_PRESETS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="quick-chat-tag"
+                    onClick={() => handleSelectPreset(preset, 'location')}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="btn-add-opt-row"
+                onClick={() => addOptField('location')}
               >
-                {pinDigits.every((d) => d !== '')
-                  ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
-                  : `Còn thiếu ${6 - pinDigits.filter((d) => d !== '').length} chữ số`}
-              </span>
-            )}
-          </div>
+                ➕ Thêm Địa Điểm Khác
+              </button>
+            </div>
 
-          <div className="form-actions-modal">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Hủy Bỏ
-            </button>
-            <button type="submit" className="btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang Tạo Kèo...' : '🍻 Phát Lệnh Tạo Kèo'}
-            </button>
-          </div>
-        </form>
+            {/* Đề xuất Loại Bia */}
+            <div className="form-group mb-6">
+              <label>Loại Bia / Phong Cách Quán</label>
+              <div className="options-input-list">
+                {beerOpts.map((opt, index) => (
+                  <div key={index} className="option-input-row">
+                    <input
+                      type="text"
+                      placeholder="Ví dụ: Bia hơi Hà Nội mát lạnh, Bia thủ công..."
+                      value={opt}
+                      onChange={(e) => handleOptChange(index, e.target.value, 'beer')}
+                      required={index === 0}
+                    />
+                    {beerOpts.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-remove-opt"
+                        onClick={() => removeOptField(index, 'beer')}
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Presets cho Loại Bia */}
+              <div className="presets-container my-2">
+                {BEER_PRESETS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="quick-chat-tag"
+                    onClick={() => handleSelectPreset(preset, 'beer')}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="btn-add-opt-row" onClick={() => addOptField('beer')}>
+                ➕ Thêm Loại Bia Khác
+              </button>
+            </div>
+
+            {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
+            <div className="form-group mb-6">
+              <label>
+                🔐 Mật Khẩu Bảo Vệ Kèo{' '}
+                <span className="font-normal text-muted">(tùy chọn - đúng 6 chữ số)</span>
+              </label>
+              <div className="flex justify-start gap-2 mt-2">
+                {pinDigits.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => {
+                      pinInputRefs.current[i] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={d}
+                    onChange={(e) => handlePinDigitChange(i, e.target.value)}
+                    onKeyDown={(e) => handlePinKeyDown(i, e)}
+                    onPaste={handlePinPaste}
+                    className="h-12 w-10 rounded-xl border border-glass bg-white/5 text-2xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
+                    aria-label={`Số thứ ${i + 1} của mật khẩu 6 số bảo vệ kèo`}
+                  />
+                ))}
+              </div>
+              {pinDigits.some((d) => d !== '') && (
+                <span
+                  className={`block text-[0.75rem] pt-2 ${pinDigits.every((d) => d !== '') ? 'text-green' : 'text-muted'}`}
+                >
+                  {pinDigits.every((d) => d !== '')
+                    ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
+                    : `Còn thiếu ${6 - pinDigits.filter((d) => d !== '').length} chữ số`}
+                </span>
+              )}
+            </div>
+
+            <div className="form-actions-modal">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Hủy Bỏ
+              </button>
+              <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Đang Tạo Kèo...' : '🍻 Phát Lệnh Tạo Kèo'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

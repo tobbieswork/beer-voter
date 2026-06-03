@@ -22,21 +22,57 @@ router.post('/google/callback', async (req: Request, res: Response) => {
 
   try {
     const parts = credential.split('.');
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
 
-    const redirectUrl =
-      `/?googleLogin=true` +
-      `&sub=${encodeURIComponent(payload.sub)}` +
-      `&email=${encodeURIComponent(payload.email || '')}` +
-      `&name=${encodeURIComponent(payload.name || '')}` +
-      `&given_name=${encodeURIComponent(payload.given_name || '')}` +
-      `&picture=${encodeURIComponent(payload.picture || '')}` +
-      `&credential=${encodeURIComponent(credential)}`;
+    const sessionData = {
+      sub: payload.sub,
+      email: payload.email || '',
+      name: payload.name || '',
+      given_name: payload.given_name || '',
+      picture: payload.picture || '',
+      credential,
+    };
 
-    res.redirect(redirectUrl);
+    res.cookie('beervote_google_session', JSON.stringify(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 5 * 60 * 1000, // 5 minutes
+    });
+
+    res.redirect('/?googleLogin=true');
   } catch (err) {
     console.error('Lỗi phân tích JWT trong Google redirect callback:', err);
     res.status(500).send('Lỗi máy chủ khi xử lý đăng nhập Google.');
+  }
+});
+
+// Lấy thông tin session Google OAuth và xoá cookie
+router.get('/session', (req: Request, res: Response) => {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) {
+    return res.status(401).json({ message: 'Không tìm thấy session.' });
+  }
+
+  const cookies = Object.fromEntries(
+    cookieHeader.split(';').map((c) => {
+      const parts = c.split('=');
+      return [parts[0].trim(), parts.slice(1).join('=').trim()];
+    })
+  );
+
+  const sessionCookie = cookies['beervote_google_session'];
+  if (!sessionCookie) {
+    return res.status(401).json({ message: 'Session không hợp lệ hoặc đã hết hạn.' });
+  }
+
+  try {
+    const sessionData = JSON.parse(decodeURIComponent(sessionCookie));
+    res.clearCookie('beervote_google_session');
+    res.json(sessionData);
+  } catch (err) {
+    console.error('Lỗi phân tích session cookie:', err);
+    res.status(500).json({ message: 'Lỗi máy chủ khi giải mã session.' });
   }
 });
 
