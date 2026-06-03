@@ -4,7 +4,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const issueTitle = process.env.ISSUE_TITLE || '';
 const issueBody = process.env.ISSUE_BODY || '';
 const issueNumber = process.env.ISSUE_NUMBER || '';
