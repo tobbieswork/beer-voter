@@ -36,7 +36,7 @@ async function runAgent() {
 
   // 3. Ask Gemini to identify files to read
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-pro', // Use Pro for complex coding tasks
+    model: 'gemini-2.5-flash',
     contents: prompt,
     config: { responseMimeType: 'application/json' },
   });
@@ -64,7 +64,7 @@ async function runAgent() {
   `;
 
   const editResponse = await ai.models.generateContent({
-    model: 'gemini-2.5-pro',
+    model: 'gemini-2.5-flash',
     contents: editPrompt,
     config: { responseMimeType: 'application/json' },
   });
