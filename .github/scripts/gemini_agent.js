@@ -135,4 +135,7 @@ function getRepoFiles(dir = '.', files = []) {
   return files;
 }
 
-runAgent().catch(console.error);
+runAgent().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
