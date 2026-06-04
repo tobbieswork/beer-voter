@@ -9,11 +9,40 @@ import {
   insertComment,
   updateEventStatus,
 } from '../db/store.js';
-import { DBOption } from '../db/types.js';
-import { clients, broadcastEventUpdate, broadcastDashboardUpdate } from './server.js';
+import { DBEvent, DBOption } from '../db/types.js';
+import { ClientInfo, clients, broadcastEventUpdate, broadcastDashboardUpdate } from './server.js';
 import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
 
 const RATE_LIMIT_MS = 500;
+
+async function isUserAuthorizedForEvent(
+  action: WSAction,
+  event: DBEvent | undefined,
+  clientInfo: ClientInfo
+): Promise<boolean> {
+  if (!event) return false;
+  if (!event.partyPinHash) return true;
+
+  let isCreator = !!(action.creatorToken && action.creatorToken === event.creatorToken);
+  if (!isCreator && action.userId && action.userId === event.creatorId) {
+    if (action.googleToken && action.userId.startsWith('google_')) {
+      const googleSub = await verifyGoogleToken(action.googleToken);
+      if (googleSub && `google_${googleSub}` === event.creatorId) {
+        isCreator = true;
+      }
+    } else if (action.githubToken && action.userId.startsWith('github_')) {
+      const githubSub = await verifyGithubToken(action.githubToken);
+      if (githubSub && `github_${githubSub}` === event.creatorId) {
+        isCreator = true;
+      }
+    }
+  }
+
+  if (isCreator) return true;
+
+  const effectiveToken = action.pinToken || clientInfo.verifiedPinTokens.get(event.id);
+  return isPinAuthorized(event, effectiveToken);
+}
 
 export interface WSAction {
   type: string;
@@ -92,20 +121,10 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
     }
 
     case 'VOTE_TOGGLE': {
-      const {
-        eventId,
-        optionId,
-        userId,
-        userName,
-        userNickname,
-        userRealName,
-        userEmail,
-        pinToken,
-      } = action;
+      const { eventId, optionId, userId, userName, userNickname, userRealName, userEmail } = action;
       if (!eventId || !optionId || !userId || !userName) break;
       const voteEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(voteEvent, effectiveToken)) break;
+      if (!(await isUserAuthorizedForEvent(action, voteEvent, clientInfo))) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -151,7 +170,6 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         userRealName,
         userUsername,
         userEmail,
-        pinToken,
       } = action;
       if (
         !eventId ||
@@ -165,8 +183,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
       )
         break;
       const addOptEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(addOptEvent, effectiveToken)) break;
+      if (!(await isUserAuthorizedForEvent(action, addOptEvent, clientInfo))) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -218,7 +235,6 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         userNickname,
         userRealName,
         userEmail,
-        pinToken,
       } = action;
       if (
         !eventId ||
@@ -231,8 +247,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
       )
         break;
       const commentEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(commentEvent, effectiveToken)) break;
+      if (!(await isUserAuthorizedForEvent(action, commentEvent, clientInfo))) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -264,14 +279,12 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         finalDateTime,
         finalLocation,
         finalBeerStyle,
-        pinToken,
         googleToken,
         githubToken,
       } = action;
       if (!eventId || !finalDateTime || !finalLocation || !finalBeerStyle) break;
       const lockEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(lockEvent, effectiveToken)) break;
+      if (!(await isUserAuthorizedForEvent(action, lockEvent, clientInfo))) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
@@ -321,11 +334,10 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
     }
 
     case 'UNLOCK_EVENT': {
-      const { eventId, userId, creatorToken, pinToken, googleToken, githubToken } = action;
+      const { eventId, userId, creatorToken, googleToken, githubToken } = action;
       if (!eventId) break;
       const unlockEvent = readDB().events.find((e) => e.id === eventId);
-      const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
-      if (!isPinAuthorized(unlockEvent, effectiveToken)) break;
+      if (!(await isUserAuthorizedForEvent(action, unlockEvent, clientInfo))) break;
 
       const now = Date.now();
       if (now - clientInfo.lastActionAt < RATE_LIMIT_MS) break;
