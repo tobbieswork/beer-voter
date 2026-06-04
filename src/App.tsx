@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import './App.css';
 import BeerBubbles from './components/BeerBubbles';
 import Header from './components/Header';
@@ -21,6 +22,7 @@ import {
 } from './utils/storage';
 
 export default function App() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<EventData[]>([]);
   const [_visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
 
@@ -44,6 +46,65 @@ export default function App() {
 
   // Encapsulate user state & logic inside custom hook
   const { currentUser, loginUser, logoutUser } = useUser(showToast, setIsJoinModalOpen);
+
+  // Account synchronization logic via QR Code params: authData & syncUser
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authDataParam = urlParams.get('authData');
+    const syncUserParam = urlParams.get('syncUser');
+    const targetUserParam = authDataParam || syncUserParam;
+    const creatorTokenParam = urlParams.get('creatorToken');
+    const eventIdParam = urlParams.get('eventId') || currentEventId;
+
+    if (targetUserParam) {
+      let decodedUser: User | null = null;
+      try {
+        decodedUser = JSON.parse(decodeURIComponent(escape(atob(targetUserParam))));
+      } catch (err) {
+        console.error('Failed to decode user data from sync parameters:', err);
+      }
+
+      if (decodedUser && decodedUser.id) {
+        const performLogin = () => {
+          loginUser(decodedUser!);
+          if (syncUserParam && creatorTokenParam && eventIdParam) {
+            localStorage.setItem(`beervote_creator_token_${eventIdParam}`, creatorTokenParam);
+          }
+          showToast(
+            '🍻 ' +
+              (authDataParam
+                ? 'Đồng bộ tài khoản thành công!'
+                : 'Đồng bộ tài khoản người tạo thành công!')
+          );
+        };
+
+        if (!currentUser) {
+          // Auto login if not logged in
+          performLogin();
+        } else if (currentUser.id !== decodedUser.id) {
+          // Prompt switch account if logged in with different ID
+          if (window.confirm(t('header.sync_confirm'))) {
+            logoutUser();
+            performLogin();
+          }
+        } else {
+          // If already logged in as the same user, just make sure to store creator token if available
+          if (syncUserParam && creatorTokenParam && eventIdParam) {
+            localStorage.setItem(`beervote_creator_token_${eventIdParam}`, creatorTokenParam);
+          }
+        }
+      }
+
+      // Clean the query parameters from URL safely
+      urlParams.delete('authData');
+      urlParams.delete('syncUser');
+      urlParams.delete('creatorToken');
+      const newSearch = urlParams.toString();
+      const newPath =
+        window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+      window.history.replaceState(null, '', newPath);
+    }
+  }, [currentUser, currentEventId, loginUser, logoutUser, showToast, t]);
 
   // 1. Tự động đồng bộ URL (Router mini)
   const navigateToEvent = useCallback(
@@ -182,7 +243,8 @@ export default function App() {
       // Check for creatorToken query parameter to securely sync creator status
       const urlParams = new URLSearchParams(window.location.search);
       const urlCreatorToken = urlParams.get('creatorToken');
-      if (urlCreatorToken) {
+      const syncUserParam = urlParams.get('syncUser');
+      if (urlCreatorToken && !syncUserParam) {
         localStorage.setItem(`beervote_creator_token_${currentEventId}`, urlCreatorToken);
         // Clean URL to keep it secure
         urlParams.delete('creatorToken');

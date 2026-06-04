@@ -752,106 +752,118 @@ export default function EventDetail({
                           {t('event_detail.unlock_button')}
                         </button>
                       )}
-                      {isCreatorTokenMatched && (
-                        <div className="mt-3.5 mb-2.5">
-                          <button
-                            type="button"
-                            className="btn-secondary w-full"
-                            style={{
-                              backgroundColor: 'rgba(255, 176, 0, 0.05)',
-                              border: '1px solid rgba(255, 176, 0, 0.3)',
-                              color: 'var(--accent-gold)',
-                            }}
-                            onClick={() => setShowSyncSection(!showSyncSection)}
-                          >
-                            🔗{' '}
-                            {showSyncSection
-                              ? i18n.language === 'en'
-                                ? 'Hide Device Sync QR'
-                                : 'Ẩn Mã Đồng Bộ Thiết Bị'
-                              : i18n.language === 'en'
-                                ? 'Sync Device Access (QR)'
-                                : 'Đồng Bộ Thiết Bị Khác (QR)'}
-                          </button>
+                      {isCreatorTokenMatched &&
+                        currentUser &&
+                        currentUser.authMethod === 'guest' && (
+                          <div className="mt-3.5 mb-2.5">
+                            <button
+                              type="button"
+                              className="btn-secondary w-full"
+                              style={{
+                                backgroundColor: 'rgba(255, 176, 0, 0.05)',
+                                border: '1px solid rgba(255, 176, 0, 0.3)',
+                                color: 'var(--accent-gold)',
+                              }}
+                              onClick={() => setShowSyncSection(!showSyncSection)}
+                            >
+                              🔗{' '}
+                              {showSyncSection
+                                ? i18n.language === 'en'
+                                  ? 'Hide Device Sync QR'
+                                  : 'Ẩn Mã Đồng Bộ Thiết Bị'
+                                : i18n.language === 'en'
+                                  ? 'Sync Device Access (QR)'
+                                  : 'Đồng Bộ Thiết Bị Khác (QR)'}
+                            </button>
 
-                          {showSyncSection &&
-                            (() => {
-                              const creatorToken = localStorage.getItem(
-                                `beervote_creator_token_${eventId}`
-                              );
-                              const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
+                            {showSyncSection &&
+                              (() => {
+                                const creatorToken = localStorage.getItem(
+                                  `beervote_creator_token_${eventId}`
+                                );
+                                const guestUserData = {
+                                  id: currentUser.id,
+                                  nickname: currentUser.nickname,
+                                  realName: currentUser.realName,
+                                  username: currentUser.username,
+                                  avatar: currentUser.avatar || '',
+                                };
+                                const encodedUser = btoa(
+                                  unescape(encodeURIComponent(JSON.stringify(guestUserData)))
+                                );
+                                const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}&syncUser=${encodedUser}`;
 
-                              const handleCopySync = () => {
-                                navigator.clipboard.writeText(syncUrl);
-                                setCopiedSync(true);
-                                setTimeout(() => setCopiedSync(false), 2000);
-                              };
+                                const handleCopySync = () => {
+                                  navigator.clipboard.writeText(syncUrl);
+                                  setCopiedSync(true);
+                                  setTimeout(() => setCopiedSync(false), 2000);
+                                };
 
-                              return (
-                                <div
-                                  className="mt-3 p-4 text-center rounded-[12px]"
-                                  style={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                                    border: '1px dashed rgba(255, 176, 0, 0.2)',
-                                  }}
-                                >
-                                  <p className="text-[0.8rem] text-text-muted mb-3 leading-relaxed">
-                                    {i18n.language === 'en'
-                                      ? 'Scan this QR code or copy this link on another device to restore Host permission without sign-in:'
-                                      : 'Quét mã QR bằng điện thoại hoặc sao chép liên kết này mở ở thiết bị khác để cấp quyền Chủ Kèo mà không cần đăng nhập:'}
-                                  </p>
+                                return (
                                   <div
-                                    className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
-                                    style={{ maxWidth: '196px' }}
+                                    className="mt-3 p-4 text-center rounded-[12px]"
+                                    style={{
+                                      backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                                      border: '1px dashed rgba(255, 176, 0, 0.2)',
+                                    }}
                                   >
-                                    {qrDataUrl ? (
-                                      <img
-                                        src={qrDataUrl}
-                                        alt="Sync QR"
-                                        width={180}
-                                        height={180}
-                                        style={{ display: 'block' }}
-                                      />
-                                    ) : (
-                                      <div className="text-secondary text-xs p-4">
-                                        {i18n.language === 'en'
-                                          ? 'Generating QR...'
-                                          : 'Đang tạo mã QR...'}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="text"
-                                      readOnly
-                                      value={syncUrl}
-                                      className="form-control text-xs font-mono py-1.5 opacity-80"
-                                      style={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                        color: 'var(--text-main)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                      }}
-                                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={handleCopySync}
-                                      className="btn-success text-xs py-1.5 px-3 whitespace-nowrap"
+                                    <p className="text-[0.8rem] text-text-muted mb-3 leading-relaxed">
+                                      {i18n.language === 'en'
+                                        ? 'Scan this QR code or copy this link on another device to restore Host permission without sign-in:'
+                                        : 'Quét mã QR bằng điện thoại hoặc sao chép liên kết này mở ở thiết bị khác để cấp quyền Chủ Kèo mà không cần đăng nhập:'}
+                                    </p>
+                                    <div
+                                      className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
+                                      style={{ maxWidth: '196px' }}
                                     >
-                                      {copiedSync
-                                        ? i18n.language === 'en'
-                                          ? 'Copied! ✓'
-                                          : 'Đã chép! ✓'
-                                        : i18n.language === 'en'
-                                          ? 'Copy'
-                                          : 'Sao chép'}
-                                    </button>
+                                      {qrDataUrl ? (
+                                        <img
+                                          src={qrDataUrl}
+                                          alt="Sync QR"
+                                          width={180}
+                                          height={180}
+                                          style={{ display: 'block' }}
+                                        />
+                                      ) : (
+                                        <div className="text-secondary text-xs p-4">
+                                          {i18n.language === 'en'
+                                            ? 'Generating QR...'
+                                            : 'Đang tạo mã QR...'}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="text"
+                                        readOnly
+                                        value={syncUrl}
+                                        className="form-control text-xs font-mono py-1.5 opacity-80"
+                                        style={{
+                                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                          color: 'var(--text-main)',
+                                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        }}
+                                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={handleCopySync}
+                                        className="btn-success text-xs py-1.5 px-3 whitespace-nowrap"
+                                      >
+                                        {copiedSync
+                                          ? i18n.language === 'en'
+                                            ? 'Copied! ✓'
+                                            : 'Đã chép! ✓'
+                                          : i18n.language === 'en'
+                                            ? 'Copy'
+                                            : 'Sao chép'}
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })()}
-                        </div>
-                      )}
+                                );
+                              })()}
+                          </div>
+                        )}
                       <button
                         className="btn-outline-danger w-full"
                         onClick={() => setShowDeleteConfirm(true)}

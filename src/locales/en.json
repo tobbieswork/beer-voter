@@ -8,7 +8,8 @@
     "qr_title": "Login on other device using QR",
     "qr_description_1": "Scan this QR code with your phone camera or other device to sync your account:",
     "qr_description_2": "Please keep this QR secret to protect your account.",
-    "qr_close": "Close"
+    "qr_close": "Close",
+    "sync_confirm": "You are currently logged in with a different account. Do you want to log out and log in with the shared account?"
   },
   "dashboard": {
     "hero_tag": "Premium Edition",

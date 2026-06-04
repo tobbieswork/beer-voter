@@ -8,7 +8,8 @@
     "qr_title": "Đăng nhập thiết bị khác bằng QR",
     "qr_description_1": "Quét mã QR này bằng camera điện thoại của bạn hoặc thiết bị khác để đồng bộ tài khoản:",
     "qr_description_2": "Vui lòng giữ bí mật mã này để bảo vệ tài khoản của bạn.",
-    "qr_close": "Đóng"
+    "qr_close": "Đóng",
+    "sync_confirm": "Bạn đang đăng nhập bằng tài khoản khác. Bạn có muốn đăng xuất và đăng nhập bằng tài khoản được chia sẻ không?"
   },
   "dashboard": {
     "hero_tag": "Phiên bản Premium",

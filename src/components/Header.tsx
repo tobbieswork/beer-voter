@@ -91,15 +91,17 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
               <span className="sm:hidden">✓</span>
             </span>
 
-            <button
-              type="button"
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-gold max-[360px]:h-5 max-[360px]:w-5"
-              onClick={() => setShowQrModal(true)}
-              title={t('header.qr_title')}
-              aria-label={t('header.qr_title')}
-            >
-              📱
-            </button>
+            {currentUser.authMethod === 'guest' && (
+              <button
+                type="button"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-white/5 text-text-secondary transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-gold max-[360px]:h-5 max-[360px]:w-5"
+                onClick={() => setShowQrModal(true)}
+                title={t('header.qr_title')}
+                aria-label={t('header.qr_title')}
+              >
+                📱
+              </button>
+            )}
 
             {onSignOut && (
               <button
