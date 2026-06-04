@@ -165,7 +165,7 @@ export default function EventDetail({
     }
     return [
       { text: '🍺 Kèo này tới bến luôn nha anh em!', label: '🍺 Tới bến luôn!' },
-      { text: '💸 Kèo này tao bao... ly đầu tiên! 😂', label: '💸 Bao ly đầu!' },
+      { text: '💸 Kèo này mình mời... ly đầu tiên nhé! 😉', label: '💸 Mời ly đầu!' },
       { text: '🐶 Đứa nào bàn lùi hoặc bùng làm cún nhé!', label: '🐶 Bùng làm cún!' },
       { text: '⏰ Đi đúng giờ nha, trễ phạt 1 ly!', label: '⏰ Phạt trễ giờ!' },
       { text: '🤤 Thèm lẩu quá, triển quán dê thôi!', label: '🤤 Thèm lẩu dê!' },
