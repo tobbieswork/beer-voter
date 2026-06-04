@@ -9,16 +9,17 @@ This guide details the recommended architecture and steps to integrate Generativ
 For maximum security, reliability, and cost control, the integration uses a **Client-Server Architecture**:
 
 ```
-[ Frontend (React) ] 
-       │ 
+[ Frontend (React) ]
+       │
        ▼ Request (e.g., POST /api/ai/suggest)
 [ Backend (Express) ]  <─── Reads GEMINI_API_KEY securely from .env
-       │ 
+       │
        ▼ SDK call (via @google/genai)
 [ Google Gemini API ]
 ```
 
 ### Why this design?
+
 - **Key Safety:** Keeping `GEMINI_API_KEY` on the Express backend prevents it from being exposed to the client browser.
 - **Quota Protection:** Allows rate-limiting on Express backend routes to prevent quota abuse.
 - **Prompt Isolation:** Allows prompt templates to be constructed server-side, preventing prompt-injection attacks.
@@ -28,18 +29,23 @@ For maximum security, reliability, and cost control, the integration uses a **Cl
 ## 2. Implementation Steps
 
 ### Step 1: Install Gen AI SDK
+
 Run the following command in the project root to install Google's official AI SDK on the backend:
+
 ```bash
 npm install @google/genai
 ```
 
 ### Step 2: Configure Environment
+
 Ensure your [.env](file:///Users/tobbiesng/Code/beer-voter/.env) file has your API key:
+
 ```ini
 GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 ### Step 3: Create Express Route (`server/routes/ai.ts`)
+
 Create a route to handle assistant queries. For example, a route to extract voting options from a simple text paragraph:
 
 ```typescript
@@ -68,22 +74,22 @@ router.post('/suggest', async (req: Request, res: Response) => {
             suggestedDateTimes: {
               type: 'array',
               items: { type: 'string' },
-              description: 'ISO datetime suggestions (e.g. 2026-06-05T19:00:00)'
+              description: 'ISO datetime suggestions (e.g. 2026-06-05T19:00:00)',
             },
             suggestedLocations: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Suggested venue names'
+              description: 'Suggested venue names',
             },
             suggestedBeerStyles: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Suggested beers or beverages'
-            }
+              description: 'Suggested beers or beverages',
+            },
           },
-          required: ['title', 'suggestedDateTimes', 'suggestedLocations', 'suggestedBeerStyles']
-        }
-      }
+          required: ['title', 'suggestedDateTimes', 'suggestedLocations', 'suggestedBeerStyles'],
+        },
+      },
     });
 
     const resultText = response.text;
@@ -102,7 +108,9 @@ export default router;
 ```
 
 ### Step 4: Register Route in Server (`server/index.ts`)
+
 Mount the new AI route:
+
 ```typescript
 import aiRoutes from './routes/ai.js';
 // ...
@@ -110,4 +118,5 @@ app.use('/api/ai', aiRoutes);
 ```
 
 ### Step 5: Frontend integration in React (`src/components/CreateEvent.tsx`)
+
 Create a text area inside your event creation modal where users can type their description. Clicking **"AI Lên Kèo Hộ"** calls the endpoint, gets structured JSON, and automatically populates the form inputs!

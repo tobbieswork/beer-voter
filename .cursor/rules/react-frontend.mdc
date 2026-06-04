@@ -7,6 +7,8 @@ alwaysApply: false
 
 Standards and architectural practices for building the frontend of the BeerVote application.
 
+See the full React standards in [react-best-practices.md](file:///Users/tobbiesng/Code/beer-voter/docs/skills/react-best-practices.md).
+
 ## Core Stack
 - **Framework**: React 19.
 - **Routing**: Minimalist URL parameter-based routing (`?eventId=...`). Custom push state utilities/hooks are used instead of external routing libraries (e.g. React Router).

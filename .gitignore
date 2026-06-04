@@ -27,3 +27,8 @@ dist-ssr
 .opencode/node_modules
 .opencode/package.json
 .opencode/package-lock.json
+
+# Environment variables
+.env
+.env.*
+

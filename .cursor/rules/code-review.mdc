@@ -1,0 +1,16 @@
+---
+description: Code review guidelines and validation checklist for evaluating code modifications.
+globs: ["**/*.ts", "**/*.tsx", "**/*.css"]
+alwaysApply: true
+---
+# Code Review Standards
+
+When editing or reviewing pull requests, strictly apply the guidelines detailed in the Code Review Checklist skill:
+
+See the full checklist in [code-review-checklist.md](file:///Users/tobbiesng/Code/beer-voter/docs/skills/code-review-checklist.md).
+
+## Critical Guidelines
+1. **Strict Types**: Reject any use of `any` types or lint-bypassing comments.
+2. **Vietnamese Comments**: All code comments and descriptions must be written in Vietnamese.
+3. **No CSS Frameworks**: Ensure no Tailwind, CSS modules, or inline styling is introduced.
+4. **Validation Check**: Run formatting and type-checking scripts to verify changes.
