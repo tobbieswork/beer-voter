@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: HeaderProps) {
   const [showQrModal, setShowQrModal] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
   const toggleLanguage = () => {
@@ -19,7 +20,7 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
   };
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between border-b border-glass bg-bg-primary/75 backdrop-blur-md px-4 py-3 sm:px-8 sm:py-4 max-[360px]:px-2 max-[360px]:py-2">
+    <header className="relative sticky top-0 z-50 flex items-center justify-between border-b border-glass bg-bg-primary/75 backdrop-blur-md px-4 py-3 sm:px-8 sm:py-4 max-[360px]:px-2 max-[360px]:py-2">
       <button
         type="button"
         onClick={onGoHome}
@@ -32,7 +33,8 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
         </span>
       </button>
 
-      <div className="flex items-center gap-2">
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center gap-2">
         {/* Nút chuyển đổi ngôn ngữ */}
         <button
           type="button"
@@ -130,6 +132,111 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
           </div>
         )}
       </div>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        type="button"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-glass bg-white/5 text-text-primary transition-colors hover:bg-white/10 md:hidden focus-visible:ring-2 focus-visible:ring-gold"
+        aria-label="Toggle navigation menu"
+      >
+        <span className="text-lg leading-none">{isMenuOpen ? '✕' : '☰'}</span>
+      </button>
+
+      {/* Mobile Dropdown Menu */}
+      {isMenuOpen && (
+        <div className="absolute top-full left-0 right-0 z-40 flex flex-col gap-3.5 border-b border-glass bg-bg-primary/95 backdrop-blur-lg px-4 py-4 md:hidden shadow-[0_12px_30px_rgba(0,0,0,0.4)] transition-all">
+          {currentUser ? (
+            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                {currentUser.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt=""
+                    className="h-8 w-8 rounded-full border border-white/20 object-cover"
+                  />
+                ) : (
+                  <span className="text-xl">🍺</span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm font-semibold text-text-primary block truncate">
+                    {currentUser.nickname}
+                  </span>
+                  {currentUser.realName && (
+                    <span className="text-xs text-text-secondary block truncate">
+                      {currentUser.realName}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <span
+                className={`role-badge ${currentUser.authMethod === 'google' ? 'google' : 'guest'}`}
+              >
+                {currentUser.authMethod === 'google' ? t('header.google') : t('header.guest')}
+              </span>
+            </div>
+          ) : (
+            <div className="border-b border-white/15 pb-2 text-xs text-text-secondary">
+              {t('guest_modal.subtitle')}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2.5">
+            {/* Language Selection */}
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex w-full items-center justify-between rounded-lg border border-glass bg-white/5 px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-white/10"
+            >
+              <span>🌐 {i18n.language === 'vi' ? 'Ngôn ngữ' : 'Language'}</span>
+              <span>{i18n.language === 'vi' ? '🇻🇳 Tiếng Việt' : '🇬🇧 English'}</span>
+            </button>
+
+            {/* Guest QR sync */}
+            {currentUser && currentUser.authMethod === 'guest' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowQrModal(true);
+                  setIsMenuOpen(false);
+                }}
+                className="flex w-full items-center justify-between rounded-lg border border-glass bg-white/5 px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-white/10"
+              >
+                <span>📱 {t('header.qr_title')}</span>
+                <span>➜</span>
+              </button>
+            )}
+
+            {/* Login or Sign out button */}
+            {currentUser
+              ? onSignOut && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSignOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[rgba(248,113,113,0.1)] border border-red-500/25 px-4 py-2 text-sm font-bold text-red-400 transition-colors hover:bg-[rgba(248,113,113,0.2)]"
+                  >
+                    🚪 {t('header.logout')}
+                  </button>
+                )
+              : onSignIn && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSignIn();
+                      setIsMenuOpen(false);
+                    }}
+                    className="btn-primary w-full justify-center py-2 text-sm rounded-lg"
+                  >
+                    🔑 {t('header.login')}
+                  </button>
+                )}
+          </div>
+        </div>
+      )}
 
       {showQrModal && currentUser && (
         <div
