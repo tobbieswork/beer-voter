@@ -1,0 +1,25 @@
+---
+description: React frontend standards, including components, vanilla CSS variables, responsive design, custom hooks, and shared types.
+globs: ["src/**/*.{ts,tsx,css}", "index.html"]
+alwaysApply: false
+---
+# React Frontend Guidelines
+
+Standards and architectural practices for building the frontend of the BeerVote application.
+
+## Core Stack
+- **Framework**: React 19.
+- **Routing**: Minimalist URL parameter-based routing (`?eventId=...`). Custom push state utilities/hooks are used instead of external routing libraries (e.g. React Router).
+- **Global State**: Global user state, WebSocket connections, and loaded events live in hook abstractions inside `src/App.tsx`.
+
+## CSS & Styling (No Frameworks)
+- **No CSS framework** (no Tailwind CSS, no CSS modules, no CSS-in-JS).
+- **Global Files**: Keep all component styling in `src/App.css` and overall resets, typography, and variable tokens in `src/index.css`.
+- **Variables**: Always use CSS custom properties defined in `:root` inside `src/index.css` for styling (e.g. `var(--accent-gold)`, `var(--bg-card)`, `var(--bg-main)`).
+- **Responsive Design**: Respect breakpoints defined in CSS (1024px, 768px, 480px, 360px). Use safe area padding max variables for iOS notches compatibility.
+- **Animations**: Prefer lightweight CSS keyframes for animations (e.g. bubble effects, state transitions).
+
+## Component Structure & Types
+- **Hooks Extraction**: Keep UI components small by extracting asynchronous triggers, WebSockets interactions, and state sync code into modular hooks in `src/hooks/` (e.g., `useWebSocket`, `useUser`).
+- **Interfaces**: Shared types must be imported from the central `src/types/index.ts` file via relative imports (e.g. `import { User, EventData } from '../types'`). Do not declare local copies of shared types.
+- **State Updates**: React local state updates must align with standard state patterns. Do not mutate state objects directly.

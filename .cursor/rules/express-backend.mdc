@@ -1,0 +1,28 @@
+---
+description: Backend Express guidelines, single-file server structure, cache-front database patterns, WebSocket protocols, and authentication.
+globs: ["server/**/*.ts"]
+alwaysApply: false
+---
+# Express Backend Guidelines
+
+Architectural rules and patterns for the Express backend, WebSocket server, and database sync.
+
+## Server Structure
+- **Global Directive**: Keep `/* global process */` on line 1 of `server/index.ts` so TypeScript compiles environment checks properly.
+- **Port**: Single process listening on port 3001 serving REST APIs, serving production React static bundle, and mounting WebSockets on the same port.
+
+## Database & Cache Sync (Dual-Mode DB)
+- **Architecture**: The database utilizes a dual-mode cache-front pattern.
+- **Modes**: Falls back to local `server/db.json` when `SUPABASE_URL` + `SUPABASE_KEY` env vars are absent. Otherwise, loads/writes the entire DB JSON state into a single row of the `beer_voter_data` Supabase table (key: `main_db`).
+- **Cache**: Memory cache `cacheDB` holds all state. Writes are saved to `cacheDB` immediately and then asynchronously flushed to Supabase/File-system using `syncDB()` with pending write coalescing to minimize database calls.
+- Do not introduce complex relational queries. Treat the system as a key-value/document store sync.
+
+## WebSockets Integration
+- **Connection**: WebSockets are handled concurrently with the Express server.
+- **Sync protocol**: Client/server sync via typed event payloads (e.g. `EVENT_UPDATED`, `DASHBOARD_UPDATED`).
+- **Rate limiting**: Enforce client rate limits (e.g. 500ms between actions).
+- **Event PIN validation**: Enforce PIN requirements on sensitive updates for locked/PIN-protected events. Creator authentications require Creator token validations.
+
+## Error Handling & Sentry
+- Centralized Express middleware should handle server-side errors.
+- Integrate Sentry for capturing exception reports in production configurations.

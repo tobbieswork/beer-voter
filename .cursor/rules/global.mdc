@@ -1,0 +1,35 @@
+---
+description: Global project standards, code quality, naming/language rules, and strict TypeScript types.
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+alwaysApply: true
+---
+# Global Coding Standards
+
+Guidelines and standards to maintain code quality, type-safety, and project integrity.
+
+## Strict Type Rules
+- **Strict Any Type Rule**: Do NOT use `any` types in frontend or backend TypeScript files.
+- Do NOT use comments like `/* eslint-disable @typescript-eslint/no-explicit-any */` to bypass type checks. Always define explicit interfaces or use specific, safe types (e.g. `unknown`, `Record<string, unknown>`).
+
+## Language & Comments
+- **Identifiers**: All functions, variables, classes, and database columns MUST be named in English (e.g. `getUser`, `voteToggle`).
+- **Comments**: Code comments and developer explanations MUST be written in Vietnamese (Tiếng Việt) to match the project documentation style.
+- **Example**:
+  ```typescript
+  // Lấy thông tin người dùng từ localStorage
+  const fetchLocalUser = (): User | null => { ... };
+  ```
+
+## Quality Assurance & Verification Commands
+Before submitting code changes, run and verify the following commands in order:
+1. `npm run lint` — Runs ESLint checks on Javascript and TypeScript source files.
+2. `npx tsc --noEmit` — Compiles TypeScript files and runs type checks without emitting build files.
+3. `npm run format:check` — Verifies formatting compliance with Prettier rules.
+4. `npm run build` — Validates compilation and bundling for production distribution.
+
+## Formatting & Style
+- Formatting is managed strictly by Prettier config (`.prettierrc`).
+- Indentation: 2 spaces.
+- Semicolons: Yes.
+- Quotes: Single quotes.
+- Print width: 100 characters.
