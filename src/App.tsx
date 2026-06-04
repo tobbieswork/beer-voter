@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import BeerBubbles from './components/BeerBubbles';
 import Header from './components/Header';
@@ -9,278 +9,59 @@ import GuestJoinModal from './components/GuestJoinModal';
 import CreateEvent from './components/CreateEvent';
 import PartyPinModal from './components/PartyPinModal';
 
-import { User, EventData, OptionPayload, CommentPayload, LockPayload } from './types';
-
-function getVisitedEvents(): string[] {
-  try {
-    const data = localStorage.getItem('beervote_visited_events');
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
-}
-
-function addVisitedEvent(eventId: string) {
-  try {
-    const events = getVisitedEvents();
-    if (!events.includes(eventId)) {
-      events.push(eventId);
-      localStorage.setItem('beervote_visited_events', JSON.stringify(events));
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-// Pin token storage helpers
-function getPinToken(eventId: string): string | null {
-  try {
-    return localStorage.getItem(`beervote_pin_token_${eventId}`);
-  } catch {
-    return null;
-  }
-}
-
-function savePinToken(eventId: string, token: string) {
-  try {
-    localStorage.setItem(`beervote_pin_token_${eventId}`, token);
-  } catch {
-    // Storage full, ignore
-  }
-}
-
-function clearPinToken(eventId: string) {
-  try {
-    localStorage.removeItem(`beervote_pin_token_${eventId}`);
-  } catch {
-    // Ignore
-  }
-}
-
-function getInitialUser(): User | null {
-  const userId = localStorage.getItem('beervote_user_id');
-  const nickname = localStorage.getItem('beervote_user_nickname');
-  const realName = localStorage.getItem('beervote_user_real_name');
-  const username = localStorage.getItem('beervote_user_username');
-  const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
-  const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
-  const googleToken = localStorage.getItem('beervote_user_google_token') || undefined;
-  const githubId = localStorage.getItem('beervote_user_github_id') || undefined;
-  const githubToken = localStorage.getItem('beervote_user_github_token') || undefined;
-  const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as
-    | 'google'
-    | 'guest'
-    | 'github';
-  if (userId && nickname) {
-    return {
-      id: userId,
-      nickname,
-      realName: realName || '',
-      username: username || '',
-      name: realName ? `${nickname} (${realName})` : nickname,
-      avatar,
-      googleId,
-      githubId,
-      authMethod,
-      googleToken,
-      githubToken,
-    };
-  }
-  return null;
-}
-
-function saveUserToStorage(user: User) {
-  localStorage.setItem('beervote_user_id', user.id);
-  localStorage.setItem('beervote_user_nickname', user.nickname);
-  localStorage.setItem('beervote_user_real_name', user.realName);
-  localStorage.setItem('beervote_user_username', user.username);
-  if (user.avatar) localStorage.setItem('beervote_user_avatar', user.avatar);
-  else localStorage.removeItem('beervote_user_avatar');
-  if (user.googleId) localStorage.setItem('beervote_user_google_id', user.googleId);
-  else localStorage.removeItem('beervote_user_google_id');
-  if (user.googleToken) localStorage.setItem('beervote_user_google_token', user.googleToken);
-  else localStorage.removeItem('beervote_user_google_token');
-  if (user.githubId) localStorage.setItem('beervote_user_github_id', user.githubId);
-  else localStorage.removeItem('beervote_user_github_id');
-  if (user.githubToken) localStorage.setItem('beervote_user_github_token', user.githubToken);
-  else localStorage.removeItem('beervote_user_github_token');
-  localStorage.setItem('beervote_user_auth_method', user.authMethod || 'guest');
-}
-
-function clearUserFromStorage() {
-  [
-    'beervote_user_id',
-    'beervote_user_nickname',
-    'beervote_user_real_name',
-    'beervote_user_username',
-    'beervote_user_avatar',
-    'beervote_user_google_id',
-    'beervote_user_auth_method',
-    'beervote_user_google_token',
-    'beervote_user_github_id',
-    'beervote_user_github_token',
-  ].forEach((k) => localStorage.removeItem(k));
-}
+import { User, EventData } from './types';
+import { useUser } from './hooks/useUser';
+import { useWebSocket } from './hooks/useWebSocket';
+import {
+  getVisitedEvents,
+  addVisitedEvent,
+  getPinToken,
+  savePinToken,
+  clearPinToken,
+} from './utils/storage';
 
 export default function App() {
   const [events, setEvents] = useState<EventData[]>([]);
   const [_visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
 
   const [currentEventId, setCurrentEventId] = useState<string | null>(() => {
-    // Đọc eventId từ URL lúc khởi chạy
     const params = new URLSearchParams(window.location.search);
     return params.get('eventId') || null;
   });
 
   const [currentEventData, setCurrentEventData] = useState<EventData | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(() => getInitialUser());
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState(false);
 
-  // Trạng thái Modal
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(() => {
-    const user = getInitialUser();
-    const params = new URLSearchParams(window.location.search);
-    return params.get('eventId') ? !user : false;
-  });
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [triggerCreateAfterJoin, setTriggerCreateAfterJoin] = useState<boolean>(false);
-  const [showPinModal, setShowPinModal] = useState<boolean>(false);
-  const [toastMsg, setToastMsg] = useState('');
-
+  // Toast notification state
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const showToast = useCallback((msg: string) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(''), 3000);
+    setTimeout(() => setToastMsg(null), 3000);
   }, []);
 
-  // Check authData on startup
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const authData = params.get('authData');
-    if (authData) {
-      try {
-        const decodedUser = JSON.parse(decodeURIComponent(escape(atob(authData))));
-        if (decodedUser && decodedUser.id && decodedUser.nickname) {
-          saveUserToStorage(decodedUser);
-          setCurrentUser(decodedUser);
-
-          // Clean the authData query param while preserving others like eventId
-          params.delete('authData');
-          const cleanSearch = params.toString();
-          const newUrl = cleanSearch
-            ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
-            : `${window.location.origin}${window.location.pathname}`;
-
-          window.history.replaceState({}, '', newUrl);
-          showToast('🍻 Đăng nhập qua mã QR thành công!');
-          setIsJoinModalOpen(false);
-        }
-      } catch (e) {
-        console.error('Lỗi giải mã QR Auth:', e);
-      }
-    }
-
-    const googleLogin = params.get('googleLogin');
-    if (googleLogin === 'true') {
-      fetch('/api/auth/session')
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch session');
-          return res.json();
-        })
-        .then((data) => {
-          const { sub, email, name, given_name, picture, credential } = data;
-          if (sub && credential) {
-            const displayName = given_name || name || email;
-            const realName = name || given_name || '';
-            const user: User = {
-              id: 'google_' + sub,
-              nickname: displayName,
-              realName,
-              username: email,
-              name: realName ? `${displayName} (${realName})` : displayName,
-              email,
-              avatar: picture,
-              googleId: sub,
-              authMethod: 'google',
-              googleToken: credential,
-            };
-            saveUserToStorage(user);
-            setCurrentUser(user);
-
-            // Clean the query parameters
-            params.delete('googleLogin');
-            const cleanSearch = params.toString();
-            const newUrl = cleanSearch
-              ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
-              : `${window.location.origin}${window.location.pathname}`;
-
-            window.history.replaceState({}, '', newUrl);
-            showToast('🍻 Đăng nhập Google thành công!');
-            setIsJoinModalOpen(false);
-          }
-        })
-        .catch((err) => {
-          console.error('Lỗi xử lý Google redirect callback:', err);
-        });
-    }
-
-    const githubLogin = params.get('githubLogin');
-    if (githubLogin === 'true') {
-      fetch('/api/auth/session')
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch session');
-          return res.json();
-        })
-        .then((data) => {
-          const { sub, email, name, login, picture, credential, authMethod } = data;
-          if (sub && credential && authMethod === 'github') {
-            const displayName = name || login || email || `GitHub User ${sub}`;
-            const realName = name || '';
-            const user: User = {
-              id: 'github_' + sub,
-              nickname: displayName,
-              realName,
-              username: login || email || '',
-              name: realName ? `${displayName} (${realName})` : displayName,
-              email,
-              avatar: picture,
-              githubId: sub,
-              authMethod: 'github',
-              githubToken: credential,
-            };
-            saveUserToStorage(user);
-            setCurrentUser(user);
-
-            // Clean the query parameters
-            params.delete('githubLogin');
-            const cleanSearch = params.toString();
-            const newUrl = cleanSearch
-              ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
-              : `${window.location.origin}${window.location.pathname}`;
-
-            window.history.replaceState({}, '', newUrl);
-            showToast('🍻 Đăng nhập GitHub thành công!');
-            setIsJoinModalOpen(false);
-          }
-        })
-        .catch((err) => {
-          console.error('Lỗi xử lý GitHub redirect callback:', err);
-        });
-    }
-  }, [showToast]);
-
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const connectWsRef = useRef<(() => void) | null>(null);
+  // Encapsulate user state & logic inside custom hook
+  const { currentUser, loginUser, logoutUser } = useUser(showToast, setIsJoinModalOpen);
 
   // 1. Tự động đồng bộ URL (Router mini)
   const navigateToEvent = useCallback(
     (eventId: string | null) => {
       setCurrentEventId(eventId);
-      const newUrl = eventId
-        ? `${window.location.origin}${window.location.pathname}?eventId=${eventId}`
+      const params = new URLSearchParams(window.location.search);
+      if (eventId) {
+        params.set('eventId', eventId);
+      } else {
+        params.delete('eventId');
+        setCurrentEventData(null);
+      }
+      const newSearch = params.toString();
+      const newUrl = newSearch
+        ? `${window.location.origin}${window.location.pathname}?${newSearch}`
         : `${window.location.origin}${window.location.pathname}`;
       window.history.pushState({ eventId }, '', newUrl);
 
-      // Sync modal state on navigation
       if (eventId && !currentUser) {
         setIsJoinModalOpen(true);
       } else {
@@ -289,6 +70,24 @@ export default function App() {
     },
     [currentUser]
   );
+
+  // Encapsulate WebSocket logic inside custom hook
+  const {
+    wsRef,
+    handleVoteToggle,
+    handleAddOption,
+    handleAddComment,
+    handleLockEvent,
+    handleUnlockEvent,
+    handleDeleteEvent,
+  } = useWebSocket({
+    currentEventId,
+    currentUser,
+    setCurrentEventData,
+    setEvents,
+    navigateToEvent,
+    setIsJoinModalOpen,
+  });
 
   // Lắng nghe nút Back/Forward của trình duyệt
   useEffect(() => {
@@ -346,7 +145,7 @@ export default function App() {
         if (response.ok) {
           const data = await response.json();
           setCurrentEventData(data);
-          // If we are verified as creator via userId/Google on another device, send JOIN_EVENT now that data is loaded
+          // If we are verified as creator via userId/Google/GitHub on another device, send JOIN_EVENT now that data is loaded
           const isCreator = !!creatorToken || (currentUser && currentUser.id === data.creatorId);
           if (
             isCreator &&
@@ -374,7 +173,7 @@ export default function App() {
         console.error(`Không thể gọi API lấy chi tiết kèo ${id}:`, error);
       }
     },
-    [currentUser]
+    [currentUser, wsRef]
   );
 
   // Tải dữ liệu khi chuyển trang
@@ -423,7 +222,7 @@ export default function App() {
         wsRef.current.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
       }
     }
-  }, [currentEventId, fetchEventDetail, fetchEvents, currentUser]);
+  }, [currentEventId, fetchEventDetail, fetchEvents, currentUser, wsRef]);
 
   // PIN gating: show PIN modal if event is protected and token not present
   useEffect(() => {
@@ -443,245 +242,6 @@ export default function App() {
       setShowPinModal(false);
     }
   }, [currentEventId, currentEventData, currentUser]);
-
-  // 3. Thiết lập Kết nối WebSockets Real-time
-  const connectWebSocket = useCallback(() => {
-    if (wsRef.current) return;
-
-    // Tự động định vị địa chỉ WebSocket server dựa trên hostname và port hiện tại
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let wsUrl: string;
-    if (window.location.port === '5173') {
-      // Trong môi trường dev: React chạy ở 5173, WebSocket chạy ở 3001
-      wsUrl = `${protocol}//${window.location.hostname}:3001`;
-    } else {
-      // Trong môi trường production / LAN share qua 3001: WebSockets chạy chung cổng với web
-      wsUrl = `${protocol}//${window.location.host}`;
-    }
-
-    console.log(`Đang kết nối WebSockets tới: ${wsUrl}`);
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log('Đã kết nối WebSockets thành công tới BeerVote Server!');
-      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-
-      // Đăng ký phòng khi kết nối mở
-      if (currentEventId) {
-        ws.send(
-          JSON.stringify({
-            type: 'JOIN_EVENT',
-            eventId: currentEventId,
-            pinToken: getPinToken(currentEventId),
-            creatorToken: localStorage.getItem(`beervote_creator_token_${currentEventId}`),
-            userId: currentUser?.id,
-            googleToken: currentUser?.googleToken,
-            githubToken: currentUser?.githubToken,
-          })
-        );
-      } else {
-        ws.send(JSON.stringify({ type: 'JOIN_DASHBOARD' }));
-      }
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        console.log('Nhận WebSocket Event:', message.type);
-
-        if (message.type === 'EVENT_UPDATED') {
-          if (message.eventId === currentEventId) {
-            setCurrentEventData(message.eventData);
-          }
-        } else if (message.type === 'DASHBOARD_UPDATED') {
-          if (!currentEventId) {
-            setEvents(message.events);
-          }
-        } else if (message.type === 'EVENT_DELETED') {
-          setEvents((prev) => prev.filter((e) => e.id !== message.eventId));
-          if (message.eventId === currentEventId) {
-            navigateToEvent(null);
-          }
-        }
-      } catch (err) {
-        console.error('Lỗi phân tích tin nhắn WebSocket:', err);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log('Kết nối WebSocket đã bị ngắt. Đang thử kết nối lại sau 3s...');
-      wsRef.current = null;
-      reconnectTimerRef.current = setTimeout(() => {
-        if (connectWsRef.current) {
-          connectWsRef.current();
-        }
-      }, 3000);
-    };
-
-    ws.onerror = (err) => {
-      console.error('Lỗi kết nối WebSocket:', err);
-      ws.close();
-    };
-  }, [
-    currentEventId,
-    navigateToEvent,
-    currentUser?.id,
-    currentUser?.googleToken,
-    currentUser?.githubToken,
-  ]);
-
-  useEffect(() => {
-    connectWsRef.current = connectWebSocket;
-    connectWebSocket();
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-    };
-  }, [connectWebSocket]);
-
-  // 4. Thao tác gửi dữ liệu qua WebSockets
-  const handleVoteToggle = (
-    eventId: string,
-    optionId: string,
-    userId?: string,
-    userName?: string
-  ) => {
-    if (!currentUser) {
-      setIsJoinModalOpen(true);
-      return;
-    }
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'VOTE_TOGGLE',
-          eventId,
-          optionId,
-          userId: userId || currentUser.id,
-          userName: userName || currentUser.name,
-          userNickname: currentUser.nickname || userName || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(eventId) || '',
-        })
-      );
-    } else {
-      alert('Mất kết nối WebSocket tới Server. Vui lòng đợi trong giây lát!');
-    }
-  };
-
-  const handleAddOption = (optionData: OptionPayload | null) => {
-    if (!currentUser) {
-      setIsJoinModalOpen(true);
-      return;
-    }
-    if (!optionData) return;
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'ADD_OPTION',
-          ...optionData,
-          creatorId: currentUser.id,
-          creatorName: currentUser.name,
-          userNickname: currentUser.nickname || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(optionData.eventId) || '',
-        })
-      );
-    }
-  };
-
-  const handleAddComment = (commentData: CommentPayload | null) => {
-    if (!currentUser) {
-      setIsJoinModalOpen(true);
-      return;
-    }
-    if (!commentData) return;
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'ADD_COMMENT',
-          ...commentData,
-          userId: currentUser.id,
-          userName: currentUser.name,
-          userNickname: currentUser.nickname || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(commentData.eventId) || '',
-        })
-      );
-    }
-  };
-
-  const handleLockEvent = (lockData: LockPayload) => {
-    if (!currentUser) {
-      setIsJoinModalOpen(true);
-      return;
-    }
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${lockData.eventId}`) || '';
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'LOCK_EVENT',
-          ...lockData,
-          userId: currentUser.id,
-          creatorToken,
-          pinToken: getPinToken(lockData.eventId) || '',
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
-        })
-      );
-    }
-  };
-
-  const handleUnlockEvent = (eventId: string) => {
-    if (!currentUser) return;
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'UNLOCK_EVENT',
-          eventId,
-          userId: currentUser.id,
-          creatorToken,
-          pinToken: getPinToken(eventId) || '',
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
-        })
-      );
-    }
-  };
-
-  const handleDeleteEvent = async (eventId: string) => {
-    if (!currentUser) return;
-    const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
-    try {
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creatorToken,
-          userId: currentUser.id,
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
-        }),
-      });
-      if (res.ok) {
-        navigateToEvent(null);
-        setEvents((prev) => prev.filter((e) => e.id !== eventId));
-      } else {
-        alert('Không thể xóa kèo nhậu này. Bạn có phải Chủ Kèo không?');
-      }
-    } catch {
-      alert('Lỗi kết nối khi xóa kèo nhậu!');
-    }
-  };
 
   // Xử lý mở Modal tạo kèo nhậu (kiểm tra hồ sơ)
   const handleCreateEventClick = () => {
@@ -713,8 +273,7 @@ export default function App() {
       name: realName ? `${nickname} (${realName})` : nickname,
       authMethod: 'guest',
     };
-    saveUserToStorage(user);
-    setCurrentUser(user);
+    loginUser(user);
     setIsJoinModalOpen(false);
     if (triggerCreateAfterJoin) {
       setTriggerCreateAfterJoin(false);
@@ -751,8 +310,7 @@ export default function App() {
       authMethod: 'google',
       googleToken: credential,
     };
-    saveUserToStorage(user);
-    setCurrentUser(user);
+    loginUser(user);
     setIsJoinModalOpen(false);
     if (triggerCreateAfterJoin) {
       setTriggerCreateAfterJoin(false);
@@ -761,8 +319,7 @@ export default function App() {
   };
 
   const handleSignOut = () => {
-    clearUserFromStorage();
-    setCurrentUser(null);
+    logoutUser();
     navigateToEvent(null);
   };
 
