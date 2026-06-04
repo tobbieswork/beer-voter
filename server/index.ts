@@ -25,6 +25,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Tin tưởng headers từ reverse proxy (Render, Cloudflare, v.v.) để giải quyết đúng giao thức https
+app.set('trust proxy', 1);
+
 // Cấu hình CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
