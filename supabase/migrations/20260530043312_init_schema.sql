@@ -8,8 +8,6 @@ CREATE TABLE IF NOT EXISTS public.events (
     creator_real_name text,
     creator_username text,
     creator_token text,
-    party_pin_hash text,
-    party_pin text,
     status text DEFAULT 'voting'::text NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
     locked_at timestamp with time zone,
