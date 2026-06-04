@@ -8,8 +8,10 @@ export interface User {
   email?: string;
   avatar?: string;
   googleId?: string;
-  authMethod?: 'google' | 'guest';
+  githubId?: string;
+  authMethod?: 'google' | 'guest' | 'github';
   googleToken?: string;
+  githubToken?: string;
 }
 
 export interface EventOption {

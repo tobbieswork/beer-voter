@@ -47,7 +47,7 @@ router.post('/google/callback', async (req: Request, res: Response) => {
   }
 });
 
-// Lấy thông tin session Google OAuth và xoá cookie
+// Lấy thông tin session Google/GitHub OAuth và xoá cookie
 router.get('/session', (req: Request, res: Response) => {
   const cookieHeader = req.headers.cookie;
   if (!cookieHeader) {
@@ -61,18 +61,155 @@ router.get('/session', (req: Request, res: Response) => {
     })
   );
 
-  const sessionCookie = cookies['beervote_google_session'];
-  if (!sessionCookie) {
+  const googleSessionCookie = cookies['beervote_google_session'];
+  const githubSessionCookie = cookies['beervote_github_session'];
+
+  if (!googleSessionCookie && !githubSessionCookie) {
     return res.status(401).json({ message: 'Session không hợp lệ hoặc đã hết hạn.' });
   }
 
   try {
-    const sessionData = JSON.parse(decodeURIComponent(sessionCookie));
-    res.clearCookie('beervote_google_session');
-    res.json(sessionData);
+    if (googleSessionCookie) {
+      const sessionData = JSON.parse(decodeURIComponent(googleSessionCookie));
+      res.clearCookie('beervote_google_session');
+      return res.json({ ...sessionData, authMethod: 'google' });
+    } else {
+      const sessionData = JSON.parse(decodeURIComponent(githubSessionCookie));
+      res.clearCookie('beervote_github_session');
+      return res.json({ ...sessionData, authMethod: 'github' });
+    }
   } catch (err) {
     console.error('Lỗi phân tích session cookie:', err);
     res.status(500).json({ message: 'Lỗi máy chủ khi giải mã session.' });
+  }
+});
+
+// GitHub OAuth Redirect Initiation
+router.get('/github/login', (req: Request, res: Response) => {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send('GitHub OAuth is not configured on this server.');
+  }
+  const eventId = (req.query.eventId as string) || '';
+  const state = eventId ? encodeURIComponent(eventId) : '';
+  const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/github/callback`;
+  const githubUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}&scope=read:user,user:email&state=${state}`;
+  res.redirect(githubUrl);
+});
+
+// GitHub OAuth Callback Handler
+router.get('/github/callback', async (req: Request, res: Response) => {
+  const { code, state } = req.query;
+  if (!code) {
+    return res.status(400).send('Không nhận được code từ GitHub.');
+  }
+
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    return res.status(500).send('GitHub Client ID hoặc Client Secret chưa được cấu hình.');
+  }
+
+  try {
+    // 1. Exchange code for access token
+    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+      }),
+    });
+
+    if (!tokenRes.ok) {
+      throw new Error(`Failed to exchange code: ${tokenRes.status}`);
+    }
+
+    const tokenData = (await tokenRes.json()) as {
+      access_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+    if (tokenData.error || !tokenData.access_token) {
+      throw new Error(tokenData.error_description || tokenData.error || 'No access token returned');
+    }
+
+    const accessToken = tokenData.access_token;
+
+    // 2. Fetch user profile
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'User-Agent': 'BeerVoter-Server',
+        Accept: 'application/json',
+      },
+    });
+
+    if (!userRes.ok) {
+      throw new Error(`Failed to fetch user profile: ${userRes.status}`);
+    }
+
+    const profile = (await userRes.json()) as {
+      id: number;
+      login: string;
+      name?: string;
+      email?: string;
+      avatar_url?: string;
+    };
+
+    // 3. Fetch primary email if not public in profile
+    let email = profile.email || '';
+    if (!email) {
+      const emailsRes = await fetch('https://api.github.com/user/emails', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'User-Agent': 'BeerVoter-Server',
+          Accept: 'application/json',
+        },
+      });
+      if (emailsRes.ok) {
+        const emails = (await emailsRes.json()) as Array<{
+          email: string;
+          primary: boolean;
+          verified: boolean;
+        }>;
+        const primaryEmail = emails.find((e) => e.primary) || emails[0];
+        if (primaryEmail) {
+          email = primaryEmail.email;
+        }
+      }
+    }
+
+    // 4. Save details in cookie
+    const sessionData = {
+      sub: String(profile.id),
+      email,
+      name: profile.name || '',
+      login: profile.login,
+      picture: profile.avatar_url || '',
+      credential: accessToken,
+    };
+
+    res.cookie('beervote_github_session', JSON.stringify(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 5 * 60 * 1000, // 5 minutes
+    });
+
+    const eventId = state ? decodeURIComponent(state as string) : '';
+    const redirectPath = eventId ? `/?eventId=${eventId}&githubLogin=true` : `/?githubLogin=true`;
+    res.redirect(redirectPath);
+  } catch (err) {
+    console.error('GitHub authentication callback error:', err);
+    res.status(500).send('Lỗi máy chủ khi xác thực GitHub.');
   }
 });
 

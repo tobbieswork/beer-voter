@@ -25,3 +25,28 @@ export async function verifyGoogleToken(idToken: string | undefined): Promise<st
     return null;
   }
 }
+
+/**
+ * Xác thực Github Access Token và trả về github ID nếu hợp lệ.
+ */
+export async function verifyGithubToken(accessToken: string | undefined): Promise<string | null> {
+  if (!accessToken) return null;
+  try {
+    const response = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'User-Agent': 'BeerVoter-Server',
+        Accept: 'application/json',
+      },
+    });
+    if (!response.ok) {
+      console.error('GitHub token verification failed status:', response.status);
+      return null;
+    }
+    const data = (await response.json()) as { id: number | string };
+    return data && data.id ? String(data.id) : null;
+  } catch (e) {
+    console.error('GitHub token verification failed error:', e);
+    return null;
+  }
+}

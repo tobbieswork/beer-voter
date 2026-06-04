@@ -65,9 +65,12 @@ function getInitialUser(): User | null {
   const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
   const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
   const googleToken = localStorage.getItem('beervote_user_google_token') || undefined;
+  const githubId = localStorage.getItem('beervote_user_github_id') || undefined;
+  const githubToken = localStorage.getItem('beervote_user_github_token') || undefined;
   const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as
     | 'google'
-    | 'guest';
+    | 'guest'
+    | 'github';
   if (userId && nickname) {
     return {
       id: userId,
@@ -77,8 +80,10 @@ function getInitialUser(): User | null {
       name: realName ? `${nickname} (${realName})` : nickname,
       avatar,
       googleId,
+      githubId,
       authMethod,
       googleToken,
+      githubToken,
     };
   }
   return null;
@@ -95,6 +100,10 @@ function saveUserToStorage(user: User) {
   else localStorage.removeItem('beervote_user_google_id');
   if (user.googleToken) localStorage.setItem('beervote_user_google_token', user.googleToken);
   else localStorage.removeItem('beervote_user_google_token');
+  if (user.githubId) localStorage.setItem('beervote_user_github_id', user.githubId);
+  else localStorage.removeItem('beervote_user_github_id');
+  if (user.githubToken) localStorage.setItem('beervote_user_github_token', user.githubToken);
+  else localStorage.removeItem('beervote_user_github_token');
   localStorage.setItem('beervote_user_auth_method', user.authMethod || 'guest');
 }
 
@@ -108,6 +117,8 @@ function clearUserFromStorage() {
     'beervote_user_google_id',
     'beervote_user_auth_method',
     'beervote_user_google_token',
+    'beervote_user_github_id',
+    'beervote_user_github_token',
   ].forEach((k) => localStorage.removeItem(k));
 }
 
@@ -210,6 +221,50 @@ export default function App() {
           console.error('Lỗi xử lý Google redirect callback:', err);
         });
     }
+
+    const githubLogin = params.get('githubLogin');
+    if (githubLogin === 'true') {
+      fetch('/api/auth/session')
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch session');
+          return res.json();
+        })
+        .then((data) => {
+          const { sub, email, name, login, picture, credential, authMethod } = data;
+          if (sub && credential && authMethod === 'github') {
+            const displayName = name || login || email || `GitHub User ${sub}`;
+            const realName = name || '';
+            const user: User = {
+              id: 'github_' + sub,
+              nickname: displayName,
+              realName,
+              username: login || email || '',
+              name: realName ? `${displayName} (${realName})` : displayName,
+              email,
+              avatar: picture,
+              githubId: sub,
+              authMethod: 'github',
+              githubToken: credential,
+            };
+            saveUserToStorage(user);
+            setCurrentUser(user);
+
+            // Clean the query parameters
+            params.delete('githubLogin');
+            const cleanSearch = params.toString();
+            const newUrl = cleanSearch
+              ? `${window.location.origin}${window.location.pathname}?${cleanSearch}`
+              : `${window.location.origin}${window.location.pathname}`;
+
+            window.history.replaceState({}, '', newUrl);
+            showToast('🍻 Đăng nhập GitHub thành công!');
+            setIsJoinModalOpen(false);
+          }
+        })
+        .catch((err) => {
+          console.error('Lỗi xử lý GitHub redirect callback:', err);
+        });
+    }
   }, [showToast]);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -284,6 +339,9 @@ export default function App() {
         if (currentUser?.googleToken) {
           headers['X-Google-Token'] = currentUser.googleToken;
         }
+        if (currentUser?.githubToken) {
+          headers['X-Github-Token'] = currentUser.githubToken;
+        }
         const response = await fetch(`/api/events/${id}`, { headers });
         if (response.ok) {
           const data = await response.json();
@@ -304,6 +362,7 @@ export default function App() {
                 creatorToken,
                 userId: currentUser?.id,
                 googleToken: currentUser?.googleToken,
+                githubToken: currentUser?.githubToken,
               })
             );
           }
@@ -351,6 +410,7 @@ export default function App() {
             creatorToken,
             userId: currentUser?.id,
             googleToken: currentUser?.googleToken,
+            githubToken: currentUser?.githubToken,
           })
         );
       }
@@ -417,6 +477,7 @@ export default function App() {
             creatorToken: localStorage.getItem(`beervote_creator_token_${currentEventId}`),
             userId: currentUser?.id,
             googleToken: currentUser?.googleToken,
+            githubToken: currentUser?.githubToken,
           })
         );
       } else {
@@ -462,7 +523,13 @@ export default function App() {
       console.error('Lỗi kết nối WebSocket:', err);
       ws.close();
     };
-  }, [currentEventId, navigateToEvent, currentUser?.id, currentUser?.googleToken]);
+  }, [
+    currentEventId,
+    navigateToEvent,
+    currentUser?.id,
+    currentUser?.googleToken,
+    currentUser?.githubToken,
+  ]);
 
   useEffect(() => {
     connectWsRef.current = connectWebSocket;
@@ -567,6 +634,7 @@ export default function App() {
           creatorToken,
           pinToken: getPinToken(lockData.eventId) || '',
           googleToken: currentUser.googleToken,
+          githubToken: currentUser.githubToken,
         })
       );
     }
@@ -584,6 +652,7 @@ export default function App() {
           creatorToken,
           pinToken: getPinToken(eventId) || '',
           googleToken: currentUser.googleToken,
+          githubToken: currentUser.githubToken,
         })
       );
     }
@@ -600,6 +669,7 @@ export default function App() {
           creatorToken,
           userId: currentUser.id,
           googleToken: currentUser.googleToken,
+          githubToken: currentUser.githubToken,
         }),
       });
       if (res.ok) {

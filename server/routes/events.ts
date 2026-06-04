@@ -14,7 +14,7 @@ import {
 import { DBEvent, DBOption } from '../db/types.js';
 import { supabase } from '../db/client.js';
 import { broadcastEventDeleted, broadcastDashboardUpdate } from '../websocket/server.js';
-import { verifyGoogleToken } from '../utils/auth.js';
+import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
 
 const router = Router();
 
@@ -42,6 +42,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   const creatorToken = req.headers['x-creator-token'] as string | undefined;
   const userId = req.headers['x-user-id'] as string | undefined;
   const googleToken = req.headers['x-google-token'] as string | undefined;
+  const githubToken = req.headers['x-github-token'] as string | undefined;
   const db = readDB();
   const event = db.events.find((e) => e.id === id);
   if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
@@ -52,6 +53,15 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (userId.startsWith('google_')) {
       const googleSub = await verifyGoogleToken(googleToken);
       if (googleSub && `google_${googleSub}` === event.creatorId) {
+        isCreator = true;
+      }
+    }
+  }
+
+  if (!isCreator && githubToken && userId && userId === event.creatorId) {
+    if (userId.startsWith('github_')) {
+      const githubSub = await verifyGithubToken(githubToken);
+      if (githubSub && `github_${githubSub}` === event.creatorId) {
         isCreator = true;
       }
     }
@@ -173,7 +183,7 @@ router.post('/:id/verify-pin', (req: Request, res: Response) => {
 // Xóa kèo nhậu
 router.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { creatorToken, userId, googleToken } = req.body;
+  const { creatorToken, userId, googleToken, githubToken } = req.body;
 
   const db = readDB();
   const eventIndex = db.events.findIndex((e) => e.id === id);
@@ -186,6 +196,15 @@ router.delete('/:id', async (req: Request, res: Response) => {
     if (userId.startsWith('google_')) {
       const googleSub = await verifyGoogleToken(googleToken);
       if (googleSub && `google_${googleSub}` === event.creatorId) {
+        authorized = true;
+      }
+    }
+  }
+
+  if (!authorized && githubToken && userId && userId === event.creatorId) {
+    if (userId.startsWith('github_')) {
+      const githubSub = await verifyGithubToken(githubToken);
+      if (githubSub && `github_${githubSub}` === event.creatorId) {
         authorized = true;
       }
     }

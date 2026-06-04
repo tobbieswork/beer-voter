@@ -11,7 +11,7 @@ import {
 } from '../db/store.js';
 import { DBOption } from '../db/types.js';
 import { clients, broadcastEventUpdate, broadcastDashboardUpdate } from './server.js';
-import { verifyGoogleToken } from '../utils/auth.js';
+import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
 
 const RATE_LIMIT_MS = 500;
 
@@ -21,6 +21,7 @@ export interface WSAction {
   pinToken?: string;
   creatorToken?: string;
   googleToken?: string;
+  githubToken?: string;
   optionId?: string;
   userId?: string;
   userName?: string;
@@ -58,6 +59,19 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
           if (action.userId.startsWith('google_')) {
             const googleSub = await verifyGoogleToken(action.googleToken);
             if (googleSub && `google_${googleSub}` === event_join.creatorId) {
+              isCreator = true;
+            }
+          }
+        }
+        if (
+          !isCreator &&
+          action.githubToken &&
+          action.userId &&
+          action.userId === event_join.creatorId
+        ) {
+          if (action.userId.startsWith('github_')) {
+            const githubSub = await verifyGithubToken(action.githubToken);
+            if (githubSub && `github_${githubSub}` === event_join.creatorId) {
               isCreator = true;
             }
           }
@@ -252,6 +266,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         finalBeerStyle,
         pinToken,
         googleToken,
+        githubToken,
       } = action;
       if (!eventId || !finalDateTime || !finalLocation || !finalBeerStyle) break;
       const lockEvent = readDB().events.find((e) => e.id === eventId);
@@ -277,6 +292,15 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         }
       }
 
+      if (!authorized && githubToken && userId && userId === event.creatorId) {
+        if (userId.startsWith('github_')) {
+          const githubSub = await verifyGithubToken(githubToken);
+          if (githubSub && `github_${githubSub}` === event.creatorId) {
+            authorized = true;
+          }
+        }
+      }
+
       if (!authorized) {
         console.warn(`Security: unauthorized LOCK_EVENT attempt for ${eventId}`);
         break;
@@ -297,7 +321,7 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
     }
 
     case 'UNLOCK_EVENT': {
-      const { eventId, userId, creatorToken, pinToken, googleToken } = action;
+      const { eventId, userId, creatorToken, pinToken, googleToken, githubToken } = action;
       if (!eventId) break;
       const unlockEvent = readDB().events.find((e) => e.id === eventId);
       const effectiveToken = pinToken || clientInfo.verifiedPinTokens.get(eventId);
@@ -317,6 +341,15 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         if (userId.startsWith('google_')) {
           const googleSub = await verifyGoogleToken(googleToken);
           if (googleSub && `google_${googleSub}` === event.creatorId) {
+            authorized = true;
+          }
+        }
+      }
+
+      if (!authorized && githubToken && userId && userId === event.creatorId) {
+        if (userId.startsWith('github_')) {
+          const githubSub = await verifyGithubToken(githubToken);
+          if (githubSub && `github_${githubSub}` === event.creatorId) {
             authorized = true;
           }
         }

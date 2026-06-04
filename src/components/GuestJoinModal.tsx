@@ -224,25 +224,46 @@ export default function GuestJoinModal({
                 <span>Đăng nhập nhanh</span>
               </div>
 
-              <div className="flex justify-center mb-4">
+              <div className="flex flex-col items-center gap-3 mb-4">
                 {isVerifying ? (
-                  <div className="text-secondary text-[0.9rem] p-4">Đang xác thực Google...</div>
+                  <div className="text-secondary text-[0.9rem] p-4">Đang xác thực...</div>
                 ) : (
-                  <GoogleLogin
-                    onSuccess={handleGoogleCredential}
-                    onError={() =>
-                      setGoogleError(
-                        'Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!'
-                      )
-                    }
-                    ux_mode="redirect"
-                    login_uri={`${window.location.origin}/api/auth/google/callback`}
-                    text="continue_with"
-                    shape="rectangular"
-                    theme="filled_black"
-                    size="large"
-                    width="280"
-                  />
+                  <>
+                    <GoogleLogin
+                      onSuccess={handleGoogleCredential}
+                      onError={() =>
+                        setGoogleError(
+                          'Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!'
+                        )
+                      }
+                      ux_mode="redirect"
+                      login_uri={`${window.location.origin}/api/auth/google/callback`}
+                      text="continue_with"
+                      shape="rectangular"
+                      theme="filled_black"
+                      size="large"
+                      width="280"
+                    />
+
+                    {import.meta.env.VITE_GITHUB_CLIENT_ID && (
+                      <a
+                        href={`/api/auth/github/login?eventId=${new URLSearchParams(window.location.search).get('eventId') || ''}`}
+                        className="btn-github"
+                      >
+                        <svg
+                          height="20"
+                          aria-hidden="true"
+                          viewBox="0 0 16 16"
+                          version="1.1"
+                          width="20"
+                          fill="currentColor"
+                        >
+                          <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.35 3.1 1.07.01.66.01 1.29.01 1.47 0 .21-.15.46-.55.38A8.013 8.013 0 0 1 0 8c0-4.42 3.58-8 8-8z"></path>
+                        </svg>
+                        <span>Continue with GitHub</span>
+                      </a>
+                    )}
+                  </>
                 )}
               </div>
 
