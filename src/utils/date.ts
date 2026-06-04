@@ -1,9 +1,12 @@
 /**
  * Chuyển đổi chuỗi ISO datetime hoặc datetime-local (e.g. 2026-05-20T19:30)
- * thành định dạng tiếng Việt dễ đọc và chuẩn xác.
- * Ví dụ: "19:30 - Thứ Tư, 20/05/2026"
+ * thành định dạng ngày giờ theo ngôn ngữ được chọn.
+ * Ví dụ: "19:30 - Thứ Tư, 20/05/2026" (vi) hoặc "19:30 - Wednesday, 20/05/2026" (en)
  */
-export function formatVietnameseDateTime(dateTimeStr: string | null | undefined): string {
+export function formatVietnameseDateTime(
+  dateTimeStr: string | null | undefined,
+  lang: string = 'vi'
+): string {
   if (!dateTimeStr) return '';
   try {
     const date = new Date(dateTimeStr);
@@ -16,8 +19,26 @@ export function formatVietnameseDateTime(dateTimeStr: string | null | undefined)
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const timeStr = `${hours}:${minutes}`;
 
-    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayName = daysOfWeek[date.getDay()];
+    const daysOfWeekVi = [
+      'Chủ Nhật',
+      'Thứ Hai',
+      'Thứ Ba',
+      'Thứ Tư',
+      'Thứ Năm',
+      'Thứ Sáu',
+      'Thứ Bảy',
+    ];
+    const daysOfWeekEn = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+
+    const dayName = lang === 'en' ? daysOfWeekEn[date.getDay()] : daysOfWeekVi[date.getDay()];
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');

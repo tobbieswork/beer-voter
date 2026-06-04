@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-const FUNNY_SLOGANS = [
+const VI_SLOGANS = [
   'Gan của bạn đã sẵn sàng chưa? 🔥',
   'Nhớ đến đúng giờ, trễ 1 phút phạt 1 ly! ⏰',
   'Lên đồ đẹp, chuẩn bị cạn ly tới bến! 🍻',
@@ -8,6 +9,17 @@ const FUNNY_SLOGANS = [
   'Đứa nào bàn lùi hoặc bùng kèo làm cún! 🐶',
   'Họp mặt đông đủ, cạn ly rực rỡ! 🥂',
 ];
+
+const EN_SLOGANS = [
+  'Is your liver ready? 🔥',
+  'Be on time, 1 minute late = 1 penalty drink! ⏰',
+  'Dress up, get ready to bottom up! 🍻',
+  'No drunk, no home! 🤫',
+  'Whoever backs out now is a chicken! 🐔',
+  'Party fully assembled, cheers! 🥂',
+];
+
+const SLOGANS_COUNT = 6; // Độ dài cố định của cả 2 mảng slogans
 
 interface TimeLeft {
   days?: number;
@@ -37,9 +49,14 @@ interface CountdownProps {
 }
 
 export default function Countdown({ targetDate }: CountdownProps) {
+  const { t, i18n } = useTranslation();
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetDate));
-  const [slogan, setSlogan] = useState<string>(() => {
-    return FUNNY_SLOGANS[Math.floor(Math.random() * FUNNY_SLOGANS.length)];
+
+  const getSlogans = () => (i18n.language === 'en' ? EN_SLOGANS : VI_SLOGANS);
+
+  // Chỉ lưu trữ index trong state
+  const [sloganIndex, setSloganIndex] = useState(() => {
+    return Math.floor(Math.random() * SLOGANS_COUNT);
   });
 
   useEffect(() => {
@@ -48,10 +65,16 @@ export default function Countdown({ targetDate }: CountdownProps) {
       setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
 
-    // Thay đổi slogan mỗi 10 giây
+    // Thay đổi slogan index mỗi 10 giây
     const sloganTimer = setInterval(() => {
-      const randomSlogan = FUNNY_SLOGANS[Math.floor(Math.random() * FUNNY_SLOGANS.length)];
-      setSlogan(randomSlogan);
+      setSloganIndex((prevIndex) => {
+        let nextIndex = Math.floor(Math.random() * SLOGANS_COUNT);
+        // Đảm bảo không trùng lặp ngay lập tức
+        if (nextIndex === prevIndex) {
+          nextIndex = (nextIndex + 1) % SLOGANS_COUNT;
+        }
+        return nextIndex;
+      });
     }, 10000);
 
     return () => {
@@ -64,17 +87,25 @@ export default function Countdown({ targetDate }: CountdownProps) {
     return String(num).padStart(2, '0');
   };
 
+  // Tính toán slogan động dựa trên ngôn ngữ hiện tại và index
+  const slogans = getSlogans();
+  const slogan = slogans[sloganIndex] || slogans[0];
+
   if (timeLeft.isOver) {
     return (
       <div className="card-pub border-gold">
         <div className="mb-4 text-center text-gold uppercase tracking-wider text-sm font-bold">
-          🍻 ĐÃ ĐẾN GIỜ NHẬU! 🍻
+          🍻 {i18n.language === 'en' ? 'IT IS PARTY TIME! 🍻' : 'ĐÃ ĐẾN GIỜ NHẬU! 🍻'}
         </div>
         <div className="my-4 text-center text-xl font-extrabold text-gold">
-          ZÔ ZÔ ZÔ! ANH EM LÊN ĐỒ VÀ CẠN LY THÔI!
+          {i18n.language === 'en'
+            ? "LET'S GO! DRESS UP AND CLINK GLASSES!"
+            : 'ZÔ ZÔ ZÔ! ANH EM LÊN ĐỒ VÀ CẠN LY THÔI!'}
         </div>
         <p className="pt-2 text-center text-[0.9rem] italic text-text-secondary border-t border-dashed border-white/5">
-          Chưa ai đến thì giục giã mau lên nha! 🚀
+          {i18n.language === 'en'
+            ? "Whoever hasn't arrived, hurry them up! 🚀"
+            : 'Chưa ai đến thì giục giã mau lên nha! 🚀'}
         </p>
       </div>
     );
@@ -83,7 +114,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
   return (
     <div className="card-pub">
       <div className="mb-4 text-center text-gold uppercase tracking-wider text-[0.85rem] font-bold">
-        ⏳ Đếm Ngược Đến Giờ Nhậu ⏳
+        ⏳ {i18n.language === 'en' ? 'Countdown to Party ⏳' : 'Đếm Ngược Đến Giờ Nhậu ⏳'}
       </div>
 
       <div className="grid grid-cols-4 gap-2 mb-4">
@@ -92,7 +123,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
             {padZero(timeLeft.days || 0)}
           </div>
           <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">
-            Ngày
+            {t('countdown.days')}
           </span>
         </div>
         <div className="flex flex-col items-center">
@@ -100,7 +131,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
             {padZero(timeLeft.hours || 0)}
           </div>
           <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">
-            Giờ
+            {t('countdown.hours')}
           </span>
         </div>
         <div className="flex flex-col items-center">
@@ -108,7 +139,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
             {padZero(timeLeft.minutes || 0)}
           </div>
           <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">
-            Phút
+            {t('countdown.minutes')}
           </span>
         </div>
         <div className="flex flex-col items-center">
@@ -116,7 +147,7 @@ export default function Countdown({ targetDate }: CountdownProps) {
             {padZero(timeLeft.seconds || 0)}
           </div>
           <span className="mt-1.5 text-[0.7rem] font-semibold uppercase text-text-secondary">
-            Giây
+            {t('countdown.seconds')}
           </span>
         </div>
       </div>

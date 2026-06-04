@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import QRCode from 'qrcode';
+import { useTranslation } from 'react-i18next';
 import Countdown from './Countdown';
 import { formatVietnameseDateTime } from '../utils/date';
 import {
@@ -12,7 +13,7 @@ import {
   LockPayload,
 } from '../types';
 
-const getDynamicDatePresets = () => {
+const getInitialDatePresets = (lang: string) => {
   const getQuickDate = (daysAhead: number, hourStr = '19:30') => {
     const d = new Date();
     d.setDate(d.getDate() + daysAhead);
@@ -33,6 +34,15 @@ const getDynamicDatePresets = () => {
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}T${hourStr}`;
   };
+
+  if (lang === 'en') {
+    return [
+      { label: 'Today 🕒', value: getQuickDate(0) },
+      { label: 'Tomorrow 🌅', value: getQuickDate(1) },
+      { label: 'This Friday ⚡', value: getUpcomingDay(5) },
+      { label: 'This Saturday 🥳', value: getUpcomingDay(6, '18:00') },
+    ];
+  }
 
   return [
     { label: 'Hôm nay 🕒', value: getQuickDate(0) },
@@ -84,6 +94,7 @@ export default function EventDetail({
   onUnlockEvent,
   onDeleteEvent,
 }: EventDetailProps) {
+  const { t, i18n } = useTranslation();
   const [newOptionValues, setNewOptionValues] = useState({ datetime: '', location: '', beer: '' });
   const [commentText, setCommentText] = useState('');
   const [showLockModal, setShowLockModal] = useState(false);
@@ -101,7 +112,7 @@ export default function EventDetail({
       const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
       QRCode.toDataURL(syncUrl, { width: 180, margin: 1 })
         .then((url) => setQrDataUrl(url))
-        .catch((err) => console.error('Lỗi tạo mã QR:', err));
+        .catch((err) => console.error('Error creating QR:', err));
     }
   }, [showSyncSection, eventId]);
 
@@ -127,12 +138,43 @@ export default function EventDetail({
   if (!eventData) {
     return (
       <div className="card-pub text-center" style={{ padding: '3rem' }}>
-        <p>Đang tải dữ liệu kèo nhậu cực chill...</p>
+        <p>
+          {i18n.language === 'en'
+            ? 'Loading chill gathering details...'
+            : 'Đang tải dữ liệu kèo nhậu cực chill...'}
+        </p>
       </div>
     );
   }
 
   const { title, creatorName, status, options = [], votes = [], comments = [] } = eventData;
+
+  const getQuickChats = () => {
+    if (i18n.language === 'en') {
+      return [
+        { text: '🍺 Bottoms up, partners!', label: '🍺 Bottoms up!' },
+        { text: '💸 First round is on me! 😂', label: '💸 First round!' },
+        { text: '🐔 Whoever backs out is a chicken!', label: '🐔 Back out is chicken!' },
+        { text: '⏰ Be on time, late penalty is 1 drink!', label: '⏰ Penalty for late!' },
+        { text: "🤤 Craving goat hotpot, let's go!", label: '🤤 Craving goat!' },
+        { text: "🚗 Don't drink and drive, book a Grab! 🚕", label: '🚗 Grab back home!' },
+        { text: "💸 Let's split the bill equally! 🤝", label: '💸 Split bill!' },
+        { text: '🦐 Just eating snacks, no alcohol! 🍗', label: '🦐 Just snacks!' },
+        { text: '🎤 Second round at Karaoke! 🎶', label: '🎤 Karaoke!' },
+      ];
+    }
+    return [
+      { text: '🍺 Kèo này tới bến luôn nha anh em!', label: '🍺 Tới bến luôn!' },
+      { text: '💸 Kèo này tao bao... ly đầu tiên! 😂', label: '💸 Bao ly đầu!' },
+      { text: '🐶 Đứa nào bàn lùi hoặc bùng làm cún nhé!', label: '🐶 Bùng làm cún!' },
+      { text: '⏰ Đi đúng giờ nha, trễ phạt 1 ly!', label: '⏰ Phạt trễ giờ!' },
+      { text: '🤤 Thèm lẩu quá, triển quán dê thôi!', label: '🤤 Thèm lẩu dê!' },
+      { text: '🚗 Uống không lái, bắt Grab nha! 🚕', label: '🚗 Uống không lái!' },
+      { text: '💸 Campuchia chia tiền đều nhé anh em! 🤝', label: '💸 Campuchia chia tiền!' },
+      { text: '🦐 Cho xin một slot phá mồi thôi nha! 🍗', label: '🦐 Chỉ phá mồi!' },
+      { text: '🎤 Làm tí tăng hai Karaoke hát hò tưng bừng đê! 🎶', label: '🎤 Tăng hai Karaoke!' },
+    ];
+  };
 
   // Lọc các option theo từng loại
   const getOptionsByType = (type: 'datetime' | 'location' | 'beer'): EventOptionWithVotes[] => {
@@ -188,11 +230,15 @@ export default function EventDetail({
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
-        setToastMsg('🍻 Đã copy link chia sẻ! Hãy gửi qua Zalo/Messenger cho bạn bè.');
+        setToastMsg(
+          i18n.language === 'en'
+            ? '🍻 Shared link copied! Send it via Zalo/Messenger/WhatsApp to friends.'
+            : '🍻 Đã copy link chia sẻ! Hãy gửi qua Zalo/Messenger cho bạn bè.'
+        );
         setTimeout(() => setToastMsg(''), 2500);
       })
       .catch((err) => {
-        console.error('Không thể copy link:', err);
+        console.error('Cannot copy link:', err);
       });
   };
 
@@ -247,7 +293,11 @@ export default function EventDetail({
       (o) => o.type === type && o.value.toLowerCase() === val.trim().toLowerCase()
     );
     if (isDuplicate) {
-      alert('Đề xuất này đã tồn tại rồi bạn ơi! Vote cho nó đi nào.');
+      alert(
+        i18n.language === 'en'
+          ? 'This proposal already exists! Vote for it instead.'
+          : 'Đề xuất này đã tồn tại rồi bạn ơi! Vote cho nó đi nào.'
+      );
       return;
     }
 
@@ -289,7 +339,11 @@ export default function EventDetail({
   // Xác nhận chốt kèo
   const handleConfirmLock = () => {
     if (!finalDateTime.trim() || !finalLocation.trim() || !finalBeerStyle.trim()) {
-      alert('Vui lòng nhập đầy đủ thông tin chốt kèo nhậu!');
+      alert(
+        i18n.language === 'en'
+          ? 'Please enter all fields to finalize the gathering!'
+          : 'Vui lòng nhập đầy đủ thông tin chốt kèo nhậu!'
+      );
       return;
     }
 
@@ -301,13 +355,21 @@ export default function EventDetail({
     });
 
     setShowLockModal(false);
-    setToastMsg('🎉 Đã chốt kèo nhậu thành công! Đồng hồ đếm ngược đã kích hoạt.');
+    setToastMsg(
+      i18n.language === 'en'
+        ? '🎉 Gathering finalized successfully! Countdown clock activated.'
+        : '🎉 Đã chốt kèo nhậu thành công! Đồng hồ đếm ngược đã kích hoạt.'
+    );
     setTimeout(() => setToastMsg(''), 3000);
   };
 
   const handleUnlock = () => {
     onUnlockEvent(eventId);
-    setToastMsg('🔓 Đã mở lại kèo để tiếp tục bình chọn!');
+    setToastMsg(
+      i18n.language === 'en'
+        ? '🔓 Voting reopened successfully!'
+        : '🔓 Đã mở lại kèo để tiếp tục bình chọn!'
+    );
     setTimeout(() => setToastMsg(''), 3000);
   };
 
@@ -341,18 +403,22 @@ export default function EventDetail({
               <div key={opt.id} className={`option-item ${isLeader ? 'leader' : ''}`}>
                 <div className="option-content">
                   <span className="option-value">
-                    {type === 'datetime' ? formatVietnameseDateTime(opt.value) : opt.value}
+                    {type === 'datetime'
+                      ? formatVietnameseDateTime(opt.value, i18n.language)
+                      : opt.value}
                   </span>
                   <span
                     className="option-creator"
                     title={
-                      `Đề xuất bởi: ${opt.creatorNickname || opt.creatorName}` +
+                      (i18n.language === 'en' ? 'Proposed by: ' : 'Đề xuất bởi: ') +
+                      `${opt.creatorNickname || opt.creatorName}` +
                       (opt.creatorRealName
                         ? ` (${opt.creatorRealName} - ${opt.creatorUsername || opt.creatorEmail || 'Guest'})`
                         : '')
                     }
                   >
-                    Đề xuất bởi: <strong>{opt.creatorNickname || opt.creatorName}</strong>
+                    {i18n.language === 'en' ? 'Proposed by: ' : 'Đề xuất bởi: '}{' '}
+                    <strong>{opt.creatorNickname || opt.creatorName}</strong>
                   </span>
                 </div>
 
@@ -385,10 +451,16 @@ export default function EventDetail({
                     disabled={status === 'locked'}
                     title={
                       status === 'locked'
-                        ? 'Kèo đã chốt, không thể vote'
+                        ? i18n.language === 'en'
+                          ? 'Gathering finalized, voting disabled'
+                          : 'Kèo đã chốt, không thể vote'
                         : hasVoted
-                          ? 'Hủy bình chọn'
-                          : 'Bình chọn'
+                          ? i18n.language === 'en'
+                            ? 'Cancel vote'
+                            : 'Hủy bình chọn'
+                          : i18n.language === 'en'
+                            ? 'Vote'
+                            : 'Bình chọn'
                     }
                   >
                     <span className="vote-icon">{hasVoted ? '🍺' : '👍'}</span>
@@ -400,17 +472,25 @@ export default function EventDetail({
           })}
 
           {listOptions.length === 0 && (
-            <p className="empty-state-text">Chưa có đề xuất nào cho mục này.</p>
+            <p className="empty-state-text">
+              {i18n.language === 'en'
+                ? 'No proposals yet for this category.'
+                : 'Chưa có đề xuất nào cho mục này.'}
+            </p>
           )}
         </div>
 
-        {/* Ô Đề xuất mới cho Guest/Admin */}
+        {/* Ô Đề xuất mới */}
         {status === 'voting' && (
           <div className="pt-4">
             <div className="suggest-input-group">
               <input
                 type={type === 'datetime' ? 'datetime-local' : 'text'}
-                placeholder={`Đề xuất ${titleText.toLowerCase()} mới...`}
+                placeholder={
+                  i18n.language === 'en'
+                    ? `Propose new ${titleText.toLowerCase()}...`
+                    : `Đề xuất ${titleText.toLowerCase()} mới...`
+                }
                 value={newOptionValues[type]}
                 onChange={(e) => setNewOptionValues({ ...newOptionValues, [type]: e.target.value })}
                 onKeyDown={(e) => {
@@ -423,14 +503,14 @@ export default function EventDetail({
                 className="btn-suggest-add"
                 onClick={() => handleAddSuggest(type)}
               >
-                Thêm
+                {i18n.language === 'en' ? 'Add' : 'Thêm'}
               </button>
             </div>
 
             {/* Presets điền nhanh cho phần đề xuất */}
             <div className="presets-container mt-2">
               {type === 'datetime' &&
-                getDynamicDatePresets().map((preset, idx) => (
+                getInitialDatePresets(i18n.language).map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -441,13 +521,22 @@ export default function EventDetail({
                   </button>
                 ))}
               {type === 'location' &&
-                [
-                  'Bia Hơi Bờ Sông 🌊',
-                  'Quán Lẩu Dê 🐐',
-                  'Beer Club 🎶',
-                  'Nướng & Beer 💨',
-                  'Ốc Đêm 🐚',
-                ].map((preset, idx) => (
+                (i18n.language === 'en'
+                  ? [
+                      'Riverside Draft Beer 🌊',
+                      'Goat Hotpot 🐐',
+                      'Beer Club 🎶',
+                      'Windy BBQ 💨',
+                      'Late-night Snails 🐚',
+                    ]
+                  : [
+                      'Bia Hơi Bờ Sông 🌊',
+                      'Quán Lẩu Dê 🐐',
+                      'Beer Club 🎶',
+                      'Nướng & Beer 💨',
+                      'Ốc Đêm 🐚',
+                    ]
+                ).map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -458,13 +547,22 @@ export default function EventDetail({
                   </button>
                 ))}
               {type === 'beer' &&
-                [
-                  'Bia hơi Hà Nội 🍺',
-                  'Bia thủ công IPA 🌾',
-                  'Tiger Bạc 🐯',
-                  'Bia tươi Tiệp 🇨🇿',
-                  'Bia úp ngược 🍹',
-                ].map((preset, idx) => (
+                (i18n.language === 'en'
+                  ? [
+                      'Hanoi Draft Beer 🍺',
+                      'IPA Craft Beer 🌾',
+                      'Tiger Silver 🐯',
+                      'Czech Fresh Beer 🇨🇿',
+                      'Upside-down Beer 🍹',
+                    ]
+                  : [
+                      'Bia hơi Hà Nội 🍺',
+                      'Bia thủ công IPA 🌾',
+                      'Tiger Bạc 🐯',
+                      'Bia tươi Tiệp 🇨🇿',
+                      'Bia úp ngược 🍹',
+                    ]
+                ).map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -488,28 +586,33 @@ export default function EventDetail({
 
       {/* Nút quay lại */}
       <button className="back-link" type="button" onClick={onBack}>
-        ⬅️ Quay lại danh sách kèo
+        {t('event_detail.back')}
       </button>
 
       {/* Banner nếu Kèo Đã Chốt */}
       {status === 'locked' && eventData.finalDateTime && (
         <div className="locked-banner animate-fade-in">
           <div className="locked-banner-title">
-            <span>👑</span> Kèo Đã Chốt Chính Thức! Lên Đồ Đi Nhậu Thôi!
+            <span>👑</span>{' '}
+            {i18n.language === 'en'
+              ? "Gathering Finalized! Let's Dress Up And Go!"
+              : 'Kèo Đã Chốt Chính Thức! Lên Đồ Đi Nhậu Thôi!'}
           </div>
           <div className="locked-summary-grid">
             <div className="locked-summary-box">
-              <div className="locked-summary-label">📅 Lịch Trình Gặp Nhau</div>
+              <div className="locked-summary-label">📅 {t('create_event.target_time_label')}</div>
               <div className="locked-summary-val">
-                {formatVietnameseDateTime(eventData.finalDateTime)}
+                {formatVietnameseDateTime(eventData.finalDateTime, i18n.language)}
               </div>
             </div>
             <div className="locked-summary-box">
-              <div className="locked-summary-label">📍 Địa Điểm Ăn Chơi</div>
+              <div className="locked-summary-label">
+                📍 {t('event_detail.option_types.location')}
+              </div>
               <div className="locked-summary-val">{eventData.finalLocation}</div>
             </div>
             <div className="locked-summary-box">
-              <div className="locked-summary-label">🍻 Loại Bia / Vibe Quán</div>
+              <div className="locked-summary-label">🍻 {t('event_detail.option_types.beer')}</div>
               <div className="locked-summary-val">{eventData.finalBeerStyle}</div>
             </div>
           </div>
@@ -526,13 +629,15 @@ export default function EventDetail({
               <h2 className="detail-title">{title}</h2>
               <div className="detail-meta-row">
                 <span>
-                  Chủ kèo: <strong>{creatorName}</strong>
+                  {t('event_detail.created_by')} <strong>{creatorName}</strong>
                 </span>
                 <span className="dot-separator"></span>
                 <span>
-                  Trạng thái:{' '}
+                  {i18n.language === 'en' ? 'Status: ' : 'Trạng thái: '}{' '}
                   <strong className={status === 'voting' ? 'status-voting' : 'status-locked'}>
-                    {status === 'voting' ? '🔥 Đang bình chọn' : '🍻 Đã chốt lịch'}
+                    {status === 'voting'
+                      ? `🔥 ${t('dashboard.status_active')}`
+                      : `🍻 ${t('dashboard.status_locked')}`}
                   </strong>
                 </span>
               </div>
@@ -540,13 +645,23 @@ export default function EventDetail({
           </div>
 
           {/* Bình chọn Lịch trình */}
-          {renderVotingSection('📅', 'Lịch Trình', 'datetime', datetimeOptions)}
+          {renderVotingSection(
+            '📅',
+            t('event_detail.option_types.datetime'),
+            'datetime',
+            datetimeOptions
+          )}
 
           {/* Bình chọn Địa điểm */}
-          {renderVotingSection('📍', 'Địa Điểm', 'location', locationOptions)}
+          {renderVotingSection(
+            '📍',
+            t('event_detail.option_types.location'),
+            'location',
+            locationOptions
+          )}
 
           {/* Bình chọn Bia */}
-          {renderVotingSection('🍻', 'Loại Bia & Vibe Quán', 'beer', beerOptions)}
+          {renderVotingSection('🍻', t('event_detail.option_types.beer'), 'beer', beerOptions)}
         </div>
 
         {/* Cột phụ: Sidebar (Countdown, Chốt kèo, Chat chit) */}
@@ -558,18 +673,21 @@ export default function EventDetail({
             <div className="card-pub text-center !p-6">
               <div className="mb-2 text-4xl">🔥</div>
               <h4 className="mb-2 text-[0.9rem] font-bold uppercase text-gold">
-                Đang Mở Sòng Vote
+                {t('event_detail.verify_creator')}
               </h4>
               <p className="text-secondary text-[0.85rem]">
-                Chia sẻ link cho bạn bè để cùng vào vote địa điểm ngon, giờ đẹp và loại bia chill
-                nhé anh em ơi!
+                {i18n.language === 'en'
+                  ? 'Share the link with friends to vote on the best date, delicious spots, and chill beer styles!'
+                  : 'Chia sẻ link cho bạn bè để cùng vào vote địa điểm ngon, giờ đẹp và loại bia chill nhé anh em ơi!'}
               </p>
             </div>
           )}
 
           {/* 2. Quyền năng Admin (Chốt kèo / Chia sẻ link) */}
           <div className="card-pub">
-            <h4 className="section-card-title text-[1rem] mb-3.5">⚙️ Bảng Điều Khiển Sòng Nhậu</h4>
+            <h4 className="section-card-title text-[1rem] mb-3.5">
+              ⚙️ {i18n.language === 'en' ? 'Gathering Control Panel' : 'Bảng Điều Khiển Sòng Nhậu'}
+            </h4>
 
             <div className="admin-action-box">
               {(() => {
@@ -596,7 +714,9 @@ export default function EventDetail({
                             padding: '0.75rem 1rem',
                           }}
                         >
-                          <span className="text-[0.85rem] text-gold">🔐 PIN bảo vệ sòng:</span>
+                          <span className="text-[0.85rem] text-gold">
+                            🔐 {t('event_detail.pin_required')}:
+                          </span>
                           <div className="flex items-center gap-2">
                             <strong className="text-xl tracking-widest text-gold font-mono">
                               {showPartyPin ? eventData.partyPin : '••••••'}
@@ -615,7 +735,7 @@ export default function EventDetail({
                                 alignItems: 'center',
                                 justifyContent: 'center',
                               }}
-                              title={showPartyPin ? 'Ẩn mã PIN' : 'Xem mã PIN'}
+                              title={showPartyPin ? 'Hide PIN' : 'View PIN'}
                             >
                               {showPartyPin ? '👁️' : '👁️‍🗨️'}
                             </button>
@@ -624,12 +744,12 @@ export default function EventDetail({
                       )}
                       {status === 'voting' && (
                         <button className="btn-lock" onClick={handleOpenLockModal}>
-                          🔒 Chốt Kèo Tới Bến
+                          {t('event_detail.lock_button')}
                         </button>
                       )}
                       {status === 'locked' && (
                         <button className="btn-secondary w-full mb-2" onClick={handleUnlock}>
-                          🔓 Mở Lại Bình Chọn
+                          {t('event_detail.unlock_button')}
                         </button>
                       )}
                       {isCreatorTokenMatched && (
@@ -646,8 +766,12 @@ export default function EventDetail({
                           >
                             🔗{' '}
                             {showSyncSection
-                              ? 'Ẩn Mã Đồng Bộ Thiết Bị'
-                              : 'Đồng Bộ Thiết Bị Khác (QR)'}
+                              ? i18n.language === 'en'
+                                ? 'Hide Device Sync QR'
+                                : 'Ẩn Mã Đồng Bộ Thiết Bị'
+                              : i18n.language === 'en'
+                                ? 'Sync Device Access (QR)'
+                                : 'Đồng Bộ Thiết Bị Khác (QR)'}
                           </button>
 
                           {showSyncSection &&
@@ -657,7 +781,7 @@ export default function EventDetail({
                               );
                               const syncUrl = `${window.location.origin}${window.location.pathname}?eventId=${eventId}&creatorToken=${creatorToken}`;
 
-                              const handleCopyLink = () => {
+                              const handleCopySync = () => {
                                 navigator.clipboard.writeText(syncUrl);
                                 setCopiedSync(true);
                                 setTimeout(() => setCopiedSync(false), 2000);
@@ -672,8 +796,9 @@ export default function EventDetail({
                                   }}
                                 >
                                   <p className="text-[0.8rem] text-text-muted mb-3 leading-relaxed">
-                                    Quét mã QR bằng điện thoại hoặc sao chép liên kết này mở ở thiết
-                                    bị khác để cấp quyền Chủ Kèo mà không cần đăng nhập:
+                                    {i18n.language === 'en'
+                                      ? 'Scan this QR code or copy this link on another device to restore Host permission without sign-in:'
+                                      : 'Quét mã QR bằng điện thoại hoặc sao chép liên kết này mở ở thiết bị khác để cấp quyền Chủ Kèo mà không cần đăng nhập:'}
                                   </p>
                                   <div
                                     className="flex justify-center mb-3 p-2 bg-white rounded-lg mx-auto"
@@ -682,14 +807,16 @@ export default function EventDetail({
                                     {qrDataUrl ? (
                                       <img
                                         src={qrDataUrl}
-                                        alt="QR Đồng Bộ"
+                                        alt="Sync QR"
                                         width={180}
                                         height={180}
                                         style={{ display: 'block' }}
                                       />
                                     ) : (
                                       <div className="text-secondary text-xs p-4">
-                                        Đang tạo mã QR...
+                                        {i18n.language === 'en'
+                                          ? 'Generating QR...'
+                                          : 'Đang tạo mã QR...'}
                                       </div>
                                     )}
                                   </div>
@@ -708,10 +835,16 @@ export default function EventDetail({
                                     />
                                     <button
                                       type="button"
-                                      onClick={handleCopyLink}
+                                      onClick={handleCopySync}
                                       className="btn-success text-xs py-1.5 px-3 whitespace-nowrap"
                                     >
-                                      {copiedSync ? 'Đã chép! ✓' : 'Sao chép'}
+                                      {copiedSync
+                                        ? i18n.language === 'en'
+                                          ? 'Copied! ✓'
+                                          : 'Đã chép! ✓'
+                                        : i18n.language === 'en'
+                                          ? 'Copy'
+                                          : 'Sao chép'}
                                     </button>
                                   </div>
                                 </div>
@@ -723,7 +856,7 @@ export default function EventDetail({
                         className="btn-outline-danger w-full"
                         onClick={() => setShowDeleteConfirm(true)}
                       >
-                        🗑️ Xóa Kèo Này
+                        🗑️ {i18n.language === 'en' ? 'Delete This Gathering' : 'Xóa Kèo Này'}
                       </button>
                     </>
                   );
@@ -731,18 +864,33 @@ export default function EventDetail({
 
                 return status === 'voting' ? (
                   <div className="info-box-muted">
-                    🔒 Chỉ{' '}
-                    <strong>Chủ Kèo ({eventData.creatorNickname || eventData.creatorName})</strong>{' '}
-                    mới có quyền chốt kèo này.
+                    🔒 {i18n.language === 'en' ? 'Only ' : 'Chỉ '}
+                    <strong>
+                      {eventData.creatorNickname || eventData.creatorName} (
+                      {i18n.language === 'en' ? 'Host' : 'Chủ Kèo'})
+                    </strong>{' '}
+                    {i18n.language === 'en'
+                      ? 'can finalize this party.'
+                      : 'mới có quyền chốt kèo này.'}
                   </div>
                 ) : (
-                  <div className="info-box-green">✅ Kèo nhậu này đã đóng băng bình chọn.</div>
+                  <div className="info-box-green">
+                    ✅{' '}
+                    {i18n.language === 'en'
+                      ? 'Gathering finalized — voting locked.'
+                      : 'Kèo nhậu này đã đóng băng bình chọn.'}
+                  </div>
                 );
               })()}
 
               {/* Hộp chia sẻ link */}
               <div className="share-link-box">
-                <span className="share-link-title">🔗 Link gửi Zalo / Messenger:</span>
+                <span className="share-link-title">
+                  🔗{' '}
+                  {i18n.language === 'en'
+                    ? 'Share link with friends:'
+                    : 'Link gửi Zalo / Messenger:'}
+                </span>
                 <div className="share-link-row">
                   <div className="share-link-input">
                     {window.location.origin}/?eventId={eventId}
@@ -758,7 +906,7 @@ export default function EventDetail({
           {/* 3. Khung Chat Thảo Luận / Bàn Lùi */}
           <div className="card-pub flex flex-col">
             <h4 className="chat-title">
-              <span>💬</span> Chat Chit Bàn Lùi ({comments.length})
+              <span>💬</span> {t('event_detail.comments_title', { count: comments.length })}
             </h4>
 
             {/* Danh sách bình luận */}
@@ -784,7 +932,11 @@ export default function EventDetail({
                           <span
                             className={`max-[480px]:hidden role-badge ${cmt.userId === eventData.creatorId ? 'admin' : 'guest'}`}
                           >
-                            {cmt.userId === eventData.creatorId ? 'Chủ Kèo' : 'Chiến Hữu'}
+                            {cmt.userId === eventData.creatorId
+                              ? i18n.language === 'en'
+                                ? 'Host'
+                                : 'Chủ Kèo'
+                              : t('header.guest')}
                           </span>
                         </div>
                         {cmt.userRealName && (
@@ -800,10 +952,10 @@ export default function EventDetail({
                         )}
                       </div>
                       <span className="text-[0.7rem] text-text-muted">
-                        {new Date(cmt.createdAt).toLocaleTimeString('vi-VN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {new Date(cmt.createdAt).toLocaleTimeString(
+                          i18n.language === 'en' ? 'en-US' : 'vi-VN',
+                          { hour: '2-digit', minute: '2-digit' }
+                        )}
                       </span>
                     </div>
                     <p className="mt-1.5 text-[0.92rem] text-text-primary leading-[1.4] break-words max-[480px]:text-[0.82rem]">
@@ -814,7 +966,7 @@ export default function EventDetail({
               ))}
               {comments.length === 0 && (
                 <div className="empty-state-text py-8 px-4 text-center">
-                  Chưa có lời gạ gẫm nào. Hãy phát súng lệnh chat đầu tiên đi nào! 🍺
+                  {t('event_detail.no_comments')}
                 </div>
               )}
               <div ref={commentsEndRef} />
@@ -822,64 +974,21 @@ export default function EventDetail({
 
             {/* Chat nhanh / Bàn lùi tags */}
             <div className="quick-chats-container">
-              <div className="quick-chats-title">⚡ Gõ nhanh lời gạ gẫm:</div>
+              <div className="quick-chats-title">
+                {i18n.language === 'en'
+                  ? '⚡ Quick message suggestion:'
+                  : '⚡ Gõ nhanh lời gạ gẫm:'}
+              </div>
               <div className="quick-chats-grid">
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('🍺 Kèo này tới bến luôn nha anh em!')}
-                >
-                  🍺 Tới bến luôn!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('💸 Kèo này tao bao... ly đầu tiên! 😂')}
-                >
-                  💸 Bao ly đầu!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('🐶 Đứa nào bàn lùi hoặc bùng làm cún nhé!')}
-                >
-                  🐶 Bùng làm cún!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('⏰ Đi đúng giờ nha, trễ phạt 1 ly!')}
-                >
-                  ⏰ Phạt trễ giờ!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('🤤 Thèm lẩu quá, triển quán dê thôi!')}
-                >
-                  🤤 Thèm lẩu dê!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('🚗 Uống không lái, bắt Grab nha! 🚕')}
-                >
-                  🚗 Uống không lái!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('💸 Campuchia chia tiền đều nhé anh em! 🤝')}
-                >
-                  💸 Chia tiền đều!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() => handleQuickChat('🦐 Cho xin một slot phá mồi thôi nha! 🍗')}
-                >
-                  🦐 Chỉ phá mồi!
-                </button>
-                <button
-                  className="quick-chat-tag"
-                  onClick={() =>
-                    handleQuickChat('🎤 Làm tí tăng hai Karaoke hát hò tưng bừng đê! 🎶')
-                  }
-                >
-                  🎤 Tăng hai Karaoke!
-                </button>
+                {getQuickChats().map((qc, idx) => (
+                  <button
+                    key={idx}
+                    className="quick-chat-tag"
+                    onClick={() => handleQuickChat(qc.text)}
+                  >
+                    {qc.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -887,14 +996,14 @@ export default function EventDetail({
             <form onSubmit={handleSendComment} className="comment-form">
               <input
                 type="text"
-                placeholder="Gạ gẫm, bàn lùi gì không..."
+                placeholder={t('event_detail.comment_placeholder')}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 maxLength={200}
                 required
               />
               <button type="submit" className="btn-send">
-                Gửi
+                {t('event_detail.comment_submit')}
               </button>
             </form>
           </div>
@@ -906,10 +1015,13 @@ export default function EventDetail({
         <div className="modal-overlay">
           <div className="modal-pub max-w-[420px]">
             <div className="modal-pub-body">
-              <h3 className="modal-title text-red">🗑️ Xác Nhận Xóa Kèo</h3>
+              <h3 className="modal-title text-red">
+                {i18n.language === 'en' ? '🗑️ Confirm Delete Party' : '🗑️ Xác Nhận Xóa Kèo'}
+              </h3>
               <p className="modal-desc">
-                Bạn có chắc muốn xóa kèo <strong>"{title}"</strong> không? Toàn bộ vote, đề xuất và
-                chat chit sẽ bị xóa vĩnh viễn!
+                {i18n.language === 'en'
+                  ? `Are you sure you want to delete "${title}"? All votes, proposals, and chats will be permanently deleted!`
+                  : `Bạn có chắc muốn xóa kèo "${title}" không? Toàn bộ vote, đề xuất và chat chit sẽ bị xóa vĩnh viễn!`}
               </p>
               <div className="form-actions-modal">
                 <button
@@ -918,7 +1030,7 @@ export default function EventDetail({
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
                 >
-                  Hủy Bỏ
+                  {t('create_event.cancel')}
                 </button>
                 <button
                   type="button"
@@ -926,7 +1038,13 @@ export default function EventDetail({
                   onClick={handleDeleteConfirmed}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? 'Đang xóa...' : '🗑️ Xóa Luôn!'}
+                  {isDeleting
+                    ? i18n.language === 'en'
+                      ? 'Deleting...'
+                      : 'Đang xóa...'
+                    : i18n.language === 'en'
+                      ? '🗑️ Delete Permanently'
+                      : '🗑️ Xóa Luôn!'}
                 </button>
               </div>
             </div>
@@ -939,14 +1057,19 @@ export default function EventDetail({
         <div className="modal-overlay">
           <div className="modal-pub max-w-[500px]">
             <div className="modal-pub-body">
-              <h3 className="modal-title text-amber">🔒 Xác Nhận Chốt Kèo Nhậu</h3>
+              <h3 className="modal-title text-amber">
+                {i18n.language === 'en'
+                  ? '🔒 Confirm Finalize Gathering'
+                  : '🔒 Xác Nhận Chốt Kèo Nhậu'}
+              </h3>
               <p className="modal-desc">
-                Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể
-                điều chỉnh lại thông tin trước khi chốt chính thức!
+                {i18n.language === 'en'
+                  ? 'The system has automatically prefilled options with highest votes. Adjust them if needed before finalizing!'
+                  : 'Hệ thống đã tự động lấy các phương án có lượt VOTE cao nhất hiện tại. Bạn có thể điều chỉnh lại thông tin trước khi chốt chính thức!'}
               </p>
 
               <div className="form-group">
-                <label htmlFor="final-date">📅 Chốt Lịch Trình (Ngày & Giờ)</label>
+                <label htmlFor="final-date">📅 {t('create_event.target_time_label')}</label>
                 <input
                   type="datetime-local"
                   id="final-date"
@@ -957,33 +1080,56 @@ export default function EventDetail({
               </div>
 
               <div className="form-group">
-                <label htmlFor="final-location">📍 Chốt Địa Điểm Nhậu</label>
+                <label htmlFor="final-location">
+                  📍 {i18n.language === 'en' ? 'Final Location' : 'Chốt Địa Điểm Nhậu'}
+                </label>
                 <input
                   type="text"
                   id="final-location"
                   value={finalLocation}
                   onChange={(e) => setFinalLocation(e.target.value)}
-                  placeholder="Ví dụ: Lẩu Dê Đồng Quê"
+                  placeholder={
+                    i18n.language === 'en'
+                      ? 'e.g. Riverside Draft Beer Bar'
+                      : 'Ví dụ: Lẩu Dê Đồng Quê'
+                  }
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="final-beer">🍻 Chốt Loại Bia / Vibe Quán</label>
+                <label htmlFor="final-beer">
+                  🍻{' '}
+                  {i18n.language === 'en' ? 'Final Beer / Vibe Style' : 'Chốt Loại Bia / Vibe Quán'}
+                </label>
                 <input
                   type="text"
                   id="final-beer"
                   value={finalBeerStyle}
                   onChange={(e) => setFinalBeerStyle(e.target.value)}
-                  placeholder="Ví dụ: Bia thủ công IPA thơm nồng"
+                  placeholder={
+                    i18n.language === 'en'
+                      ? 'e.g. Rich IPA Craft Beer'
+                      : 'Ví dụ: Bia thủ công IPA thơm nồng'
+                  }
                   required
                 />
               </div>
 
               <div className="warning-box mb-4">
-                ⚠️ <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng
-                vote và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm ngược
-                sẽ kích hoạt ngay lập tức!
+                ⚠️{' '}
+                {i18n.language === 'en' ? (
+                  <>
+                    <strong>Note:</strong> Once finalized, voting and proposals will be permanently
+                    locked for everyone. The countdown timer will start immediately!
+                  </>
+                ) : (
+                  <>
+                    <strong>Lưu ý:</strong> Khi bạn bấm <strong>Xác Nhận Chốt</strong>, tính năng
+                    vote và đề xuất sẽ bị đóng băng vĩnh viễn đối với mọi thành viên. Đồng hồ đếm
+                    ngược sẽ kích hoạt ngay lập tức!
+                  </>
+                )}
               </div>
 
               <div className="form-actions-modal">
@@ -992,10 +1138,10 @@ export default function EventDetail({
                   className="btn-secondary"
                   onClick={() => setShowLockModal(false)}
                 >
-                  Hủy Bỏ
+                  {t('create_event.cancel')}
                 </button>
                 <button type="button" className="btn-success" onClick={handleConfirmLock}>
-                  🍻 Xác Nhận Chốt Luôn!
+                  🍻 {i18n.language === 'en' ? 'Confirm Finalize' : 'Xác Nhận Chốt Luôn!'}
                 </button>
               </div>
             </div>

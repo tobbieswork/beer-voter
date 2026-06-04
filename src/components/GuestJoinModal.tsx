@@ -1,7 +1,8 @@
 import { useState, FormEvent } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { useTranslation } from 'react-i18next';
 
-const FUNNY_NAMES = [
+const VI_FUNNY_NAMES = [
   'Beer Thủ Vô Song 🍺',
   'Chiến Thần Diệt Mồi 🍗',
   'Sát Thủ Vỉa Hè 🛵',
@@ -17,6 +18,24 @@ const FUNNY_NAMES = [
   'Bóng Ma Góc Quán 👻',
   'Lão Đại Hớp Cạn 👴',
   'Đệ Nhất Uống Nước Ngọt 🥤',
+];
+
+const EN_FUNNY_NAMES = [
+  'Beer Master 🍺',
+  'Snack Destroyer 🍗',
+  'Sidewalk Assassin 🛵',
+  'Party Pooper 🛑',
+  'Wife Evader 🤫',
+  'Yeast Overlord 🍻',
+  'Bottoms Up Knight 🥂',
+  'Plate Cleanser 🍤',
+  'Beer Table Emperor 👑',
+  'One-Liter Thor ⚡',
+  'Cheers Champion 🛡️',
+  'Gluttony Hero 🌭',
+  'Pub Phantom 👻',
+  'Gulp Godfather 👴',
+  'Soft Drink Professional 🥤',
 ];
 
 interface GuestJoinModalProps {
@@ -39,6 +58,7 @@ export default function GuestJoinModal({
   onGoogleSuccess,
   usedNicknames = [],
 }: GuestJoinModalProps) {
+  const { t, i18n } = useTranslation();
   const [mode, setMode] = useState<'choose' | 'guest' | 'guest-login'>('choose');
   const [nickname, setNickname] = useState('');
   const [realName, setRealName] = useState('');
@@ -52,9 +72,15 @@ export default function GuestJoinModal({
 
   if (!isOpen) return null;
 
+  const getFunnyNames = () => (i18n.language === 'en' ? EN_FUNNY_NAMES : VI_FUNNY_NAMES);
+
   const handleGoogleCredential = async (response: CredentialResponse) => {
     if (!response.credential) {
-      setGoogleError('Không nhận được thông tin từ Google. Thử lại nhé!');
+      setGoogleError(
+        i18n.language === 'en'
+          ? 'No profile details received from Google. Try again!'
+          : 'Không nhận được thông tin từ Google. Thử lại nhé!'
+      );
       return;
     }
     setIsVerifying(true);
@@ -90,7 +116,9 @@ export default function GuestJoinModal({
         });
       } catch {
         setGoogleError(
-          'Đăng nhập Google thất bại. Vui lòng thử lại hoặc tham gia với tư cách khách!'
+          i18n.language === 'en'
+            ? 'Google sign in failed. Please try again or join as guest!'
+            : 'Đăng nhập Google thất bại. Vui lòng thử lại hoặc tham gia với tư cách khách!'
         );
       }
     } finally {
@@ -101,19 +129,35 @@ export default function GuestJoinModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) {
-      setError('Vui lòng nhập biệt danh để anh em dễ gọi nhé!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please enter a nickname so friends can recognize you!'
+          : 'Vui lòng nhập biệt danh để anh em dễ gọi nhé!'
+      );
       return;
     }
     if (!realName.trim()) {
-      setError('Vui lòng cung cấp tên thật để phân biệt biệt danh!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please provide your real name to distinguish from others!'
+          : 'Vui lòng cung cấp tên thật để phân biệt biệt danh!'
+      );
       return;
     }
     if (!username.trim()) {
-      setError('Vui lòng nhập Tên đăng nhập hoặc Email để phân biệt với người trùng tên!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please enter a username or email!'
+          : 'Vui lòng nhập Tên đăng nhập hoặc Email để phân biệt với người trùng tên!'
+      );
       return;
     }
     if (!password || password.length < 4) {
-      setError('Vui lòng nhập mật khẩu tối thiểu 4 ký tự để bảo vệ tài khoản!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please enter a password with at least 4 characters!'
+          : 'Vui lòng nhập mật khẩu tối thiểu 4 ký tự để bảo vệ tài khoản!'
+      );
       return;
     }
 
@@ -133,7 +177,12 @@ export default function GuestJoinModal({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Đăng ký tài khoản Khách thất bại!');
+        throw new Error(
+          data.message ||
+            (i18n.language === 'en'
+              ? 'Guest account registration failed!'
+              : 'Đăng ký tài khoản Khách thất bại!')
+        );
       }
 
       onSubmit({
@@ -143,7 +192,12 @@ export default function GuestJoinModal({
         username: data.username,
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Không thể đăng ký Khách mới. Thử lại nhé!';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : i18n.language === 'en'
+            ? 'Failed to register guest account. Try again!'
+            : 'Không thể đăng ký Khách mới. Thử lại nhé!';
       setError(msg);
     } finally {
       setIsSubmitting(false);
@@ -153,11 +207,15 @@ export default function GuestJoinModal({
   const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!username.trim()) {
-      setError('Vui lòng nhập Tên đăng nhập hoặc Email của bạn!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please enter your username or email!'
+          : 'Vui lòng nhập Tên đăng nhập hoặc Email của bạn!'
+      );
       return;
     }
     if (!password) {
-      setError('Vui lòng nhập mật khẩu!');
+      setError(i18n.language === 'en' ? 'Please enter your password!' : 'Vui lòng nhập mật khẩu!');
       return;
     }
 
@@ -175,7 +233,10 @@ export default function GuestJoinModal({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Đăng nhập Khách cũ thất bại!');
+        throw new Error(
+          data.message ||
+            (i18n.language === 'en' ? 'Guest login failed!' : 'Đăng nhập Khách cũ thất bại!')
+        );
       }
 
       onSubmit({
@@ -185,7 +246,12 @@ export default function GuestJoinModal({
         username: data.username,
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Sai tên đăng nhập hoặc mật khẩu!';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : i18n.language === 'en'
+            ? 'Incorrect username or password!'
+            : 'Sai tên đăng nhập hoặc mật khẩu!';
       setError(msg);
     } finally {
       setIsSubmitting(false);
@@ -197,7 +263,8 @@ export default function GuestJoinModal({
     setError('');
   };
 
-  const sortedNames = [...FUNNY_NAMES].sort((a, b) => {
+  const currentFunnyNames = getFunnyNames();
+  const sortedNames = [...currentFunnyNames].sort((a, b) => {
     const aUsed = usedNicknames.some((un) => un.trim().toLowerCase() === a.trim().toLowerCase());
     const bUsed = usedNicknames.some((un) => un.trim().toLowerCase() === b.trim().toLowerCase());
     if (aUsed && !bUsed) return 1;
@@ -211,29 +278,35 @@ export default function GuestJoinModal({
         <div className="modal-pub-body">
           <div className="modal-icon-large">🍻</div>
           <h3 className="modal-title" id="join-modal-title">
-            Vào Sòng Nhậu BeerVote!
+            {i18n.language === 'en' ? 'Welcome to BeerVote!' : 'Vào Sòng Nhậu BeerVote!'}
           </h3>
 
           {mode === 'choose' && (
             <>
               <p className="modal-desc">
-                Chọn cách tham gia để bắt đầu bình chọn và chém gió cùng anh em.
+                {i18n.language === 'en'
+                  ? 'Select how to join to start voting and chatting with friends.'
+                  : 'Chọn cách tham gia để bắt đầu bình chọn và chém gió cùng anh em.'}
               </p>
 
               <div className="join-mode-divider">
-                <span>Đăng nhập nhanh</span>
+                <span>{i18n.language === 'en' ? 'Quick Sign In' : 'Đăng nhập nhanh'}</span>
               </div>
 
               <div className="flex flex-col items-center gap-3 mb-4">
                 {isVerifying ? (
-                  <div className="text-secondary text-[0.9rem] p-4">Đang xác thực...</div>
+                  <div className="text-secondary text-[0.9rem] p-4">
+                    {i18n.language === 'en' ? 'Verifying...' : 'Đang xác thực...'}
+                  </div>
                 ) : (
                   <>
                     <GoogleLogin
                       onSuccess={handleGoogleCredential}
                       onError={() =>
                         setGoogleError(
-                          'Đăng nhập Google thất bại. Thử lại hoặc tham gia với tư cách khách!'
+                          i18n.language === 'en'
+                            ? 'Google sign in failed. Try again or join as guest!'
+                            : 'Đăng nhập Google thất bại. Vui lòng thử lại hoặc tham gia với tư cách khách!'
                         )
                       }
                       ux_mode="redirect"
@@ -272,7 +345,9 @@ export default function GuestJoinModal({
               )}
 
               <div className="join-mode-divider">
-                <span>Hoặc dành cho Khách (Chiến Hữu)</span>
+                <span>
+                  {i18n.language === 'en' ? 'Or Guest Partner' : 'Hoặc dành cho Khách (Chiến Hữu)'}
+                </span>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -285,7 +360,8 @@ export default function GuestJoinModal({
                     setMode('guest');
                   }}
                 >
-                  👤 Tạo Tài Khoản Khách Mới
+                  👤{' '}
+                  {i18n.language === 'en' ? 'Create New Guest Account' : 'Tạo Tài Khoản Khách Mới'}
                 </button>
                 <button
                   className="btn-secondary w-full justify-center min-h-[44px]"
@@ -296,7 +372,10 @@ export default function GuestJoinModal({
                     setMode('guest-login');
                   }}
                 >
-                  🔑 Đăng Nhập Khách Cũ (Đa thiết bị)
+                  🔑{' '}
+                  {i18n.language === 'en'
+                    ? 'Login Old Guest Account'
+                    : 'Đăng Nhập Khách Cũ (Đa thiết bị)'}
                 </button>
               </div>
             </>
@@ -305,18 +384,25 @@ export default function GuestJoinModal({
           {mode === 'guest' && (
             <>
               <p className="modal-desc">
-                Cung cấp thông tin của bạn và tạo mật khẩu để có thể khôi phục tài khoản trên mọi
-                thiết bị khác.
+                {i18n.language === 'en'
+                  ? 'Provide details and set a password to restore account on any device.'
+                  : 'Cung cấp thông tin của bạn và tạo mật khẩu để có thể khôi phục tài khoản trên mọi thiết bị khác.'}
               </p>
               <form onSubmit={handleSubmit}>
                 {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
 
                 <div className="form-group">
-                  <label htmlFor="guest-username">Tên đăng nhập / Email</label>
+                  <label htmlFor="guest-username">
+                    {i18n.language === 'en' ? 'Username / Email' : 'Tên đăng nhập / Email'}
+                  </label>
                   <input
                     type="text"
                     id="guest-username"
-                    placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
+                    placeholder={
+                      i18n.language === 'en'
+                        ? 'e.g. tom99 or tom.smith@gmail.com...'
+                        : 'Ví dụ: hung99 hoặc hung.nguyen@gmail.com...'
+                    }
                     value={username}
                     onChange={(e) => {
                       setUsername(e.target.value);
@@ -329,12 +415,18 @@ export default function GuestJoinModal({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="guest-password">Mật khẩu bảo mật</label>
+                  <label htmlFor="guest-password">
+                    {i18n.language === 'en' ? 'Security Password' : 'Mật khẩu bảo mật'}
+                  </label>
                   <div className="relative flex items-center">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       id="guest-password"
-                      placeholder="Mật khẩu tối thiểu 4 ký tự..."
+                      placeholder={
+                        i18n.language === 'en'
+                          ? 'Minimum 4 characters...'
+                          : 'Mật khẩu tối thiểu 4 ký tự...'
+                      }
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -357,11 +449,13 @@ export default function GuestJoinModal({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="guest-realname">Tên Thật Của Bạn</label>
+                  <label htmlFor="guest-realname">{t('guest_modal.realname_label')}</label>
                   <input
                     type="text"
                     id="guest-realname"
-                    placeholder="Ví dụ: Nguyễn Văn Hùng..."
+                    placeholder={
+                      i18n.language === 'en' ? 'e.g. Tom Smith...' : 'Ví dụ: Nguyễn Văn Hùng...'
+                    }
                     value={realName}
                     onChange={(e) => {
                       setRealName(e.target.value);
@@ -373,11 +467,15 @@ export default function GuestJoinModal({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="guest-nickname">Biệt Danh Của Bạn</label>
+                  <label htmlFor="guest-nickname">{t('guest_modal.nickname_label')}</label>
                   <input
                     type="text"
                     id="guest-nickname"
-                    placeholder="Ví dụ: Chiến Thần Diệt Mồi, Hùng Beer Thủ..."
+                    placeholder={
+                      i18n.language === 'en'
+                        ? 'e.g. Snack Destroyer, Beer Master...'
+                        : 'Ví dụ: Chiến Thần Diệt Mồi, Hùng Beer Thủ...'
+                    }
                     value={nickname}
                     onChange={(e) => {
                       setNickname(e.target.value);
@@ -390,7 +488,9 @@ export default function GuestJoinModal({
 
                 <div className="mb-6">
                   <span className="funny-name-label">
-                    💡 Gợi ý biệt danh chưa sử dụng (✨ là còn trống):
+                    {i18n.language === 'en'
+                      ? '💡 Suggested unused nicknames (✨ is available):'
+                      : '💡 Gợi ý biệt danh chưa sử dụng (✨ là còn trống):'}
                   </span>
                   <div className="funny-name-scroll">
                     {sortedNames.map((fn, idx) => {
@@ -406,11 +506,19 @@ export default function GuestJoinModal({
                           disabled={isUsed}
                           title={
                             isUsed
-                              ? 'Biệt danh này đã có người chọn trong kèo nhậu này!'
-                              : 'Bấm để chọn biệt danh này'
+                              ? i18n.language === 'en'
+                                ? 'This nickname is already taken in this party!'
+                                : 'Biệt danh này đã có người chọn trong kèo nhậu này!'
+                              : i18n.language === 'en'
+                                ? 'Click to select this nickname'
+                                : 'Bấm để chọn biệt danh này'
                           }
                         >
-                          {isUsed ? `${fn} 🛑 (Đã dùng)` : `✨ ${fn}`}
+                          {isUsed
+                            ? i18n.language === 'en'
+                              ? `${fn} 🛑 (Used)`
+                              : `${fn} 🛑 (Đã dùng)`
+                            : `✨ ${fn}`}
                         </button>
                       );
                     })}
@@ -419,7 +527,11 @@ export default function GuestJoinModal({
 
                 <div className="form-actions-vertical gap-2">
                   <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'ĐANG ĐĂNG KÝ...' : '🍻 XÁC NHẬN ĐĂNG KÝ'}
+                    {isSubmitting
+                      ? i18n.language === 'en'
+                        ? 'REGISTERING...'
+                        : 'ĐANG ĐĂNG KÝ...'
+                      : `🍻 ${i18n.language === 'en' ? 'CONFIRM REGISTER' : 'XÁC NHẬN ĐĂNG KÝ'}`}
                   </button>
                   <button
                     type="button"
@@ -431,7 +543,10 @@ export default function GuestJoinModal({
                       setMode('guest-login');
                     }}
                   >
-                    🔑 Bạn đã có tài khoản cũ? Đăng Nhập
+                    🔑{' '}
+                    {i18n.language === 'en'
+                      ? 'Already have guest account? Sign In'
+                      : 'Bạn đã có tài khoản cũ? Đăng Nhập'}
                   </button>
                   <button
                     type="button"
@@ -443,7 +558,7 @@ export default function GuestJoinModal({
                       setMode('choose');
                     }}
                   >
-                    ← Quay Lại
+                    {t('create_event.cancel')}
                   </button>
                 </div>
               </form>
@@ -453,18 +568,25 @@ export default function GuestJoinModal({
           {mode === 'guest-login' && (
             <>
               <p className="modal-desc">
-                Nhập tên đăng nhập và mật khẩu Khách cũ của bạn để đồng bộ toàn bộ lịch sử
-                vote/chat.
+                {i18n.language === 'en'
+                  ? 'Enter your old Guest username and password to restore all vote/chat history.'
+                  : 'Nhập tên đăng nhập và mật khẩu Khách cũ của bạn để đồng bộ toàn bộ lịch sử vote/chat.'}
               </p>
               <form onSubmit={handleLoginSubmit}>
                 {error && <div className="modal-error-box animate-fade-in">⚠️ {error}</div>}
 
                 <div className="form-group">
-                  <label htmlFor="login-username">Tên đăng nhập / Email cũ</label>
+                  <label htmlFor="login-username">
+                    {i18n.language === 'en' ? 'Username / Old Email' : 'Tên đăng nhập / Email cũ'}
+                  </label>
                   <input
                     type="text"
                     id="login-username"
-                    placeholder="Ví dụ: hung99 hoặc hung.nguyen@gmail.com..."
+                    placeholder={
+                      i18n.language === 'en'
+                        ? 'e.g. tom99 or tom.smith@gmail.com...'
+                        : 'Ví dụ: hung99 hoặc hung.nguyen@gmail.com...'
+                    }
                     value={username}
                     onChange={(e) => {
                       setUsername(e.target.value);
@@ -477,12 +599,16 @@ export default function GuestJoinModal({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="login-password">Mật khẩu tài khoản</label>
+                  <label htmlFor="login-password">
+                    {i18n.language === 'en' ? 'Password' : 'Mật khẩu tài khoản'}
+                  </label>
                   <div className="relative flex items-center">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       id="login-password"
-                      placeholder="Nhập mật khẩu..."
+                      placeholder={
+                        i18n.language === 'en' ? 'Enter password...' : 'Nhập mật khẩu...'
+                      }
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -505,7 +631,11 @@ export default function GuestJoinModal({
 
                 <div className="form-actions-vertical gap-2 mt-4">
                   <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'ĐANG ĐĂNG NHẬP...' : '🔓 ĐĂNG NHẬP KHÁCH CŨ'}
+                    {isSubmitting
+                      ? i18n.language === 'en'
+                        ? 'LOGGING IN...'
+                        : 'ĐANG ĐĂNG NHẬP...'
+                      : `🔓 ${i18n.language === 'en' ? 'GUEST SIGN IN' : 'ĐĂNG NHẬP KHÁCH CŨ'}`}
                   </button>
                   <button
                     type="button"
@@ -517,7 +647,10 @@ export default function GuestJoinModal({
                       setMode('guest');
                     }}
                   >
-                    👤 Tạo Tài Khoản Khách Mới
+                    👤{' '}
+                    {i18n.language === 'en'
+                      ? 'Create New Guest Account'
+                      : 'Tạo Tài Khoản Khách Mới'}
                   </button>
                   <button
                     type="button"
@@ -529,7 +662,7 @@ export default function GuestJoinModal({
                       setMode('choose');
                     }}
                   >
-                    ← Quay Lại
+                    {t('create_event.cancel')}
                   </button>
                 </div>
               </form>

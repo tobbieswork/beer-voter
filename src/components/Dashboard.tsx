@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatVietnameseDateTime } from '../utils/date';
 import { EventData, User } from '../types';
 
@@ -10,13 +11,14 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ events, onSelectEvent, onCreateEventClick }: DashboardProps) {
+  const { t, i18n } = useTranslation();
   const [filterStatus, setFilterStatus] = useState<'all' | 'voting' | 'locked'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const formatDate = (isoStr: string) => {
     try {
       const date = new Date(isoStr);
-      return date.toLocaleDateString('vi-VN', {
+      return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'vi-VN', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -49,16 +51,16 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
       <div className="dashboard-hero-section card-pub mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="dashboard-title">
+            <span className="hero-badge mb-3 inline-block">{t('dashboard.hero_tag')}</span>
             <h2 className="mb-2 text-white text-3xl font-extrabold tracking-tight flex items-center gap-2">
-              <span>🍻</span> Đường Đua Sòng Nhậu BeerVote!
+              <span>🍻</span> {t('dashboard.hero_title')}
             </h2>
             <p className="text-text-secondary text-[1rem] leading-relaxed">
-              Lên lịch trình nhậu nhẹt, bình chọn các địa điểm đắc địa và chốt thời gian cùng hội
-              chiến hữu.
+              {t('dashboard.hero_subtitle')}
             </p>
           </div>
           <button className="btn-primary shrink-0 scale-hover" onClick={onCreateEventClick}>
-            <span>➕</span> Lên Kèo Nhậu Mới
+            {t('dashboard.create_button')}
           </button>
         </div>
 
@@ -68,28 +70,30 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
             <span className="stat-icon">🍺</span>
             <div className="stat-info">
               <span className="stat-value">{totalEvents}</span>
-              <span className="stat-label">Tổng Kèo Nhậu</span>
+              <span className="stat-label">{t('dashboard.stat_total_parties')}</span>
             </div>
           </div>
           <div className="stat-card">
             <span className="stat-icon text-amber-500">🔥</span>
             <div className="stat-info">
               <span className="stat-value">{votingEvents}</span>
-              <span className="stat-label">Đang Bình Chọn</span>
+              <span className="stat-label">{t('dashboard.stat_active_parties')}</span>
             </div>
           </div>
           <div className="stat-card">
             <span className="stat-icon text-green-500">✅</span>
             <div className="stat-info">
               <span className="stat-value">{lockedEvents}</span>
-              <span className="stat-label">Kèo Đã Chốt</span>
+              <span className="stat-label">{t('dashboard.stat_locked_parties')}</span>
             </div>
           </div>
           <div className="stat-card">
             <span className="stat-icon text-red-500">👍</span>
             <div className="stat-info">
               <span className="stat-value">{totalVotes}</span>
-              <span className="stat-label">Lượt Bình Chọn</span>
+              <span className="stat-label">
+                {i18n.language === 'en' ? 'Total Votes' : 'Lượt Bình Chọn'}
+              </span>
             </div>
           </div>
         </div>
@@ -104,19 +108,19 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
               className={`filter-tab-btn ${filterStatus === 'all' ? 'active' : ''}`}
               onClick={() => setFilterStatus('all')}
             >
-              Tất Cả ({totalEvents})
+              {t('dashboard.filter_all')} ({totalEvents})
             </button>
             <button
               className={`filter-tab-btn ${filterStatus === 'voting' ? 'active' : ''}`}
               onClick={() => setFilterStatus('voting')}
             >
-              Đang Bình Chọn 🔥 ({votingEvents})
+              {t('dashboard.filter_active')} 🔥 ({votingEvents})
             </button>
             <button
               className={`filter-tab-btn ${filterStatus === 'locked' ? 'active' : ''}`}
               onClick={() => setFilterStatus('locked')}
             >
-              Đã Chốt 🍻 ({lockedEvents})
+              {t('dashboard.filter_locked')} 🍻 ({lockedEvents})
             </button>
           </div>
 
@@ -125,7 +129,7 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Tìm kèo nhậu hoặc chủ kèo..."
+              placeholder={t('dashboard.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -143,17 +147,23 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
           <div className="empty-icon text-5xl mb-4 animate-bounce">🍻</div>
           <h3 className="text-xl font-bold mb-2 text-white">
             {searchQuery
-              ? 'Không tìm thấy kèo nhậu phù hợp!'
-              : 'Chưa có sòng nhậu nào được lên lịch!'}
+              ? i18n.language === 'en'
+                ? 'No matching gatherings found!'
+                : 'Không tìm thấy kèo nhậu phù hợp!'
+              : t('dashboard.no_events')}
           </h3>
           <p className="text-text-secondary text-[0.95rem] mb-6 max-w-md mx-auto">
             {searchQuery
-              ? 'Thử thay đổi từ khóa hoặc bộ lọc để tìm được các kèo nhậu hấp dẫn khác.'
-              : 'Hãy là người tiên phong phát súng lệnh bằng cách tạo một kèo nhậu mới rực rỡ!'}
+              ? i18n.language === 'en'
+                ? 'Try changing keywords or status filter to find other active sessions.'
+                : 'Thử thay đổi từ khóa hoặc bộ lọc để tìm được các kèo nhậu hấp dẫn khác.'
+              : i18n.language === 'en'
+                ? 'Be the pioneer and fire the first shot by launching a new gathering!'
+                : 'Hãy là người tiên phong phát súng lệnh bằng cách tạo một kèo nhậu mới rực rỡ!'}
           </p>
           {!searchQuery && (
             <button className="btn-primary mx-auto" onClick={onCreateEventClick}>
-              ➕ Tạo Kèo Nhậu Đầu Tiên
+              ➕ {i18n.language === 'en' ? 'Create First Party' : 'Tạo Kèo Nhậu Đầu Tiên'}
             </button>
           )}
         </div>
@@ -173,30 +183,38 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                         : 'event-status-badge locked'
                     }
                   >
-                    {event.status === 'voting' ? '🔥 Đang bình chọn' : '🍻 Đã chốt kèo'}
+                    {event.status === 'voting'
+                      ? `🔥 ${t('dashboard.status_active')}`
+                      : `🍻 ${t('dashboard.status_locked')}`}
                   </span>
                 </div>
                 <h3 className="mb-2 text-xl font-bold text-white leading-snug">{event.title}</h3>
                 <div className="flex flex-col gap-1 text-text-secondary text-[0.85rem]">
                   <span>
-                    Chủ sòng: <strong className="text-white">{event.creatorName}</strong>
+                    {i18n.language === 'en' ? 'Host: ' : 'Chủ sòng: '}
+                    <strong className="text-white">{event.creatorName}</strong>
                   </span>
-                  <span>Ngày lên kèo: {formatDate(event.createdAt)}</span>
+                  <span>
+                    {i18n.language === 'en' ? 'Date Created: ' : 'Ngày lên kèo: '}
+                    {formatDate(event.createdAt)}
+                  </span>
                 </div>
               </div>
 
               <div className="my-4 py-3 border-t border-b border-dashed border-white/5 card-middle-preview">
                 {event.status === 'voting' ? (
                   <div className="flex items-center gap-2 italic text-text-secondary text-[0.85rem] current-status-hint">
-                    <span className="beer-glow">✨</span> Anh em đang tích cực vote và đề xuất ý
-                    tưởng...
+                    <span className="beer-glow">✨</span>{' '}
+                    {i18n.language === 'en'
+                      ? 'Partners are actively voting and proposing options...'
+                      : 'Anh em đang tích cực vote và đề xuất ý tưởng...'}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2 text-[0.85rem] locked-summary-box">
                     <div className="flex items-center gap-2 text-text-primary">
                       <span>📅</span>
                       <strong className="glow-text text-gold text-[0.85rem]">
-                        {formatVietnameseDateTime(event.finalDateTime)}
+                        {formatVietnameseDateTime(event.finalDateTime, i18n.language)}
                       </strong>
                     </div>
                     <div className="flex items-center gap-2 text-text-primary">
@@ -217,9 +235,13 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
 
               <div className="mt-2 flex items-center justify-between">
                 <div className="flex gap-3 text-text-muted text-[0.85rem] stats-row">
-                  <span className="stat-item">👍 {event.votesCount || 0} vote</span>
+                  <span className="stat-item">
+                    👍 {event.votesCount || 0} {i18n.language === 'en' ? 'votes' : 'vote'}
+                  </span>
                   <span>•</span>
-                  <span className="stat-item">💬 {event.commentsCount || 0} chat</span>
+                  <span className="stat-item">
+                    💬 {event.commentsCount || 0} {i18n.language === 'en' ? 'chats' : 'chat'}
+                  </span>
                 </div>
 
                 <button
@@ -228,7 +250,13 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                   }
                   onClick={() => onSelectEvent(event.id)}
                 >
-                  {event.status === 'voting' ? '👉 Vào Vote Ngay' : '📅 Xem Lịch'}
+                  {event.status === 'voting'
+                    ? i18n.language === 'en'
+                      ? '👉 Vote Now'
+                      : '👉 Vào Vote Ngay'
+                    : i18n.language === 'en'
+                      ? '📅 View Schedule'
+                      : '📅 Xem Lịch'}
                 </button>
               </div>
             </div>

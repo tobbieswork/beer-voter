@@ -1,4 +1,5 @@
 import { useState, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PartyPinModalProps {
   eventId: string;
@@ -13,6 +14,7 @@ export default function PartyPinModal({
   onSuccess,
   onBack,
 }: PartyPinModalProps) {
+  const { t, i18n } = useTranslation();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
@@ -61,12 +63,16 @@ export default function PartyPinModal({
       if (data.valid) {
         onSuccess(data.pinToken);
       } else {
-        setError('Mật khẩu không đúng. Thử lại nhé!');
+        setError(t('party_pin.error_invalid'));
         setDigits(['', '', '', '', '', '']);
         setTimeout(() => inputRefs.current[0]?.focus(), 50);
       }
     } catch {
-      setError('Lỗi kết nối. Vui lòng thử lại!');
+      setError(
+        i18n.language === 'en'
+          ? 'Connection error. Please try again!'
+          : 'Lỗi kết nối. Vui lòng thử lại!'
+      );
     } finally {
       setIsChecking(false);
     }
@@ -75,7 +81,9 @@ export default function PartyPinModal({
   const handleSubmit = () => {
     const pin = digits.join('');
     if (pin.length !== 6) {
-      setError('Vui lòng nhập đủ 6 chữ số!');
+      setError(
+        i18n.language === 'en' ? 'Please enter all 6 digits!' : 'Vui lòng nhập đủ 6 chữ số!'
+      );
       return;
     }
     verifyPin(pin);
@@ -92,17 +100,17 @@ export default function PartyPinModal({
         <div className="modal-pub-body">
           <div className="pin-modal-header">🔐</div>
           <h3 className="modal-title" id="pin-modal-title">
-            Kèo Nhậu Riêng Tư
+            {t('party_pin.title')}
           </h3>
           <p className="modal-desc">
             {eventTitle ? (
               <>
                 <strong>{eventTitle}</strong>
                 <br />
-                Kèo này được bảo vệ bởi mật khẩu.
+                {t('party_pin.subtitle')}
               </>
             ) : (
-              'Nhập mật khẩu 6 số để vào kèo nhậu này.'
+              t('party_pin.subtitle')
             )}
           </p>
 
@@ -125,7 +133,7 @@ export default function PartyPinModal({
                 onPaste={handlePaste}
                 className="h-14 w-12 rounded-xl border-2 border-glass bg-white/5 text-3xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
                 disabled={isChecking}
-                aria-label={`Số thứ ${i + 1} của mật khẩu 6 số`}
+                aria-label={`Digit ${i + 1} of 6-digit PIN`}
               />
             ))}
           </div>
@@ -136,14 +144,18 @@ export default function PartyPinModal({
               onClick={handleSubmit}
               disabled={isChecking || digits.some((d) => d === '')}
             >
-              {isChecking ? 'Đang kiểm tra...' : '🔓 Xác Nhận Mật Khẩu'}
+              {isChecking
+                ? i18n.language === 'en'
+                  ? 'Verifying...'
+                  : 'Đang kiểm tra...'
+                : `🔓 ${t('party_pin.submit')}`}
             </button>
             <button
               className="btn-secondary w-full justify-center"
               onClick={onBack}
               disabled={isChecking}
             >
-              ← Quay Lại
+              {t('party_pin.cancel')}
             </button>
           </div>
         </div>

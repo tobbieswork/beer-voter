@@ -1,7 +1,8 @@
 import { useState, FormEvent, useRef, KeyboardEvent, ClipboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User } from '../types';
 
-const TITLE_PRESETS = [
+const VI_TITLE_PRESETS = [
   'Họp mặt cuối tuần 🍻',
   'Mừng lương về 🎉',
   'Giải nhiệt mùa hè 🌞',
@@ -9,7 +10,15 @@ const TITLE_PRESETS = [
   'Bàn mưu tính kế 🧠',
 ];
 
-const LOCATION_PRESETS = [
+const EN_TITLE_PRESETS = [
+  'Weekend Gathering 🍻',
+  'Salary Celebration 🎉',
+  'Summer Cooldown 🌞',
+  'TGIF Blast 🚀',
+  'Plotting & Planning 🧠',
+];
+
+const VI_LOCATION_PRESETS = [
   'Bia Hơi Vỉa Hè Bờ Sông 🌊',
   'Quán Lẩu Dê Đồng Quê 🐐',
   'Beer Club Sôi Động 🎶',
@@ -17,12 +26,28 @@ const LOCATION_PRESETS = [
   'Quán Ốc Đêm Ấm Cúng 🐚',
 ];
 
-const BEER_PRESETS = [
+const EN_LOCATION_PRESETS = [
+  'Riverside Draft Beer 🌊',
+  'Countryside Goat Hotpot 🐐',
+  'Vibrant Beer Club 🎶',
+  'Windy BBQ & Beer 💨',
+  'Cozy Late-night Snail Bar 🐚',
+];
+
+const VI_BEER_PRESETS = [
   'Bia hơi Hà Nội mát lạnh cổ điển 🍺',
   'Bia thủ công IPA thơm nồng, chill chill 🌾',
   'Bia tháp Tiger Bạc kéo pháo 🐯',
   'Bia tươi Tiệp thơm đậm vị 🇨🇿',
   'Bia úp ngược đa sắc màu 🍹',
+];
+
+const EN_BEER_PRESETS = [
+  'Classic Cold Hanoi Draft Beer 🍺',
+  'Aromatic IPA Craft Beer 🌾',
+  'Silver Tiger Beer Tower 🐯',
+  'Rich Czech Fresh Beer 🇨🇿',
+  'Colorful Upside-down Beer 🍹',
 ];
 
 interface CreateEventProps {
@@ -38,6 +63,7 @@ export default function CreateEvent({
   onCreateSuccess,
   currentUser,
 }: CreateEventProps) {
+  const { t, i18n } = useTranslation();
   const [title, setTitle] = useState('');
   const [dateOpts, setDateOpts] = useState<string[]>(['']);
   const [locOpts, setLocOpts] = useState<string[]>(['']);
@@ -76,6 +102,10 @@ export default function CreateEvent({
 
   if (!isOpen) return null;
 
+  const getTitlePresets = () => (i18n.language === 'en' ? EN_TITLE_PRESETS : VI_TITLE_PRESETS);
+  const getLocPresets = () => (i18n.language === 'en' ? EN_LOCATION_PRESETS : VI_LOCATION_PRESETS);
+  const getBeerPresets = () => (i18n.language === 'en' ? EN_BEER_PRESETS : VI_BEER_PRESETS);
+
   // Tính toán các gợi ý ngày giờ động dựa trên thời gian thực
   const getDynamicDatePresets = () => {
     const getQuickDate = (daysAhead: number, hourStr = '19:30') => {
@@ -98,6 +128,15 @@ export default function CreateEvent({
       const dd = String(d.getDate()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd}T${hourStr}`;
     };
+
+    if (i18n.language === 'en') {
+      return [
+        { label: 'Today (19:30) 🕒', value: getQuickDate(0) },
+        { label: 'Tomorrow (19:30) 🌅', value: getQuickDate(1) },
+        { label: 'This Friday (19:30) ⚡', value: getUpcomingDay(5) },
+        { label: 'This Saturday (18:00) 🥳', value: getUpcomingDay(6, '18:00') },
+      ];
+    }
 
     return [
       { label: 'Hôm nay (19:30) 🕒', value: getQuickDate(0) },
@@ -187,13 +226,21 @@ export default function CreateEvent({
     setError('');
 
     if (!title.trim()) {
-      setError('Vui lòng nhập tên kèo nhậu nhé!');
+      setError(
+        i18n.language === 'en'
+          ? 'Please enter a gathering name!'
+          : 'Vui lòng nhập tên kèo nhậu nhé!'
+      );
       return;
     }
 
     const partyPinVal = pinDigits.join('');
     if (partyPinVal && !/^\d{6}$/.test(partyPinVal)) {
-      setError('Mật khẩu bảo vệ phải đúng 6 chữ số (hoặc để trống)!');
+      setError(
+        i18n.language === 'en'
+          ? 'Party PIN must be exactly 6 digits (or left blank)!'
+          : 'Mật khẩu bảo vệ phải đúng 6 chữ số (hoặc để trống)!'
+      );
       return;
     }
 
@@ -203,13 +250,19 @@ export default function CreateEvent({
 
     if (filteredDates.length === 0 || filteredLocs.length === 0 || filteredBeers.length === 0) {
       setError(
-        'Vui lòng nhập/chọn ít nhất 1 đề xuất ban đầu cho mỗi mục (Ngày/Giờ, Địa điểm, Loại bia)!'
+        i18n.language === 'en'
+          ? 'Please enter/select at least 1 option for each category (Date, Location, Beer)!'
+          : 'Vui lòng nhập/chọn ít nhất 1 đề xuất ban đầu cho mỗi mục (Ngày/Giờ, Địa điểm, Loại bia)!'
       );
       return;
     }
 
     if (!currentUser) {
-      setError('Bạn cần nhập thông tin trước khi tạo kèo!');
+      setError(
+        i18n.language === 'en'
+          ? 'You need to set up a profile before creating an event!'
+          : 'Bạn cần nhập thông tin trước khi tạo kèo!'
+      );
       return;
     }
 
@@ -245,7 +298,11 @@ export default function CreateEvent({
       onClose();
     } catch (err) {
       console.error(err);
-      setError('Không thể tạo kèo nhậu. Vui lòng kiểm tra kết nối tới Server!');
+      setError(
+        i18n.language === 'en'
+          ? 'Failed to create gathering. Check server connection!'
+          : 'Không thể tạo kèo nhậu. Vui lòng kiểm tra kết nối tới Server!'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -262,11 +319,12 @@ export default function CreateEvent({
       >
         <div className="modal-pub-body">
           <h3 className="modal-title text-[1.6rem]" id="create-modal-title">
-            🍻 Tạo Kèo Nhậu Mới 🍻
+            {t('create_event.title')}
           </h3>
           <p className="modal-desc mb-4">
-            Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo
-            này sẽ mặc định làm <strong>Chủ Kèo</strong>.
+            {i18n.language === 'en'
+              ? 'Set up initial suggestions. Friends can vote or add new ideas later! You will be designated as Host.'
+              : 'Thiết lập các đề xuất ban đầu. Bạn bè sẽ vào vote hoặc thêm đề xuất mới sau! Bạn tạo kèo này sẽ mặc định làm Chủ Kèo.'}
           </p>
 
           {error && <div className="modal-error-box mb-4">⚠️ {error}</div>}
@@ -274,11 +332,11 @@ export default function CreateEvent({
           <form onSubmit={handleSubmit}>
             {/* Tên Kèo */}
             <div className="form-group">
-              <label htmlFor="event-title">Tên Kèo Nhậu</label>
+              <label htmlFor="event-title">{t('create_event.name_label')}</label>
               <input
                 type="text"
                 id="event-title"
-                placeholder="Ví dụ: Họp mặt cuối tuần, Mừng lương về, Giải nhiệt mùa hè..."
+                placeholder={t('create_event.name_placeholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={60}
@@ -286,7 +344,7 @@ export default function CreateEvent({
               />
               {/* Presets cho Tên Kèo */}
               <div className="presets-container">
-                {TITLE_PRESETS.map((preset, idx) => (
+                {getTitlePresets().map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -301,7 +359,7 @@ export default function CreateEvent({
 
             {/* Đề xuất Ngày/Giờ */}
             <div className="form-group mb-6">
-              <label>Lịch Trình Đề Xuất (Ngày & Giờ)</label>
+              <label>{t('create_event.target_time_label')}</label>
               <div className="options-input-list">
                 {dateOpts.map((opt, index) => (
                   <div key={index} className="option-input-row">
@@ -337,19 +395,23 @@ export default function CreateEvent({
                 ))}
               </div>
               <button type="button" className="btn-add-opt-row" onClick={() => addOptField('date')}>
-                ➕ Thêm Lịch Khác
+                ➕ {i18n.language === 'en' ? 'Add Another Date/Time' : 'Thêm Lịch Khác'}
               </button>
             </div>
 
             {/* Đề xuất Địa điểm */}
             <div className="form-group mb-6">
-              <label>Địa Điểm Đề Xuất</label>
+              <label>{t('event_detail.option_types.location')}</label>
               <div className="options-input-list">
                 {locOpts.map((opt, index) => (
                   <div key={index} className="option-input-row">
                     <input
                       type="text"
-                      placeholder="Ví dụ: Bia Hơi Vỉa Hè Bờ Sông"
+                      placeholder={
+                        i18n.language === 'en'
+                          ? 'e.g. Riverside Draft Beer Bar'
+                          : 'Ví dụ: Bia Hơi Vỉa Hè Bờ Sông'
+                      }
                       value={opt}
                       onChange={(e) => handleOptChange(index, e.target.value, 'location')}
                       required={index === 0}
@@ -368,7 +430,7 @@ export default function CreateEvent({
               </div>
               {/* Presets cho Địa Điểm */}
               <div className="presets-container my-2">
-                {LOCATION_PRESETS.map((preset, idx) => (
+                {getLocPresets().map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -384,19 +446,23 @@ export default function CreateEvent({
                 className="btn-add-opt-row"
                 onClick={() => addOptField('location')}
               >
-                ➕ Thêm Địa Điểm Khác
+                ➕ {i18n.language === 'en' ? 'Add Another Location' : 'Thêm Địa Điểm Khác'}
               </button>
             </div>
 
             {/* Đề xuất Loại Bia */}
             <div className="form-group mb-6">
-              <label>Loại Bia / Phong Cách Quán</label>
+              <label>{t('event_detail.option_types.beer')}</label>
               <div className="options-input-list">
                 {beerOpts.map((opt, index) => (
                   <div key={index} className="option-input-row">
                     <input
                       type="text"
-                      placeholder="Ví dụ: Bia hơi Hà Nội mát lạnh, Bia thủ công..."
+                      placeholder={
+                        i18n.language === 'en'
+                          ? 'e.g. Hanoi Draft Beer, IPA Craft...'
+                          : 'Ví dụ: Bia hơi Hà Nội mát lạnh, Bia thủ công...'
+                      }
                       value={opt}
                       onChange={(e) => handleOptChange(index, e.target.value, 'beer')}
                       required={index === 0}
@@ -415,7 +481,7 @@ export default function CreateEvent({
               </div>
               {/* Presets cho Loại Bia */}
               <div className="presets-container my-2">
-                {BEER_PRESETS.map((preset, idx) => (
+                {getBeerPresets().map((preset, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -427,15 +493,21 @@ export default function CreateEvent({
                 ))}
               </div>
               <button type="button" className="btn-add-opt-row" onClick={() => addOptField('beer')}>
-                ➕ Thêm Loại Bia Khác
+                ➕ {i18n.language === 'en' ? 'Add Another Beer Option' : 'Thêm Loại Bia Khác'}
               </button>
             </div>
 
             {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
             <div className="form-group mb-6">
               <label>
-                🔐 Mật Khẩu Bảo Vệ Kèo{' '}
-                <span className="font-normal text-muted">(tùy chọn - đúng 6 chữ số)</span>
+                🔐 {t('create_event.pin_label')}{' '}
+                <span className="font-normal text-muted">
+                  (
+                  {i18n.language === 'en'
+                    ? 'optional - exactly 6 digits'
+                    : 'tùy chọn - đúng 6 chữ số'}
+                  )
+                </span>
               </label>
               <div className="flex justify-start gap-2 mt-2">
                 {pinDigits.map((d, i) => (
@@ -453,7 +525,7 @@ export default function CreateEvent({
                     onKeyDown={(e) => handlePinKeyDown(i, e)}
                     onPaste={handlePinPaste}
                     className="h-12 w-10 rounded-xl border border-glass bg-white/5 text-2xl font-bold text-text-primary text-center outline-none transition-all duration-200 focus:border-gold focus:bg-gold/5 focus:shadow-[0_0_0_3px_rgba(255,176,0,0.15)] disabled:opacity-50"
-                    aria-label={`Số thứ ${i + 1} của mật khẩu 6 số bảo vệ kèo`}
+                    aria-label={`Digit ${i + 1} of 6-digit access PIN`}
                   />
                 ))}
               </div>
@@ -462,8 +534,12 @@ export default function CreateEvent({
                   className={`block text-[0.75rem] pt-2 ${pinDigits.every((d) => d !== '') ? 'text-green' : 'text-muted'}`}
                 >
                   {pinDigits.every((d) => d !== '')
-                    ? '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
-                    : `Còn thiếu ${6 - pinDigits.filter((d) => d !== '').length} chữ số`}
+                    ? i18n.language === 'en'
+                      ? '✅ PIN code set — only authorized partners can join!'
+                      : '✅ Đã đặt mật khẩu — chỉ người biết mã mới vào được!'
+                    : i18n.language === 'en'
+                      ? `Missing ${6 - pinDigits.filter((d) => d !== '').length} digits`
+                      : `Còn thiếu ${6 - pinDigits.filter((d) => d !== '').length} chữ số`}
                 </span>
               )}
             </div>
@@ -475,10 +551,14 @@ export default function CreateEvent({
                 onClick={onClose}
                 disabled={isSubmitting}
               >
-                Hủy Bỏ
+                {t('create_event.cancel')}
               </button>
               <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Đang Tạo Kèo...' : '🍻 Phát Lệnh Tạo Kèo'}
+                {isSubmitting
+                  ? i18n.language === 'en'
+                    ? 'Creating...'
+                    : 'Đang Tạo Kèo...'
+                  : `🍻 ${i18n.language === 'en' ? 'Launch Gathering' : 'Phát Lệnh Tạo Kèo'}`}
               </button>
             </div>
           </form>
