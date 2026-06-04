@@ -5,12 +5,20 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as Sentry from '@sentry/node';
 
 // Import các modules nội bộ đã tách
 import { initDB } from './db/store.js';
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import { initWebSocketServer } from './websocket/server.js';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  });
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,6 +51,10 @@ app.get('/api/ping', (_req: Request, res: Response) => {
 // Kết nối các Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 // Phục vụ thư mục tĩnh React build (Production)
 const distPath = path.join(__dirname, '../dist');
