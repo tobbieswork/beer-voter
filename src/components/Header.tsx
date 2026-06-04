@@ -130,42 +130,57 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
       </div>
 
       {showQrModal && currentUser && (
-        <div className="modal-overlay z-50">
+        <div
+          className="modal-overlay z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowQrModal(false);
+          }}
+        >
           <div
             className="modal-pub max-w-[400px] text-center"
             role="dialog"
             aria-modal="true"
             aria-labelledby="qr-modal-title"
           >
-            <div className="text-3xl mb-2">📱</div>
-            <h3 className="modal-title" id="qr-modal-title">
-              {t('header.qr_title')}
-            </h3>
-            <p className="modal-desc text-[0.9rem] mb-4">{t('header.qr_description_1')}</p>
-
-            <div className="flex justify-center bg-white p-3 rounded-2xl mb-4 w-[200px] h-[200px] mx-auto shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                  `${window.location.origin}${window.location.pathname}?authData=${btoa(
-                    unescape(encodeURIComponent(JSON.stringify(currentUser)))
-                  )}`
-                )}`}
-                alt="QR Code"
-                className="w-[180px] h-[180px] object-contain"
-              />
-            </div>
-
-            <div className="text-xs text-text-secondary bg-white/5 border border-glass rounded-lg p-2.5 mb-4 text-left">
-              💡 {t('header.qr_description_2')}
-            </div>
-
             <button
               type="button"
-              className="btn-primary w-full justify-center"
+              className="modal-close-btn"
               onClick={() => setShowQrModal(false)}
+              aria-label={t('header.qr_close')}
             >
-              {t('header.qr_close')}
+              &times;
             </button>
+            <div className="modal-pub-body">
+              <div className="text-3xl mb-2">📱</div>
+              <h3 className="modal-title" id="qr-modal-title">
+                {t('header.qr_title')}
+              </h3>
+              <p className="modal-desc text-[0.9rem] mb-4">{t('header.qr_description_1')}</p>
+
+              <div className="flex justify-center bg-white p-3 rounded-2xl mb-4 w-[200px] h-[200px] mx-auto shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                    `${window.location.origin}${window.location.pathname}?authData=${btoa(
+                      unescape(encodeURIComponent(JSON.stringify(currentUser)))
+                    )}`
+                  )}`}
+                  alt="QR Code"
+                  className="w-[180px] h-[180px] object-contain"
+                />
+              </div>
+
+              <div className="text-xs text-text-secondary bg-white/5 border border-glass rounded-lg p-2.5 mb-4 text-left">
+                💡 {t('header.qr_description_2')}
+              </div>
+
+              <button
+                type="button"
+                className="btn-primary w-full justify-center"
+                onClick={() => setShowQrModal(false)}
+              >
+                {t('header.qr_close')}
+              </button>
+            </div>
           </div>
         </div>
       )}

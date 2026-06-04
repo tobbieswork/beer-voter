@@ -422,6 +422,7 @@ export default function App() {
       {/* Modal yêu cầu nhập biệt danh và định danh khi vào sòng hoặc tạo kèo */}
       <GuestJoinModal
         isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
         onSubmit={handleGuestJoinSubmit}
         onGoogleSuccess={handleGoogleAuthSuccess}
         usedNicknames={currentEventData ? getUsedNicknames(currentEventData) : []}

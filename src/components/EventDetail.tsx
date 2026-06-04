@@ -1012,8 +1012,21 @@ export default function EventDetail({
 
       {/* ================= MODAL XÁC NHẬN XÓA KÈO ================= */}
       {showDeleteConfirm && (
-        <div className="modal-overlay">
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDeleteConfirm(false);
+          }}
+        >
           <div className="modal-pub max-w-[420px]">
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setShowDeleteConfirm(false)}
+              aria-label={t('create_event.cancel')}
+            >
+              &times;
+            </button>
             <div className="modal-pub-body">
               <h3 className="modal-title text-red">
                 {i18n.language === 'en' ? '🗑️ Confirm Delete Party' : '🗑️ Xác Nhận Xóa Kèo'}
@@ -1054,8 +1067,21 @@ export default function EventDetail({
 
       {/* ================= MODAL CHỐT KÈO DÀNH CHO ADMIN ================= */}
       {showLockModal && (
-        <div className="modal-overlay">
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowLockModal(false);
+          }}
+        >
           <div className="modal-pub max-w-[500px]">
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setShowLockModal(false)}
+              aria-label={t('create_event.cancel')}
+            >
+              &times;
+            </button>
             <div className="modal-pub-body">
               <h3 className="modal-title text-amber">
                 {i18n.language === 'en'

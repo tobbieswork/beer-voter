@@ -40,6 +40,7 @@ const EN_FUNNY_NAMES = [
 
 interface GuestJoinModalProps {
   isOpen: boolean;
+  onClose?: () => void;
   onSubmit: (data: { id?: string; nickname: string; realName: string; username: string }) => void;
   onGoogleSuccess: (data: {
     sub: string;
@@ -54,6 +55,7 @@ interface GuestJoinModalProps {
 
 export default function GuestJoinModal({
   isOpen,
+  onClose,
   onSubmit,
   onGoogleSuccess,
   usedNicknames = [],
@@ -272,9 +274,25 @@ export default function GuestJoinModal({
     return 0;
   });
 
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget && onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-pub" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
+        {onClose && (
+          <button
+            type="button"
+            className="modal-close-btn"
+            onClick={onClose}
+            aria-label={t('header.qr_close')}
+          >
+            &times;
+          </button>
+        )}
         <div className="modal-pub-body">
           <div className="modal-icon-large">🍻</div>
           <h3 className="modal-title" id="join-modal-title">

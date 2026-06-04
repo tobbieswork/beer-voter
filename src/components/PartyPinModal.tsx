@@ -89,14 +89,28 @@ export default function PartyPinModal({
     verifyPin(pin);
   };
 
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onBack();
+    }
+  };
+
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
       <div
         className="modal-pub max-w-[400px] text-center"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pin-modal-title"
       >
+        <button
+          type="button"
+          className="modal-close-btn"
+          onClick={onBack}
+          aria-label={t('party_pin.cancel')}
+        >
+          &times;
+        </button>
         <div className="modal-pub-body">
           <div className="pin-modal-header">🔐</div>
           <h3 className="modal-title" id="pin-modal-title">

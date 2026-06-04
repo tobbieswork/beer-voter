@@ -308,8 +308,14 @@ export default function CreateEvent({
     }
   };
 
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
       <div
         className="modal-pub"
         style={{ maxWidth: '600px' }}
@@ -317,6 +323,14 @@ export default function CreateEvent({
         aria-modal="true"
         aria-labelledby="create-modal-title"
       >
+        <button
+          type="button"
+          className="modal-close-btn"
+          onClick={onClose}
+          aria-label={t('header.qr_close')}
+        >
+          &times;
+        </button>
         <div className="modal-pub-body">
           <h3 className="modal-title text-[1.6rem]" id="create-modal-title">
             {t('create_event.title')}
