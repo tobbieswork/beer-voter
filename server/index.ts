@@ -79,7 +79,7 @@ const PORT = process.env.PORT || 3001;
 // Khởi chạy hệ thống sau khi đồng bộ database
 initDB()
   .then(() => {
-    server.listen(PORT, () => {
+    server.listen(Number(PORT), '0.0.0.0', () => {
       console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
       console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
       console.log(`👉 WebSockets: ws://localhost:${PORT}`);
@@ -87,7 +87,7 @@ initDB()
   })
   .catch((err) => {
     console.error('❌ Không thể khởi động server do lỗi DB:', err);
-    server.listen(PORT, () => {
+    server.listen(Number(PORT), '0.0.0.0', () => {
       console.log(
         `⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`
       );
