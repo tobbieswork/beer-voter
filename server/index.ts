@@ -76,20 +76,18 @@ initWebSocketServer(server);
 
 const PORT = process.env.PORT || 3001;
 
-// Khởi chạy hệ thống sau khi đồng bộ database
+// Khởi chạy HTTP Server ngay lập tức để Cloud Run không bị timeout
+server.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
+  console.log(`👉 APIs HTTP & Web: http://0.0.0.0:${PORT}`);
+  console.log(`👉 WebSockets: ws://0.0.0.0:${PORT}`);
+});
+
+// Khởi chạy hệ thống sau khi đồng bộ database ở background
 initDB()
   .then(() => {
-    server.listen(Number(PORT), '0.0.0.0', () => {
-      console.log(`🍺 BeerVote Backend Server đang chạy rực rỡ tại:`);
-      console.log(`👉 APIs HTTP & Web: http://localhost:${PORT}`);
-      console.log(`👉 WebSockets: ws://localhost:${PORT}`);
-    });
+    console.log('✅ Hoàn tất khởi tạo DB.');
   })
   .catch((err) => {
-    console.error('❌ Không thể khởi động server do lỗi DB:', err);
-    server.listen(Number(PORT), '0.0.0.0', () => {
-      console.log(
-        `⚠️ BeerVote Server khởi động ở chế độ fallback không có DB Cloud: http://localhost:${PORT}`
-      );
-    });
+    console.error('❌ Lỗi khởi tạo DB:', err);
   });
