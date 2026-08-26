@@ -4,3 +4,6 @@ runConfig:
   minInstances: 0
   maxInstances: 20
   concurrency: 80
+env:
+  - variable: SUPABASE_KEY
+    secret: SUPABASE_KEY
