@@ -163,7 +163,16 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
           </p>
           {!searchQuery && (
             <button className="btn-primary mx-auto" onClick={onCreateEventClick}>
-              ➕ {i18n.language === 'en' ? 'Create First Party' : 'Tạo Kèo Nhậu Đầu Tiên'}
+              <svg
+                className="w-5 h-5 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2.5"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              {i18n.language === 'en' ? 'Create First Party' : 'Tạo Kèo Nhậu Đầu Tiên'}
             </button>
           )}
         </div>
@@ -218,13 +227,42 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                       </strong>
                     </div>
                     <div className="flex items-center gap-2 text-text-primary">
-                      <span>📍</span>
+                      <svg
+                        className="w-4 h-4 text-amber-500 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                        />
+                      </svg>
                       <span className="font-semibold text-[0.85rem] text-white">
                         {event.finalLocation}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-text-primary">
-                      <span>🍺</span>
+                      <svg
+                        className="w-4 h-4 text-amber-500 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 2v12m0 0a5 5 0 01-5-5h10a5 5 0 01-5 5zm-4 8h8"
+                        />
+                      </svg>
                       <span className="text-[0.85rem] text-text-secondary">
                         {event.finalBeerStyle}
                       </span>
@@ -235,12 +273,38 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
 
               <div className="mt-2 flex items-center justify-between">
                 <div className="flex gap-3 text-text-muted text-[0.85rem] stats-row">
-                  <span className="stat-item">
-                    👍 {event.votesCount || 0} {i18n.language === 'en' ? 'votes' : 'vote'}
+                  <span className="stat-item flex items-center gap-1">
+                    <svg
+                      className="w-4 h-4 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6.633 10.25c.896 0 1.7-.393 2.287-1.014L10 7.75l-.25-2.75a1.5 1.5 0 0 1 3 0l-.25 2.75h3.633a2.25 2.25 0 0 1 2.25 2.25c0 .647-.272 1.23-.711 1.638.44.408.711.99.711 1.637 0 .647-.272 1.23-.711 1.638.44.408.711.99.711 1.637 0 .61-.243 1.167-.638 1.576a2.25 2.25 0 0 1-2.13 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-6.75a2.25 2.25 0 0 1 2.25-2.25Z"
+                      />
+                    </svg>
+                    {event.votesCount || 0} {i18n.language === 'en' ? 'votes' : 'vote'}
                   </span>
                   <span>•</span>
-                  <span className="stat-item">
-                    💬 {event.commentsCount || 0} {i18n.language === 'en' ? 'chats' : 'chat'}
+                  <span className="stat-item flex items-center gap-1">
+                    <svg
+                      className="w-4 h-4 text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a.75.75 0 0 1-1.074-.765 7.99 7.99 0 0 0 1.257-2.43C4.185 16.347 3 14.305 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
+                      />
+                    </svg>
+                    {event.commentsCount || 0} {i18n.language === 'en' ? 'chats' : 'chat'}
                   </span>
                 </div>
 
@@ -250,13 +314,41 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                   }
                   onClick={() => onSelectEvent(event.id)}
                 >
-                  {event.status === 'voting'
-                    ? i18n.language === 'en'
-                      ? '👉 Vote Now'
-                      : '👉 Vào Vote Ngay'
-                    : i18n.language === 'en'
-                      ? '📅 View Schedule'
-                      : '📅 Xem Lịch'}
+                  {event.status === 'voting' ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-1.5 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2.5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                        />
+                      </svg>
+                      {i18n.language === 'en' ? 'Vote Now' : 'Vào Vote Ngay'}
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4 mr-1.5 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                        />
+                      </svg>
+                      {i18n.language === 'en' ? 'View Schedule' : 'Xem Lịch'}
+                    </>
+                  )}
                 </button>
               </div>
             </div>

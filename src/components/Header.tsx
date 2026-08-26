@@ -68,7 +68,21 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
                 className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border border-white/20 object-cover max-[360px]:h-4 max-[360px]:w-4"
               />
             ) : (
-              <span className="text-lg sm:text-xl max-[360px]:text-base">🍺</span>
+              <span className="text-lg sm:text-xl max-[360px]:text-base">
+                <svg
+                  className="w-5 h-5 text-amber-500 shrink-0 inline-block"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 2v12m0 0a5 5 0 01-5-5h10a5 5 0 01-5 5zm-4 8h8"
+                  />
+                </svg>
+              </span>
             )}
 
             <div className="min-w-0 flex-1">

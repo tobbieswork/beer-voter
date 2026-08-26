@@ -1,0 +1,1647 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tobbies Nguyen — Software Engineer</title>
+    <meta name="description" content="Resume of Tobbies Nguyen, Software Engineer." />
+
+    <!-- Google Fonts: Plus Jakarta Sans / Roboto / Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&family=Roboto:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ================= GOOGLE MATERIAL DESIGN 3 (M3) DESIGN TOKENS ================= */
+      :root {
+        --font-google-sans:
+          'Plus Jakarta Sans', -apple-system, Roboto, BlinkMacSystemFont, sans-serif;
+        --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'Roboto Mono', monospace;
+
+        /* Google Core Palette */
+        --google-blue: #1a73e8;
+        --google-blue-container: #d3e3fd;
+        --google-blue-on-container: #041e49;
+        --google-red: #ea4335;
+        --google-yellow: #fbbc04;
+        --google-green: #34a853;
+        --google-green-container: #c4eed0;
+        --google-green-on-container: #072711;
+
+        /* M3 Light Tonal System (Default) */
+        --md-sys-color-background: #f8fafd;
+        --md-sys-color-surface: #ffffff;
+        --md-sys-color-surface-container-low: #f0f4f9;
+        --md-sys-color-surface-container: #e9eef6;
+        --md-sys-color-surface-container-high: #e3e8ef;
+        --md-sys-color-on-surface: #1f1f1f;
+        --md-sys-color-on-surface-variant: #444746;
+        --md-sys-color-outline: #747775;
+        --md-sys-color-outline-variant: #e0e2ec;
+        --md-sys-color-primary: #1a73e8;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #d3e3fd;
+        --md-sys-color-on-primary-container: #041e49;
+        --md-sys-color-secondary: #00639b;
+
+        --md-shape-corner-small: 8px;
+        --md-shape-corner-medium: 12px;
+        --md-shape-corner-large: 16px;
+        --md-shape-corner-extra-large: 24px;
+        --md-shape-corner-full: 9999px;
+
+        --md-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+        --md-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+        --md-elevation-page: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+      }
+
+      /* M3 Dark Theme (Pixel / Material You Dark Mode) */
+      body.theme-dark {
+        --md-sys-color-background: #111318;
+        --md-sys-color-surface: #191c20;
+        --md-sys-color-surface-container-low: #1d2024;
+        --md-sys-color-surface-container: #23262a;
+        --md-sys-color-surface-container-high: #2d3035;
+        --md-sys-color-on-surface: #e2e2e6;
+        --md-sys-color-on-surface-variant: #c4c7c5;
+        --md-sys-color-outline: #8e918f;
+        --md-sys-color-outline-variant: #444746;
+        --md-sys-color-primary: #a8c7fa;
+        --md-sys-color-on-primary: #043068;
+        --md-sys-color-primary-container: #0842a0;
+        --md-sys-color-on-primary-container: #d3e3fd;
+        --md-sys-color-secondary: #7fcfff;
+
+        --google-blue: #a8c7fa;
+        --google-green: #6dd58c;
+        --google-yellow: #fde293;
+        --google-red: #f28b82;
+
+        --md-elevation-page: 0 8px 32px rgba(0, 0, 0, 0.5);
+      }
+
+      /* ================= GLOBAL RESETS ================= */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background-color: var(--md-sys-color-background);
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.5;
+        letter-spacing: 0.01em;
+        -webkit-font-smoothing: antialiased;
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease;
+      }
+
+      /* ================= GOOGLE M3 TOP APP BAR ================= */
+      .google-app-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--md-sys-color-surface);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        box-shadow: var(--md-elevation-1);
+        padding: 10px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        transition: background-color 0.25s ease;
+      }
+
+      .google-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .google-logo-dots {
+        display: flex;
+        gap: 3px;
+      }
+      .google-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+      .dot-blue {
+        background: #4285f4;
+      }
+      .dot-red {
+        background: #ea4335;
+      }
+      .dot-yellow {
+        background: #fbbc05;
+      }
+      .dot-green {
+        background: #34a853;
+      }
+
+      .brand-text {
+        font-family: var(--font-google-sans);
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--md-sys-color-on-surface);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .brand-chip {
+        font-family: var(--font-google-sans);
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        padding: 3px 10px;
+        border-radius: var(--md-shape-corner-full);
+        letter-spacing: 0.02em;
+      }
+
+      /* Interactive Role Filter Chips (Feature 3) */
+      .filter-bar-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--md-sys-color-surface-container-high);
+        padding: 4px;
+        border-radius: var(--md-shape-corner-full);
+        border: 1px solid var(--md-sys-color-outline-variant);
+      }
+
+      .filter-btn {
+        font-family: var(--font-google-sans);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: var(--md-shape-corner-full);
+        border: none;
+        background: transparent;
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        white-space: nowrap;
+      }
+      .filter-btn:hover {
+        color: var(--md-sys-color-on-surface);
+        background: rgba(0, 0, 0, 0.05);
+      }
+      body.theme-dark .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .filter-btn.active {
+        background: var(--md-sys-color-surface);
+        color: var(--google-blue);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        font-weight: 700;
+      }
+      body.theme-dark .filter-btn.active {
+        background: var(--md-sys-color-surface-container);
+        color: var(--google-blue);
+      }
+
+      .app-bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .m3-btn {
+        font-family: var(--font-google-sans);
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: var(--md-shape-corner-full);
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        text-decoration: none;
+      }
+
+      .m3-btn-tonal {
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-on-surface);
+      }
+      .m3-btn-tonal:hover {
+        background: var(--md-sys-color-outline-variant);
+      }
+
+      .m3-btn-filled {
+        background: var(--google-blue);
+        color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      }
+      .m3-btn-filled:hover {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        transform: translateY(-1px);
+      }
+
+      /* ================= MAIN DOCUMENT CONTAINER ================= */
+      .document-wrapper {
+        max-width: 860px;
+        margin: 28px auto 64px;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      /* A4 Page Container (M3 Elevated Card) */
+      .a4-page {
+        background: var(--md-sys-color-surface);
+        width: 100%;
+        min-height: 1122px;
+        padding: 36px 44px 20px;
+        border-radius: var(--md-shape-corner-extra-large);
+        box-shadow: var(--md-elevation-page);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition:
+          background-color 0.25s ease,
+          border-color 0.25s ease;
+      }
+
+      /* Google 4-Color Accent Line */
+      .google-color-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        display: flex;
+      }
+      .google-color-bar > div:nth-child(1) {
+        flex: 1;
+        background: #4285f4;
+      }
+      .google-color-bar > div:nth-child(2) {
+        flex: 1;
+        background: #ea4335;
+      }
+      .google-color-bar > div:nth-child(3) {
+        flex: 1;
+        background: #fbbc05;
+      }
+      .google-color-bar > div:nth-child(4) {
+        flex: 1;
+        background: #34a853;
+      }
+
+      /* ================= PROFILE HERO ================= */
+      .hero-section {
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+      }
+
+      .hero-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .candidate-name {
+        font-family: var(--font-google-sans);
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.1;
+      }
+
+      .candidate-title {
+        font-family: var(--font-google-sans);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--google-blue);
+        margin-top: 4px;
+        letter-spacing: -0.01em;
+      }
+
+      /* M3 Tonal Stat Card */
+      .yoe-badge-m3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--md-sys-color-surface-container);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 6px 14px;
+        border-radius: var(--md-shape-corner-large);
+      }
+
+      .yoe-number {
+        font-family: var(--font-google-sans);
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--google-yellow);
+        line-height: 1;
+      }
+
+      .yoe-text {
+        font-family: var(--font-google-sans);
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--md-sys-color-on-surface-variant);
+        line-height: 1.15;
+      }
+
+      .candidate-location {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface-variant);
+        margin: 6px 0 8px;
+      }
+
+      .executive-summary {
+        font-size: 0.86rem;
+        line-height: 1.5;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 12px;
+      }
+
+      /* M3 Assist Chips for Links */
+      .links-chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .m3-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        padding: 5px 12px;
+        border-radius: var(--md-shape-corner-full);
+        font-family: var(--font-google-sans);
+        font-size: 0.76rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+      .m3-chip:hover {
+        background: var(--md-sys-color-surface-container-high);
+        border-color: var(--md-sys-color-outline);
+      }
+      .m3-chip-featured {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        border-color: var(--google-blue);
+        font-weight: 700;
+      }
+
+      /* ================= SECTION HEADERS & CARDS ================= */
+      .section-header-m3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .section-icon-badge {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .section-title {
+        font-family: var(--font-google-sans);
+        font-size: 1.18rem;
+        font-weight: 800;
+        color: var(--md-sys-color-on-surface);
+        letter-spacing: -0.015em;
+      }
+
+      /* M3 Elevated Surface Card */
+      .m3-card {
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-shape-corner-large);
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        transition: all 0.25s ease;
+      }
+      .m3-card:hover {
+        background: var(--md-sys-color-surface-container);
+      }
+
+      /* Dynamic Filter Highlights (Feature 3) */
+      .m3-card.dimmed,
+      .skill-card-m3.dimmed,
+      .project-card-m3.dimmed {
+        opacity: 0.28;
+        filter: grayscale(80%);
+        transform: scale(0.99);
+      }
+      .m3-card.highlighted,
+      .skill-card-m3.highlighted,
+      .project-card-m3.highlighted {
+        border-color: var(--google-blue) !important;
+        background: var(--md-sys-color-surface-container) !important;
+        box-shadow: 0 0 0 1.5px var(--google-blue);
+        transform: scale(1.005);
+      }
+
+      .card-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
+      }
+
+      .company-name {
+        font-family: var(--font-google-sans);
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--md-sys-color-on-surface);
+        letter-spacing: -0.01em;
+      }
+
+      .job-role {
+        font-family: var(--font-google-sans);
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--google-blue);
+        margin-top: 1px;
+      }
+
+      .period-chip {
+        font-family: var(--font-google-sans);
+        font-size: 0.74rem;
+        font-weight: 600;
+        background: var(--md-sys-color-surface);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface-variant);
+        padding: 2px 8px;
+        border-radius: var(--md-shape-corner-full);
+      }
+
+      .bullet-list {
+        padding-left: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .bullet-list li {
+        font-size: 0.8rem;
+        line-height: 1.4;
+        color: var(--md-sys-color-on-surface);
+      }
+
+      .bullet-list li strong {
+        font-family: var(--font-google-sans);
+        color: var(--md-sys-color-on-surface);
+        font-weight: 700;
+      }
+
+      /* ================= SKILLS MATRIX (M3 Grid) ================= */
+      .skills-grid-m3 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .skill-card-m3 {
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-shape-corner-medium);
+        padding: 10px 12px;
+        transition: all 0.25s ease;
+      }
+
+      .skill-title-m3 {
+        font-family: var(--font-google-sans);
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: var(--google-blue);
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .skill-desc-m3 {
+        font-size: 0.77rem;
+        line-height: 1.4;
+        color: var(--md-sys-color-on-surface);
+      }
+
+      .skill-desc-m3 code {
+        font-family: var(--font-mono);
+        font-size: 0.71rem;
+        background: var(--md-sys-color-surface-container-high);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 1px 4px;
+        border-radius: 4px;
+        color: var(--google-blue);
+      }
+
+      /* ================= PROJECT CARDS ================= */
+      .projects-stack-m3 {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-bottom: 12px;
+      }
+
+      .project-card-m3 {
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-shape-corner-medium);
+        padding: 9px 12px;
+        transition: all 0.25s ease;
+      }
+
+      .project-header-m3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-google-sans);
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 2px;
+      }
+
+      .project-tag-m3 {
+        font-family: var(--font-google-sans);
+        font-size: 0.67rem;
+        font-weight: 700;
+        background: var(--google-blue-container);
+        color: var(--google-blue-on-container);
+        padding: 1px 7px;
+        border-radius: var(--md-shape-corner-full);
+      }
+
+      .project-desc-m3 {
+        font-size: 0.76rem;
+        color: var(--md-sys-color-on-surface-variant);
+        line-height: 1.35;
+      }
+
+      /* ================= BOTTOM ACADEMIC ================= */
+      .bottom-grid-m3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .bottom-card-m3 {
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-shape-corner-medium);
+        padding: 10px 12px;
+      }
+
+      .bottom-title-m3 {
+        font-family: var(--font-google-sans);
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 3px;
+      }
+
+      .bottom-text-m3 {
+        font-size: 0.76rem;
+        line-height: 1.4;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+
+      /* Page Footer & Dynamic QR Code Badge (Feature 2) */
+      .page-footer-m3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-google-sans);
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--md-sys-color-outline);
+        border-top: 1px solid var(--md-sys-color-outline-variant);
+        padding-top: 8px;
+        margin-top: 10px;
+      }
+
+      .qr-badge-m3 {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 3px 8px;
+        border-radius: var(--md-shape-corner-medium);
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      .qr-badge-m3 img {
+        width: 24px;
+        height: 24px;
+        border-radius: 2px;
+        background: #ffffff;
+        padding: 1px;
+      }
+      .qr-badge-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+        text-align: left;
+      }
+      .qr-badge-title {
+        font-size: 0.64rem;
+        font-weight: 700;
+        color: var(--google-blue);
+      }
+      .qr-badge-sub {
+        font-size: 0.58rem;
+        color: var(--md-sys-color-on-surface-variant);
+        font-family: var(--font-mono);
+      }
+
+      /* M3 Snackbar Toast (Feature 4) */
+      .m3-snackbar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #32302f;
+        color: #f5f0ee;
+        padding: 10px 18px;
+        border-radius: var(--md-shape-corner-medium);
+        font-family: var(--font-google-sans);
+        font-size: 0.84rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--md-elevation-2);
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          transform 0.3s cubic-bezier(0.2, 0, 0, 1),
+          opacity 0.3s ease;
+      }
+      .m3-snackbar.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .m3-snackbar-icon {
+        color: #6dd58c;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+
+      /* Material SVG Icons Helper */
+      .m3-icon {
+        width: 15px;
+        height: 15px;
+        fill: currentColor;
+        flex-shrink: 0;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 820px) {
+        .google-app-bar {
+          flex-wrap: wrap;
+          padding: 8px 16px;
+        }
+        .filter-bar-container {
+          order: 3;
+          width: 100%;
+          overflow-x: auto;
+          justify-content: flex-start;
+        }
+      }
+
+      /* ================= GOOGLE PRINT & PDF ENGINE ================= */
+      @media print {
+        body {
+          background: #ffffff !important;
+          color: #1f1f1f !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        .google-app-bar,
+        .m3-snackbar {
+          display: none !important;
+        }
+
+        .document-wrapper {
+          margin: 0 !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          gap: 0 !important;
+        }
+
+        .a4-page {
+          width: 210mm !important;
+          height: 297mm !important;
+          min-height: 297mm !important;
+          max-height: 297mm !important;
+          margin: 0 !important;
+          padding: 14mm 16mm 10mm !important;
+          box-shadow: none !important;
+          border: none !important;
+          border-radius: 0 !important;
+          background: #ffffff !important;
+          color: #1f1f1f !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          box-sizing: border-box !important;
+        }
+
+        .google-color-bar {
+          display: flex !important;
+        }
+
+        .m3-card,
+        .skill-card-m3,
+        .project-card-m3,
+        .bottom-card-m3 {
+          background: #f8fafd !important;
+          border: 1px solid #e0e2ec !important;
+          opacity: 1 !important;
+          filter: none !important;
+          transform: none !important;
+          box-shadow: none !important;
+        }
+
+        .candidate-name,
+        .company-name,
+        .section-title,
+        .bullet-list li strong {
+          color: #1f1f1f !important;
+        }
+
+        .candidate-title,
+        .job-role,
+        .skill-title-m3 {
+          color: #1a73e8 !important;
+        }
+
+        .bullet-list li,
+        .executive-summary,
+        .skill-desc-m3,
+        .project-desc-m3 {
+          color: #444746 !important;
+        }
+
+        .m3-chip,
+        .yoe-badge-m3,
+        .period-chip,
+        .qr-badge-m3 {
+          background: #f0f4f9 !important;
+          border-color: #c4c7c5 !important;
+          color: #1f1f1f !important;
+        }
+
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Google Material 3 App Bar -->
+    <header class="google-app-bar">
+      <div class="google-brand">
+        <div class="google-logo-dots">
+          <div class="google-dot dot-blue"></div>
+          <div class="google-dot dot-red"></div>
+          <div class="google-dot dot-yellow"></div>
+          <div class="google-dot dot-green"></div>
+        </div>
+        <span class="brand-text">Tobbies Nguyen</span>
+        <span class="brand-chip">Software Engineer</span>
+      </div>
+
+      <!-- Feature 3: Interactive Role Filter -->
+      <div class="filter-bar-container">
+        <button type="button" class="filter-btn active" onclick="setFilter('all', this)">
+          All Focus
+        </button>
+        <button type="button" class="filter-btn" onclick="setFilter('frontend', this)">
+          Frontend Arch
+        </button>
+        <button type="button" class="filter-btn" onclick="setFilter('fullstack', this)">
+          Fullstack & BFF
+        </button>
+        <button type="button" class="filter-btn" onclick="setFilter('web3', this)">Web3</button>
+        <button type="button" class="filter-btn" onclick="setFilter('fintech', this)">
+          Fintech
+        </button>
+      </div>
+
+      <div class="app-bar-actions">
+        <a
+          href="figma-resume.html"
+          class="m3-btn m3-btn-tonal"
+          title="Switch to Figma 2024 Design Edition"
+        >
+          <svg class="m3-icon" viewBox="0 0 24 24">
+            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+          </svg>
+          Figma Edition
+        </a>
+        <!-- Feature 4: Copy ATS Plain Text -->
+        <button
+          type="button"
+          class="m3-btn m3-btn-tonal"
+          onclick="copyAtsResume()"
+          title="Copy Plain Text for ATS Forms"
+        >
+          <svg class="m3-icon" viewBox="0 0 24 24">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+          Copy ATS
+        </button>
+        <button
+          type="button"
+          class="m3-btn m3-btn-tonal"
+          onclick="toggleTheme()"
+          title="Switch Light/Dark Theme"
+        >
+          <svg class="m3-icon" viewBox="0 0 24 24">
+            <path
+              d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"
+            />
+          </svg>
+          Theme
+        </button>
+        <button
+          type="button"
+          class="m3-btn m3-btn-filled"
+          onclick="window.print()"
+          title="Print or Export A4 PDF"
+        >
+          <svg class="m3-icon" viewBox="0 0 24 24">
+            <path
+              d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"
+            />
+          </svg>
+          Export PDF
+        </button>
+      </div>
+    </header>
+
+    <main class="document-wrapper">
+      <!-- ================= PAGE 1: HERO & CORE EXPERIENCE ================= -->
+      <article class="a4-page" id="page-1">
+        <div class="google-color-bar">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <div>
+          <header class="hero-section">
+            <div class="hero-header-row">
+              <div>
+                <h1 class="candidate-name">Tobbies Nguyen.</h1>
+                <h2 class="candidate-title">Software Engineer</h2>
+              </div>
+              <div class="yoe-badge-m3">
+                <span class="yoe-number">5+</span>
+                <span class="yoe-text">Years<br />Of<br />Experience</span>
+              </div>
+            </div>
+
+            <div class="candidate-location">
+              <svg class="m3-icon" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                />
+              </svg>
+              Ho Chi Minh City, Vietnam
+            </div>
+
+            <p class="executive-summary">
+              Versatile <strong>Software Engineer</strong> with 5+ years of end-to-end engineering
+              experience across enterprise data systems, distributed micro-frontend architectures,
+              high-performance BFF gateways, and enterprise Keycloak IAM security matrices.
+              Dedicated to building reliable, high-availability web systems with modern AI-DLC
+              workflow automations.
+            </p>
+
+            <div class="links-chips-row">
+              <a
+                href="https://tobbies-portfolio.web.app/"
+                class="m3-chip m3-chip-featured"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                  />
+                </svg>
+                tobbies-portfolio.web.app
+              </a>
+              <a
+                href="https://github.com/tobbieswork"
+                class="m3-chip"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                  />
+                </svg>
+                github.com/tobbieswork
+              </a>
+              <a
+                href="https://linkedin.com/in/tobbies"
+                class="m3-chip"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                  />
+                </svg>
+                linkedin.com/in/tobbies
+              </a>
+              <span class="m3-chip">
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+                  />
+                </svg>
+                dangphat.job@gmail.com
+              </span>
+              <span class="m3-chip">
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"
+                  />
+                </svg>
+                (+84) 981 227 712
+              </span>
+            </div>
+          </header>
+
+          <section>
+            <div class="section-header-m3">
+              <div class="section-icon-badge">
+                <svg class="m3-icon" viewBox="0 0 24 24">
+                  <path
+                    d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"
+                  />
+                </svg>
+              </div>
+              <h3 class="section-title">Current & Recent Experience</h3>
+            </div>
+
+            <!-- FPT Corporation -->
+            <div class="m3-card" data-role="frontend fullstack">
+              <div class="card-top-row">
+                <div>
+                  <h4 class="company-name">FPT Corporation (DC5)</h4>
+                  <div class="job-role">Software Engineer</div>
+                </div>
+                <span class="period-chip">Nov 2024 – Present</span>
+              </div>
+              <ul class="bullet-list">
+                <li>
+                  <strong>Distributed Micro-Frontend Architecture:</strong> Architected and scaled a
+                  multi-tenant enterprise data platform using Nx Monorepo and Micro-Frontend (MFE)
+                  architecture, establishing independent deployment lifecycles for modular business
+                  squads.
+                </li>
+                <li>
+                  <strong>BFF Gateway & Caching:</strong> Collaborated on engineering
+                  high-performance NestJS/Fastify BFF services, optimizing request routing, GraphQL
+                  resolvers, Redis multi-layer caching, and BullMQ asynchronous queues.
+                </li>
+                <li>
+                  <strong>Enterprise IAM & Access Control:</strong> Implemented end-to-end Identity
+                  & Access Management via Keycloak, architecting fine-grained Role-Based (RBAC) and
+                  Attribute-Based (ABAC) permission matrices for multi-tenant enterprise security.
+                </li>
+                <li>
+                  <strong>Data Visualization Engine:</strong> Engineered real-time, interactive data
+                  analytics views leveraging ECharts and customized Apache Superset dashboards,
+                  supporting high-density operational data rendering.
+                </li>
+                <li>
+                  <strong>Enterprise Design System:</strong> Authored and maintained
+                  <code>@fpt-cads/ui-core</code> (React 18, Emotion, Material UI), standardizing UI
+                  components, design tokens, and accessibility across cross-functional engineering
+                  teams.
+                </li>
+                <li>
+                  <strong>AI-DLC Automation:</strong> Pioneered internal AI agent workflows (Claude
+                  Code integration) for static code analysis, automated documentation, and CI
+                  bottleneck reduction.
+                </li>
+              </ul>
+            </div>
+          </section>
+        </div>
+
+        <footer class="page-footer-m3">
+          <span>Tobbies Nguyen — Software Engineer</span>
+          <!-- Feature 2: Dynamic QR Code -->
+          <a
+            href="https://tobbies-portfolio.web.app/"
+            class="qr-badge-m3"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https%3A%2F%2Ftobbies-portfolio.web.app%2F&margin=0"
+              alt="QR"
+            />
+            <div class="qr-badge-text">
+              <span class="qr-badge-title">Live Portfolio</span>
+              <span class="qr-badge-sub">tobbies-portfolio.web.app</span>
+            </div>
+          </a>
+          <span>Page 1 / 3</span>
+        </footer>
+      </article>
+
+      <!-- ================= PAGE 2: EMPLOYMENT HISTORY ================= -->
+      <article class="a4-page" id="page-2">
+        <div class="google-color-bar">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <div>
+          <div class="section-header-m3" style="margin-bottom: 12px">
+            <div class="section-icon-badge">
+              <svg class="m3-icon" viewBox="0 0 24 24">
+                <path
+                  d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                />
+              </svg>
+            </div>
+            <h3 class="section-title">Employment History (Continued)</h3>
+          </div>
+
+          <!-- FourDigit Vietnam -->
+          <div class="m3-card" data-role="frontend">
+            <div class="card-top-row">
+              <div>
+                <h4 class="company-name">FourDigit Vietnam</h4>
+                <div class="job-role">Collaborator – Software Engineer</div>
+              </div>
+              <span class="period-chip">Apr 2024 – Jul 2024</span>
+            </div>
+            <ul class="bullet-list">
+              <li>
+                <strong>3D Web & Augmented Reality (AR):</strong> Engineered responsive 3D model
+                viewers and AR modal interactions on mobile web platforms, optimizing asset loading
+                times and WebGL rendering performance.
+              </li>
+              <li>
+                <strong>Global Accessibility & Localization:</strong> Implemented WCAG-compliant
+                accessible UI patterns (A11y) and multi-locale architectures across global teams in
+                Japan, France, and Vietnam.
+              </li>
+              <li>
+                <strong>Developer Automation:</strong> Developed custom Figma plugins and internal
+                Node.js automation scripts, reducing asset export and design-to-code iteration time
+                by over 40%.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Ayotree -->
+          <div class="m3-card" data-role="frontend">
+            <div class="card-top-row">
+              <div>
+                <h4 class="company-name">Ayotree</h4>
+                <div class="job-role">Frontend Team Leader</div>
+              </div>
+              <span class="period-chip">Nov 2023 – Mar 2024</span>
+            </div>
+            <ul class="bullet-list">
+              <li>
+                <strong>Technical Leadership:</strong> Led a cross-functional squad of 6+ frontend
+                developers and UI/UX designers, driving sprint planning, architecture reviews, and
+                backlog grooming.
+              </li>
+              <li>
+                <strong>Product Roadmapping:</strong> Partnered closely with Product Managers and
+                C-level stakeholders to convert business requirements into technical milestone
+                specifications.
+              </li>
+              <li>
+                <strong>Design-to-Code Engineering:</strong> Established strict engineering
+                guidelines for translating design tokens into performant, accessible web
+                applications with zero layout regressions.
+              </li>
+              <li>
+                <strong>Code Quality & Mentorship:</strong> Mentored mid-level and junior engineers
+                through structured code reviews, pair programming, and automated linting standards.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Sky Mavis -->
+          <div class="m3-card" data-role="frontend web3">
+            <div class="card-top-row">
+              <div>
+                <h4 class="company-name">Sky Mavis</h4>
+                <div class="job-role">Frontend Engineer</div>
+              </div>
+              <span class="period-chip">May 2022 – Oct 2023</span>
+            </div>
+            <ul class="bullet-list">
+              <li>
+                <strong>High-Throughput Web3 Infrastructure:</strong> Engineered and maintained
+                critical frontend platforms for Roninchain, managing massive asynchronous
+                transaction queries and RPC state synchronization without downtime.
+              </li>
+              <li>
+                <strong>Web3 Transaction Security:</strong> Implemented rigorous client-side
+                security protocols for wallet integrations, signature verification, and secure
+                on-chain transaction lifecycle handling.
+              </li>
+              <li>
+                <strong>Gaming Ecosystem UX:</strong> Collaborated with smart contract developers
+                and game UX researchers to build interactive features for Axie Infinity ecosystem
+                titles (Raylights).
+              </li>
+            </ul>
+          </div>
+
+          <!-- Dinovative -->
+          <div class="m3-card" data-role="frontend fintech">
+            <div class="card-top-row">
+              <div>
+                <h4 class="company-name">Dinovative (now Efisoft)</h4>
+                <div class="job-role">Frontend Developer</div>
+              </div>
+              <span class="period-chip">Feb 2021 – Apr 2022</span>
+            </div>
+            <ul class="bullet-list">
+              <li>
+                <strong>Banking-Grade Web Application (VietinBank iPay):</strong> Engineered secure,
+                high-availability web interfaces for VietinBank iPay core banking, ensuring strict
+                compliance with banking encryption standards, session timeouts, and cross-browser
+                security.
+              </li>
+              <li>
+                <strong>Multi-Domain Delivery:</strong> Delivered full-lifecycle applications across
+                Fintech Banking, Web3 Metaverse (VRTown), and E-Commerce (Maua) using React,
+                Next.js, Redux Toolkit, and REST APIs.
+              </li>
+              <li>
+                <strong>Design System Scalability:</strong> Contributed to the foundational design
+                system and style guides, improving frontend delivery consistency across client
+                projects.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <footer class="page-footer-m3">
+          <span>Tobbies Nguyen — Software Engineer</span>
+          <!-- Feature 2: Dynamic QR Code -->
+          <a
+            href="https://tobbies-portfolio.web.app/"
+            class="qr-badge-m3"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https%3A%2F%2Ftobbies-portfolio.web.app%2F&margin=0"
+              alt="QR"
+            />
+            <div class="qr-badge-text">
+              <span class="qr-badge-title">Live Portfolio</span>
+              <span class="qr-badge-sub">tobbies-portfolio.web.app</span>
+            </div>
+          </a>
+          <span>Page 2 / 3</span>
+        </footer>
+      </article>
+
+      <!-- ================= PAGE 3: TECHNICAL MATRIX & PROJECTS ================= -->
+      <article class="a4-page" id="page-3">
+        <div class="google-color-bar">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <div>
+          <div class="section-header-m3">
+            <div class="section-icon-badge">
+              <svg class="m3-icon" viewBox="0 0 24 24">
+                <path
+                  d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
+                />
+              </svg>
+            </div>
+            <h3 class="section-title">Technical Competencies & Matrix</h3>
+          </div>
+
+          <div class="skills-grid-m3">
+            <div class="skill-card-m3" data-role="frontend fullstack">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #4285f4" viewBox="0 0 24 24">
+                  <path
+                    d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"
+                  />
+                </svg>
+                Architecture & Monorepos
+              </div>
+              <div class="skill-desc-m3">
+                Micro-Frontends (MFE), <code>Nx</code> & Turborepo, Module Federation, Clean
+                Architecture, REST & GraphQL.
+              </div>
+            </div>
+
+            <div class="skill-card-m3" data-role="frontend">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #34a853" viewBox="0 0 24 24">
+                  <path d="M12 2l-5.5 9h11z" />
+                  <circle cx="17.5" cy="17.5" r="4.5" />
+                  <path d="M3 13.5h8v8H3z" />
+                </svg>
+                Frontend Frameworks
+              </div>
+              <div class="skill-desc-m3">
+                <code>React 18</code>, <code>Next.js</code>, TypeScript, HTML5/CSS3, Emotion, MUI,
+                Tailwind CSS, shadcn/ui.
+              </div>
+            </div>
+
+            <div class="skill-card-m3" data-role="fullstack">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #ea4335" viewBox="0 0 24 24">
+                  <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"
+                  />
+                </svg>
+                Backend & Gateway (BFF)
+              </div>
+              <div class="skill-desc-m3">
+                <code>Node.js</code>, <code>NestJS</code>, Fastify, Apollo GraphQL Server, Prisma
+                ORM, BullMQ Queues.
+              </div>
+            </div>
+
+            <div class="skill-card-m3" data-role="fullstack fintech">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #fbbc04" viewBox="0 0 24 24">
+                  <path
+                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+                  />
+                </svg>
+                Enterprise Security & IAM
+              </div>
+              <div class="skill-desc-m3">
+                <code>Keycloak</code>, OAuth2/OIDC, Role-Based (RBAC) & Attribute-Based (ABAC)
+                Matrices, JWT handling.
+              </div>
+            </div>
+
+            <div class="skill-card-m3" data-role="frontend fullstack">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #4285f4" viewBox="0 0 24 24">
+                  <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
+                  />
+                </svg>
+                State, Data & Analytics
+              </div>
+              <div class="skill-desc-m3">
+                <code>Zustand</code>, Apollo Client, SWR, TanStack Query, Redux,
+                <code>ECharts</code>, Apache Superset.
+              </div>
+            </div>
+
+            <div class="skill-card-m3" data-role="frontend fullstack">
+              <div class="skill-title-m3">
+                <svg class="m3-icon" style="color: #34a853" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+                  />
+                </svg>
+                DevOps & AI Automation
+              </div>
+              <div class="skill-desc-m3">
+                GitLab CI/CD, <code>Docker</code>, Redis, MinIO, Figma Plugins,
+                <code>Claude Code</code> AI-DLC integrations.
+              </div>
+            </div>
+          </div>
+
+          <div class="section-header-m3" style="margin-top: 8px; margin-bottom: 6px">
+            <div class="section-icon-badge">
+              <svg class="m3-icon" viewBox="0 0 24 24">
+                <path
+                  d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"
+                />
+              </svg>
+            </div>
+            <h3 class="section-title" style="font-size: 1.05rem">Featured Projects Portfolio</h3>
+          </div>
+
+          <div class="projects-stack-m3">
+            <div class="project-card-m3" data-role="frontend fullstack">
+              <div class="project-header-m3">
+                <span>Enterprise Data Platform — FPT Corporation (DC5)</span>
+                <span class="project-tag-m3">Distributed MFE</span>
+              </div>
+              <div class="project-desc-m3">
+                Nx Monorepo Shell MFE + NestJS Fastify BFF Gateway, Keycloak multi-tenant RBAC/ABAC
+                IAM, ECharts, Redis caching, MinIO.
+              </div>
+            </div>
+
+            <div class="project-card-m3" data-role="frontend web3">
+              <div class="project-header-m3">
+                <span>Roninchain Portal — Sky Mavis</span>
+                <span class="project-tag-m3">High-Traffic Web3</span>
+              </div>
+              <div class="project-desc-m3">
+                Official public gateway for the Ronin blockchain ecosystem, delivering real-time
+                block explorer links and asynchronous on-chain data streaming.
+              </div>
+            </div>
+
+            <div class="project-card-m3" data-role="frontend fintech">
+              <div class="project-header-m3">
+                <span>VietinBank iPay Core Banking — Dinovative</span>
+                <span class="project-tag-m3">Enterprise Fintech</span>
+              </div>
+              <div class="project-desc-m3">
+                High-availability digital banking portal handling financial transaction workflows
+                with strict client-side data protection and token security.
+              </div>
+            </div>
+
+            <div class="project-card-m3" data-role="frontend">
+              <div class="project-header-m3">
+                <span>Multiecube Smart Locker Platform — FourDigit Vietnam</span>
+                <span class="project-tag-m3">Interactive 3D / Maps</span>
+              </div>
+              <div class="project-desc-m3">
+                International locker reservation system with geolocation search, Google 3D model
+                viewer, and real-time availability scheduling.
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-grid-m3">
+            <div class="bottom-card-m3">
+              <div class="bottom-title-m3">Education</div>
+              <div
+                style="font-family: var(--font-google-sans); font-weight: 700; font-size: 0.82rem"
+              >
+                Bachelor of Software Engineering
+              </div>
+              <div class="bottom-text-m3">Ton Duc Thang University</div>
+            </div>
+
+            <div class="bottom-card-m3">
+              <div class="bottom-title-m3">Certifications</div>
+              <div class="bottom-text-m3">
+                • Claude Code in Action & 101 (AI-DLC)<br />
+                • JavaScript Developer Professional<br />
+                • Modern Web Development & UI/UX Design
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="page-footer-m3">
+          <span>Tobbies Nguyen — Software Engineer</span>
+          <!-- Feature 2: Dynamic QR Code -->
+          <a
+            href="https://tobbies-portfolio.web.app/"
+            class="qr-badge-m3"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https%3A%2F%2Ftobbies-portfolio.web.app%2F&margin=0"
+              alt="QR"
+            />
+            <div class="qr-badge-text">
+              <span class="qr-badge-title">Live Portfolio</span>
+              <span class="qr-badge-sub">tobbies-portfolio.web.app</span>
+            </div>
+          </a>
+          <span>Page 3 / 3</span>
+        </footer>
+      </article>
+    </main>
+
+    <!-- M3 Snackbar Toast Container -->
+    <div id="m3-snackbar" class="m3-snackbar">
+      <svg class="m3-snackbar-icon" viewBox="0 0 24 24">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+      </svg>
+      <span id="snackbar-text">Action completed</span>
+    </div>
+
+    <script>
+      function toggleTheme() {
+        document.body.classList.toggle('theme-dark');
+      }
+
+      // Feature 3: Interactive Role Filter
+      function setFilter(role, btnElement) {
+        document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+
+        const cards = document.querySelectorAll('[data-role]');
+        cards.forEach((card) => {
+          if (role === 'all') {
+            card.classList.remove('dimmed', 'highlighted');
+          } else {
+            const roles = card.getAttribute('data-role').split(' ');
+            if (roles.includes(role)) {
+              card.classList.remove('dimmed');
+              card.classList.add('highlighted');
+            } else {
+              card.classList.add('dimmed');
+              card.classList.remove('highlighted');
+            }
+          }
+        });
+      }
+
+      // Feature 4: Copy ATS Plain Text
+      const atsPlainText = `TOBBIES NGUYEN — SOFTWARE ENGINEER
+Website: https://tobbies-portfolio.web.app/
+Email: dangphat.job@gmail.com | Phone: (+84) 981 227 712 | Location: Ho Chi Minh City, Vietnam
+GitHub: https://github.com/tobbieswork | LinkedIn: https://linkedin.com/in/tobbies
+
+EXECUTIVE SUMMARY
+Versatile Software Engineer with 5+ years of end-to-end engineering experience across enterprise data systems, distributed micro-frontend architectures, high-traffic Web3 infrastructures, and core banking applications. Proven track record in designing Backend-for-Frontend (BFF) gateways, implementing enterprise-grade IAM (Keycloak RBAC/ABAC), engineering AI-driven workflow automations (Claude Code / AI-DLC), and authoring scalable design systems.
+
+CORE TECHNICAL SKILLS
+- Languages: TypeScript, JavaScript (ES6+), SQL, HTML5, CSS3/SCSS
+- Architecture: Micro-Frontends (MFE), Nx & Turborepo Monorepos, BFF, RESTful APIs, GraphQL
+- Frontend: React 18, Next.js, Material UI, Tailwind CSS, Emotion, Storybook
+- Backend & Gateway: Node.js, NestJS, Fastify, GraphQL Apollo Server, Prisma ORM, BullMQ
+- State & Streaming: Zustand, TanStack Query, Apollo Client, Redux Toolkit, ECharts, Apache Superset
+- Security & IAM: Keycloak (OIDC/OAuth 2.0), RBAC & ABAC Matrices, JWT Token Security
+- DevOps & AI: GitLab CI/CD, Docker, Redis, MinIO, Claude Code (AI-DLC Automation)
+
+PROFESSIONAL EXPERIENCE
+
+FPT Corporation (DC5) | Software Engineer (Nov 2024 – Present)
+- Distributed Micro-Frontend Architecture: Architected and scaled a multi-tenant enterprise data platform using Nx Monorepo and MFE architecture.
+- BFF Gateway & Caching: Collaborated on engineering high-performance NestJS/Fastify BFF services, optimizing request routing, GraphQL resolvers, Redis multi-layer caching, and BullMQ queues.
+- Enterprise IAM: Implemented Identity & Access Management via Keycloak with fine-grained RBAC/ABAC matrices.
+- Data Visualization: Engineered real-time data analytics views using ECharts and customized Apache Superset dashboards.
+- Design System: Authored and maintained @fpt-cads/ui-core (React 18, Emotion, MUI).
+- AI-DLC Automation: Pioneered Claude Code AI agent workflows for automated code analysis and CI optimization.
+
+FourDigit Vietnam | Collaborator – Software Engineer (Apr 2024 – Jul 2024)
+- 3D Web & AR: Engineered responsive 3D model viewers and AR modal interactions on mobile web platforms.
+- A11y & Localization: Implemented WCAG-compliant UI patterns across international teams (Japan, France, Vietnam).
+- Developer Automation: Developed custom Figma plugins and Node.js scripts, cutting asset export time by >40%.
+
+Ayotree | Frontend Team Leader (Nov 2023 – Mar 2024)
+- Led frontend squad of 6+ engineers and designers, driving sprint planning and architecture reviews.
+- Established strict design token translation guidelines for zero layout regressions.
+- Mentored mid-level and junior engineers through code reviews and pair programming.
+
+Sky Mavis | Frontend Engineer (May 2022 – Oct 2023)
+- Engineered critical frontend platforms for Roninchain handling high-throughput asynchronous transaction queries.
+- Implemented client-side security protocols for wallet integrations and on-chain transaction lifecycles.
+- Built interactive features for Axie Infinity ecosystem titles (Raylights).
+
+Dinovative (now Efisoft) | Frontend Developer (Feb 2021 – Apr 2022)
+- Engineered secure web interfaces for VietinBank iPay core banking complying with financial encryption standards.
+- Delivered applications across Fintech Banking, Web3 Metaverse (VRTown), and E-Commerce (Maua).
+
+KEY FEATURED PROJECTS
+1. Enterprise Data Platform (FPT DC5): Nx Shell MFE + NestJS Fastify BFF + Keycloak IAM + ECharts.
+2. Roninchain Portal (Sky Mavis): High-Traffic Blockchain Portal with Web3.js and RPC sync.
+3. VietinBank iPay (Dinovative): Financial Banking Portal with session encryption.
+4. Multiecube Smart Locker (FourDigit Vietnam): Locker Reservation System with 3D model viewer and Google Maps.
+
+EDUCATION & CERTIFICATIONS
+- Bachelor of Software Engineering — Ton Duc Thang University
+- Claude Code in Action & Claude Code 101 — Anthropic AI-DLC Certification (2024)
+- JavaScript Developer Professional Certification (2022)
+- Modern Web Development & UI/UX Design Certification (2021)`;
+
+      function copyAtsResume() {
+        navigator.clipboard
+          .writeText(atsPlainText)
+          .then(() => {
+            showSnackbar('✓ ATS Plain Text copied to clipboard!');
+          })
+          .catch((err) => {
+            showSnackbar('Copy failed, please try again.');
+          });
+      }
+
+      function showSnackbar(msg) {
+        const sb = document.getElementById('m3-snackbar');
+        const text = document.getElementById('snackbar-text');
+        if (sb && text) {
+          text.textContent = msg;
+          sb.classList.add('show');
+          setTimeout(() => {
+            sb.classList.remove('show');
+          }, 2800);
+        }
+      }
+
+      // Google Material 3 Ripple Effect
+      document.querySelectorAll('.m3-btn, .m3-chip, .filter-btn').forEach((btn) => {
+        btn.addEventListener('mousedown', function (e) {
+          const rect = this.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const ripple = document.createElement('span');
+          ripple.style.position = 'absolute';
+          ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+          if (
+            this.classList.contains('m3-chip') ||
+            this.classList.contains('m3-btn-tonal') ||
+            this.classList.contains('filter-btn')
+          ) {
+            ripple.style.background = 'rgba(0, 0, 0, 0.1)';
+          }
+          if (
+            document.body.classList.contains('theme-dark') &&
+            !this.classList.contains('m3-btn-filled')
+          ) {
+            ripple.style.background = 'rgba(255, 255, 255, 0.1)';
+          }
+
+          ripple.style.width = '100px';
+          ripple.style.height = '100px';
+          ripple.style.borderRadius = '50%';
+          ripple.style.transform = 'translate(-50%, -50%) scale(0)';
+          ripple.style.left = x + 'px';
+          ripple.style.top = y + 'px';
+          ripple.style.pointerEvents = 'none';
+          ripple.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
+
+          this.style.position = 'relative';
+          this.style.overflow = 'hidden';
+          this.appendChild(ripple);
+
+          requestAnimationFrame(() => {
+            ripple.style.transform = 'translate(-50%, -50%) scale(3)';
+            ripple.style.opacity = '0';
+          });
+
+          setTimeout(() => ripple.remove(), 400);
+        });
+      });
+    </script>
+  </body>
+</html>

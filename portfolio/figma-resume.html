@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tobbies Nguyen — Resume (Figma 2024 Edition)</title>
+    <meta
+      name="description"
+      content="Resume of Tobbies Nguyen, Software Engineer & Frontend Architect. Pixel-perfect Figma 2024 design reproduction."
+    />
+
+    <!-- Google Fonts: Fraunces (Acorn alternative), Poppins, Inter, Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ================= FIGMA 2024 DESIGN SYSTEM TOKENS ================= */
+      :root {
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'Space Mono', monospace;
+        --font-inter: 'Inter', sans-serif;
+
+        --bg-canvas: #f6f6f6;
+        --bg-page: #ffffff;
+        --color-text-main: #2b2b2b;
+        --color-text-muted: rgba(43, 43, 43, 0.75);
+        --color-text-sub: rgba(43, 43, 43, 0.5);
+        --color-border: #000000;
+        --color-border-light: rgba(0, 0, 0, 0.15);
+        --color-index: #888888;
+
+        --radius-card: 32px;
+        --radius-subcard: 24px;
+        --radius-pill: 100px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background-color: var(--bg-canvas);
+        color: var(--color-text-main);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Top Floating Toolbar */
+      .figma-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--color-border-light);
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .toolbar-title {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toolbar-badge {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        background: #000000;
+        color: #ffffff;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+
+      .toolbar-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-figma {
+        font-family: var(--font-body);
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 8px 18px;
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--color-border);
+        background: #ffffff;
+        color: var(--color-text-main);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+      .btn-figma:hover {
+        background: #000000;
+        color: #ffffff;
+      }
+      .btn-figma-primary {
+        background: #000000;
+        color: #ffffff;
+      }
+      .btn-figma-primary:hover {
+        background: #333333;
+      }
+
+      /* Main Container */
+      .pages-container {
+        max-width: 840px;
+        margin: 36px auto 60px;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      /* Figma A4 Canvas Page */
+      .figma-a4-page {
+        background: var(--bg-page);
+        width: 100%;
+        min-height: 1122px;
+        padding: 44px 48px 24px;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+      }
+
+      /* Sparkle Icon */
+      .sparkle-icon {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        vertical-align: middle;
+        flex-shrink: 0;
+      }
+
+      /* ================= PAGE 1: HERO & FPT ================= */
+      .hero-box {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: 24px 32px 18px;
+        text-align: center;
+        position: relative;
+        margin-bottom: 24px;
+      }
+      .hero-box .corner-sparkle-left {
+        position: absolute;
+        top: 24px;
+        left: 28px;
+      }
+      .hero-box .corner-sparkle-right {
+        position: absolute;
+        top: 24px;
+        right: 28px;
+      }
+
+      .hero-name {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        line-height: 1.15;
+      }
+
+      .hero-role {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--color-text-main);
+        margin-top: 4px;
+      }
+
+      .hero-body-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 20px;
+        padding: 0 4px;
+      }
+
+      .hero-avatar-wrap {
+        flex-shrink: 0;
+        width: 130px;
+        height: 155px;
+        border-radius: 20px;
+        border: 1.5px solid var(--color-border);
+        background: #fbfbfb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .hero-avatar-svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .hero-summary-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .yoe-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .yoe-num {
+        font-family: var(--font-display);
+        font-size: 3rem;
+        font-weight: 600;
+        line-height: 1;
+      }
+      .yoe-label {
+        font-family: var(--font-body);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        line-height: 1.2;
+        color: var(--color-text-main);
+      }
+
+      .location-text {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 500;
+        line-height: 1.35;
+        color: var(--color-text-main);
+      }
+
+      .bio-text {
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: var(--color-text-muted);
+      }
+
+      /* Social Pills Row */
+      .social-pills-bar {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-pill);
+        padding: 6px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+
+      .social-pill-btn {
+        flex: 1;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-pill);
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        color: var(--color-text-main);
+        font-size: 0.74rem;
+        font-weight: 500;
+        background: #ffffff;
+        transition: all 0.2s ease;
+      }
+      .social-pill-btn:hover {
+        background: #000000;
+        color: #ffffff;
+      }
+      .social-pill-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+      }
+
+      /* Section Headers */
+      .section-pill-label {
+        display: inline-block;
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        margin-bottom: 12px;
+      }
+
+      /* Main Big Cards (32px radius) */
+      .figma-card {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: 22px 28px;
+        margin-bottom: 16px;
+        background: #ffffff;
+        position: relative;
+      }
+
+      .card-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .company-title {
+        font-family: var(--font-display);
+        font-size: 1.45rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .share-arrow {
+        width: 16px;
+        height: 16px;
+      }
+
+      .company-role {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        margin-top: 2px;
+      }
+
+      .company-period {
+        font-family: var(--font-body);
+        font-size: 0.76rem;
+        font-weight: 500;
+        color: var(--color-text-sub);
+      }
+
+      .index-badge {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--color-index);
+        border: 1px solid var(--color-border-light);
+        padding: 3px 10px;
+        border-radius: 8px;
+      }
+
+      .card-bullets-block {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .bullet-item {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        color: var(--color-text-main);
+      }
+      .bullet-item strong {
+        font-weight: 600;
+        color: #000000;
+      }
+
+      /* Page Header for Pages 2, 3, 4, 5 */
+      .page-title-section {
+        text-align: center;
+        position: relative;
+        margin-bottom: 24px;
+        padding-top: 4px;
+      }
+      .page-title-section .sparkle-left {
+        position: absolute;
+        top: 0;
+        left: 12px;
+      }
+      .page-title-section .sparkle-right {
+        position: absolute;
+        top: 0;
+        right: 12px;
+      }
+      .page-main-title {
+        font-family: var(--font-display);
+        font-size: 2.2rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        line-height: 1.2;
+      }
+      .page-subtitle {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        max-width: 620px;
+        margin: 6px auto 0;
+        line-height: 1.45;
+      }
+
+      /* ================= PROJECTS GRID (A4 - 24) ================= */
+      .projects-grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .project-card-figma {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-subcard);
+        padding: 16px 18px;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .project-card-company {
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--color-text-sub);
+      }
+
+      .project-card-name {
+        font-family: var(--font-display);
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .project-card-desc {
+        font-family: var(--font-inter);
+        font-size: 0.74rem;
+        line-height: 1.4;
+        color: var(--color-text-muted);
+      }
+      .project-card-desc strong {
+        color: #000000;
+      }
+
+      /* ================= SKILLSET (A4 - 31) ================= */
+      .skills-masonry-figma {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .skill-box-figma {
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: #ffffff;
+      }
+
+      .skill-box-title {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .skill-box-desc {
+        font-size: 0.77rem;
+        line-height: 1.4;
+        color: var(--color-text-muted);
+      }
+
+      /* ================= ADDITIONAL INFO (A4 - 23) ================= */
+      .info-section-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .info-box-pill {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: 20px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .info-header-title {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .info-item-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        color: var(--color-text-main);
+      }
+
+      .cert-badge-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        border: 1px solid var(--color-border-light);
+        padding: 2px 8px;
+        border-radius: 12px;
+        color: var(--color-text-muted);
+      }
+
+      /* Page Footer */
+      .figma-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-display);
+        font-size: 0.78rem;
+        color: var(--color-text-sub);
+        border-top: 1px solid var(--color-border-light);
+        padding-top: 10px;
+        margin-top: 12px;
+      }
+
+      /* Print Formatting */
+      @media print {
+        body {
+          background: #ffffff !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        .figma-toolbar {
+          display: none !important;
+        }
+        .pages-container {
+          margin: 0 !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          gap: 0 !important;
+        }
+        .figma-a4-page {
+          width: 210mm !important;
+          height: 297mm !important;
+          min-height: 297mm !important;
+          max-height: 297mm !important;
+          margin: 0 !important;
+          padding: 16mm 16mm 12mm !important;
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          page-break-after: always !important;
+          break-after: page !important;
+        }
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Toolbar -->
+    <header class="figma-toolbar">
+      <div class="toolbar-title">
+        <span>Tobbies Nguyen.</span>
+        <span class="toolbar-badge">FIGMA 2024 EDITION</span>
+      </div>
+      <div class="toolbar-actions">
+        <a href="index.html" class="btn-figma">Switch to Google M3 Theme</a>
+        <a
+          href="https://tobbies-portfolio.web.app/"
+          target="_blank"
+          rel="noreferrer"
+          class="btn-figma"
+          >Live Portfolio ↗</a
+        >
+        <button type="button" class="btn-figma btn-figma-primary" onclick="window.print()">
+          Export PDF (A4)
+        </button>
+      </div>
+    </header>
+
+    <main class="pages-container">
+      <!-- ================= PAGE 1 (A4 - 25): HERO & RECENTLY JOINED ================= -->
+      <article class="figma-a4-page" id="page-1">
+        <div>
+          <div class="hero-box">
+            <!-- Sparkle decorations -->
+            <svg class="sparkle-icon corner-sparkle-left" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+            <svg class="sparkle-icon corner-sparkle-right" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+
+            <h1 class="hero-name">Tobbies Nguyen.</h1>
+            <h2 class="hero-role">Software Engineer / Frontend Architect</h2>
+          </div>
+
+          <div class="hero-body-row">
+            <div class="hero-avatar-wrap">
+              <svg
+                class="hero-avatar-svg"
+                viewBox="0 0 140 170"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="140" height="170" fill="#FAFAFA" />
+                <!-- Stylized Developer Avatar Silhouette -->
+                <circle cx="70" cy="55" r="32" stroke="#000" stroke-width="2" fill="#FFFFFF" />
+                <!-- Glasses -->
+                <rect
+                  x="52"
+                  y="48"
+                  width="14"
+                  height="10"
+                  rx="3"
+                  stroke="#000"
+                  stroke-width="1.8"
+                />
+                <rect
+                  x="74"
+                  y="48"
+                  width="14"
+                  height="10"
+                  rx="3"
+                  stroke="#000"
+                  stroke-width="1.8"
+                />
+                <line x1="66" y1="53" x2="74" y2="53" stroke="#000" stroke-width="1.8" />
+                <!-- Smile -->
+                <path d="M64 68 Q70 73 76 68" stroke="#000" stroke-width="1.8" fill="none" />
+                <!-- Shoulders -->
+                <path
+                  d="M25 155 C25 105 115 105 115 155"
+                  stroke="#000"
+                  stroke-width="2"
+                  fill="#FFFFFF"
+                />
+                <!-- Laptop -->
+                <rect
+                  x="42"
+                  y="132"
+                  width="56"
+                  height="26"
+                  rx="4"
+                  stroke="#000"
+                  stroke-width="1.8"
+                  fill="#F0F0F0"
+                />
+                <path d="M35 158 L105 158" stroke="#000" stroke-width="2" />
+              </svg>
+            </div>
+
+            <div class="hero-summary-wrap">
+              <div class="yoe-row">
+                <span class="yoe-num">5+</span>
+                <span class="yoe-label">Years<br />Of<br />Experience</span>
+              </div>
+              <div class="location-text">
+                Based in the vibrant city<br /><strong>Ho Chi Minh City, Vietnam</strong>
+              </div>
+              <p class="bio-text">
+                Seasoned <strong>Software Engineer</strong> with a proven track record of shipping
+                enterprise-grade web applications at scale, specializing in secure architectures and
+                advanced data systems.
+              </p>
+            </div>
+          </div>
+
+          <!-- Social Pills Row -->
+          <div class="social-pills-bar">
+            <a
+              href="https://tobbies-portfolio.web.app/"
+              class="social-pill-btn"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+                />
+              </svg>
+              tobbies-portfolio.web.app
+            </a>
+            <a
+              href="https://github.com/tobbieswork"
+              class="social-pill-btn"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+                />
+              </svg>
+              github.com/tobbieswork
+            </a>
+            <a
+              href="https://linkedin.com/in/tobbies"
+              class="social-pill-btn"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+                />
+              </svg>
+              LinkedIn
+            </a>
+            <span class="social-pill-btn">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+                />
+              </svg>
+              dangphat.job@gmail.com
+            </span>
+          </div>
+
+          <!-- Recently Joined Section -->
+          <h3 class="section-pill-label">Recently Joined.</h3>
+
+          <div class="figma-card">
+            <div class="card-header-row">
+              <div>
+                <h4 class="company-title">
+                  FPT Corporation
+                  <svg class="share-arrow" viewBox="0 0 24 24">
+                    <path
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="2"
+                      d="M7 17L17 7M17 7H7M17 7V17"
+                    />
+                  </svg>
+                </h4>
+                <div class="company-role">Software Engineer</div>
+                <div class="company-period">November 2024 - Now</div>
+              </div>
+              <span class="index-badge">CURRENT</span>
+            </div>
+
+            <div class="card-bullets-block">
+              <p class="bullet-item">
+                <strong>Architecture & Scalability:</strong> Architected and scaled a sophisticated
+                data visualization platform under a Micro-Frontend (MFE) architecture using Nx
+                Monorepo.
+              </p>
+              <p class="bullet-item">
+                <strong>AI Research & Workflows:</strong> Engineered an AI-powered workflow
+                integration to automate code analysis and optimize system stability.
+              </p>
+              <p class="bullet-item">
+                <strong>Data Visualization & Analytics:</strong> Developed complex, interactive
+                chart visualizations using ECharts and customized Apache Superset dashboards for
+                real-time enterprise decision-making.
+              </p>
+              <p class="bullet-item">
+                <strong>Enterprise Security & IAM:</strong> Implemented a secure Identity & Access
+                Management (IAM) via Keycloak integration, incorporating advanced RBAC and ABAC
+                access control models.
+              </p>
+              <p class="bullet-item">
+                <strong>UI/UX & Design Systems:</strong> Created and maintained the core enterprise
+                design system and publishable npm packages utilizing React 18, Emotion, and Material
+                UI.
+              </p>
+              <p class="bullet-item">
+                <strong>Agile Collaboration & Mentorship:</strong> Collaborated in an Agile
+                environment and mentored team members to resolve complex technical bottlenecks.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <footer class="figma-footer">
+          <span>© 2026 Tobbies</span>
+          <span>Page 1 / 4</span>
+        </footer>
+      </article>
+
+      <!-- ================= PAGE 2 (A4 - 26): HISTORY EMPLOYMENT ================= -->
+      <article class="figma-a4-page" id="page-2">
+        <div>
+          <div class="page-title-section">
+            <svg class="sparkle-icon sparkle-left" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+            <svg class="sparkle-icon sparkle-right" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+
+            <h2 class="page-main-title">History Employment.</h2>
+            <p class="page-subtitle">
+              Succinct presentation of past roles, responsibilities, and achievements, delineating a
+              trajectory of professional growth and expertise in software engineering.
+            </p>
+          </div>
+
+          <!-- 001 FourDigit -->
+          <div class="figma-card">
+            <div class="card-header-row">
+              <div>
+                <h4 class="company-title">
+                  FourDigit
+                  <svg class="share-arrow" viewBox="0 0 24 24">
+                    <path
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="2"
+                      d="M7 17L17 7M17 7H7M17 7V17"
+                    />
+                  </svg>
+                </h4>
+                <div class="company-role">Collaborator - Software Engineer</div>
+                <div class="company-period">April 2024 - July 2024</div>
+              </div>
+              <span class="index-badge">001</span>
+            </div>
+            <div class="card-bullets-block">
+              <p class="bullet-item">
+                <strong>Interactive Storytelling & Innovation:</strong> Researched and implemented
+                3D modal views for Augmented Reality (AR), pushing the boundaries of mobile web
+                engagement.
+              </p>
+              <p class="bullet-item">
+                <strong>Global Collaboration:</strong> Partnered with multi-national teams (Japan,
+                France, Vietnam) to deliver localized, high-quality features.
+              </p>
+              <p class="bullet-item">
+                <strong>System Design & A11y:</strong> Conducted deep research into system design
+                and WCAG Accessibility to ensure inclusive digital experiences.
+              </p>
+              <p class="bullet-item">
+                <strong>Automation Tooling:</strong> Developed custom Figma plugins and internal
+                Node.js tools to automate repetitive design-to-code workflows by >40%.
+              </p>
+            </div>
+          </div>
+
+          <!-- 002 Ayotree -->
+          <div class="figma-card">
+            <div class="card-header-row">
+              <div>
+                <h4 class="company-title">
+                  Ayotree
+                  <svg class="share-arrow" viewBox="0 0 24 24">
+                    <path
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="2"
+                      d="M7 17L17 7M17 7H7M17 7V17"
+                    />
+                  </svg>
+                </h4>
+                <div class="company-role">Frontend Team Leader</div>
+                <div class="company-period">November 2023 - March 2024</div>
+              </div>
+              <span class="index-badge">002</span>
+            </div>
+            <div class="card-bullets-block">
+              <p class="bullet-item">
+                <strong>Technical Leadership:</strong> Led a cross-functional squad of developers
+                and designers to deliver innovative, user-centric web applications.
+              </p>
+              <p class="bullet-item">
+                <strong>Product Ownership:</strong> Defined project requirements and roadmaps in
+                sync with stakeholders, aligning technical execution with business milestones.
+              </p>
+              <p class="bullet-item">
+                <strong>Design-to-Code Excellence:</strong> Orchestrated the translation of complex
+                wireframes into performant, accessible interfaces with zero layout regressions.
+              </p>
+            </div>
+          </div>
+
+          <!-- 003 Sky Mavis -->
+          <div class="figma-card">
+            <div class="card-header-row">
+              <div>
+                <h4 class="company-title">
+                  Sky Mavis
+                  <svg class="share-arrow" viewBox="0 0 24 24">
+                    <path
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="2"
+                      d="M7 17L17 7M17 7H7M17 7V17"
+                    />
+                  </svg>
+                </h4>
+                <div class="company-role">Frontend Engineer</div>
+                <div class="company-period">May 2022 - October 2023</div>
+              </div>
+              <span class="index-badge">003</span>
+            </div>
+            <div class="card-bullets-block">
+              <p class="bullet-item">
+                <strong>Scaling High-Traffic Platforms:</strong> Developed and maintained
+                Roninchain, a large-scale blockchain ecosystem, ensuring seamless handling of
+                massive asynchronous request volumes.
+              </p>
+              <p class="bullet-item">
+                <strong>Security-First Engineering:</strong> Implemented robust frontend security
+                protocols for wallet signatures and on-chain transaction lifecycles.
+              </p>
+              <p class="bullet-item">
+                <strong>Gaming Ecosystem UX:</strong> Built interactive features for Axie Infinity
+                ecosystem titles (Raylights).
+              </p>
+            </div>
+          </div>
+
+          <!-- 004 Dinovative -->
+          <div class="figma-card">
+            <div class="card-header-row">
+              <div>
+                <h4 class="company-title">
+                  Dinovative (now Efisoft)
+                  <svg class="share-arrow" viewBox="0 0 24 24">
+                    <path
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="2"
+                      d="M7 17L17 7M17 7H7M17 7V17"
+                    />
+                  </svg>
+                </h4>
+                <div class="company-role">Frontend Developer</div>
+                <div class="company-period">February 2021 - April 2022</div>
+              </div>
+              <span class="index-badge">004</span>
+            </div>
+            <div class="card-bullets-block">
+              <p class="bullet-item">
+                <strong>Core Banking Web App:</strong> Engineered secure, high-availability
+                interactive interfaces for VietinBank iPay core banking complying with strict
+                financial encryption standards.
+              </p>
+              <p class="bullet-item">
+                <strong>Multi-Domain Projects:</strong> Delivered scalable interfaces across
+                Banking, Web3 Metaverse (VRTown), and E-Commerce (Maua).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <footer class="figma-footer">
+          <span>© 2026 Tobbies</span>
+          <span>Page 2 / 4</span>
+        </footer>
+      </article>
+
+      <!-- ================= PAGE 3 (A4 - 24): PROJECTS & PORTFOLIO ================= -->
+      <article class="figma-a4-page" id="page-3">
+        <div>
+          <div class="page-title-section">
+            <svg class="sparkle-icon sparkle-left" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+            <svg class="sparkle-icon sparkle-right" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+
+            <h2 class="page-main-title">Projects & Portfolio.</h2>
+            <p class="page-subtitle">
+              Highlighting key production systems, distributed architectures, and technical
+              deliverables.
+            </p>
+          </div>
+
+          <div class="projects-grid-2col">
+            <!-- Project 1: Data Platform -->
+            <div class="project-card-figma">
+              <div class="project-card-company">FPT Corporation (DC5)</div>
+              <div class="project-card-name">
+                Data Platform
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Architecture:</strong> Nx Micro-Frontend Monorepo + Fastify BFF Gateway.<br />
+                <strong>Tech:</strong> React 18, Emotion, MUI, Zustand, GraphQL, Redis, Keycloak
+                IAM, BullMQ, ECharts.
+              </p>
+            </div>
+
+            <!-- Project 2: Multiecube -->
+            <div class="project-card-figma">
+              <div class="project-card-company">FourDigit Vietnam</div>
+              <div class="project-card-name">
+                Multiecube
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> Smart locker reservation service with interactive 3D model
+                viewer and geolocation.<br />
+                <strong>Tech:</strong> NextJS, ReactJS, TypeScript, Google Maps, 3D Model Viewer,
+                Jotai.
+              </p>
+            </div>
+
+            <!-- Project 3: Momence -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Ayotree</div>
+              <div class="project-card-name">
+                Momence
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> Admin and User management dashboards for digital education
+                transformation.<br />
+                <strong>Tech:</strong> NextJS, TypeScript, Webflow, Design Tokens.
+              </p>
+            </div>
+
+            <!-- Project 4: Raylights -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Sky Mavis</div>
+              <div class="project-card-name">
+                Raylights
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> Axie Infinity blockchain virtual world mini-game
+                platform.<br />
+                <strong>Tech:</strong> Ethereum, Solidity, ReactJS, TypeScript, Web3.js.
+              </p>
+            </div>
+
+            <!-- Project 5: Roninchain -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Sky Mavis</div>
+              <div class="project-card-name">
+                Roninchain
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> High-traffic official gateway for the Ronin blockchain
+                ecosystem.<br />
+                <strong>Tech:</strong> NextJS, TypeScript, Swiper, Asynchronous RPC streaming.
+              </p>
+            </div>
+
+            <!-- Project 6: VietinBank iPay -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Dinovative</div>
+              <div class="project-card-name">
+                VietinBank iPay
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> Core digital banking web portal with strict encryption and
+                security sessions.<br />
+                <strong>Tech:</strong> ReactJS, Redux, REST API, Web Security.
+              </p>
+            </div>
+
+            <!-- Project 7: VRTown -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Dinovative</div>
+              <div class="project-card-name">
+                VRTown
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> User-owned virtual world metaverse platform.<br />
+                <strong>Tech:</strong> ReactJS, TypeScript, Web3JS, Moralis.
+              </p>
+            </div>
+
+            <!-- Project 8: Maua -->
+            <div class="project-card-figma">
+              <div class="project-card-company">Dinovative</div>
+              <div class="project-card-name">
+                Maua
+                <svg class="share-arrow" viewBox="0 0 24 24">
+                  <path fill="none" stroke="#000" stroke-width="2" d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
+              </div>
+              <p class="project-card-desc">
+                <strong>Scope:</strong> Scalable e-commerce portal facilitating market access.<br />
+                <strong>Tech:</strong> ReactJS, Redux, SCSS, Material UI.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <footer class="figma-footer">
+          <span>© 2026 Tobbies</span>
+          <span>Page 3 / 4</span>
+        </footer>
+      </article>
+
+      <!-- ================= PAGE 4 (A4 - 31 & A4 - 23): SKILLSET & ADDITIONAL INFO ================= -->
+      <article class="figma-a4-page" id="page-4">
+        <div>
+          <div class="page-title-section">
+            <svg class="sparkle-icon sparkle-left" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+            <svg class="sparkle-icon sparkle-right" viewBox="0 0 24 24">
+              <path
+                fill="#000"
+                d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+              />
+            </svg>
+
+            <h2 class="page-main-title">Skillset & Additional Info.</h2>
+            <p class="page-subtitle">
+              Fusion of software engineering, system architecture, leadership, and verified
+              credentials.
+            </p>
+          </div>
+
+          <!-- Skills Masonry Grid -->
+          <div class="skills-masonry-figma">
+            <div class="skill-box-figma">
+              <div class="skill-box-title">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                Architecture & Monorepos
+              </div>
+              <div class="skill-box-desc">
+                Micro-Frontends (MFE), Nx Monorepo, Turborepo, Module Federation, Clean
+                Architecture, BFF Pattern.
+              </div>
+            </div>
+
+            <div class="skill-box-figma">
+              <div class="skill-box-title">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                Frontend Frameworks & UI
+              </div>
+              <div class="skill-box-desc">
+                React 18, Next.js, TypeScript, Emotion, Material UI, Tailwind CSS, shadcn/ui,
+                Storybook.
+              </div>
+            </div>
+
+            <div class="skill-box-figma">
+              <div class="skill-box-title">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                Backend & Gateway (BFF)
+              </div>
+              <div class="skill-box-desc">
+                Node.js, NestJS, Fastify, GraphQL (Apollo Server), Prisma ORM, BullMQ Queues.
+              </div>
+            </div>
+
+            <div class="skill-box-figma">
+              <div class="skill-box-title">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                Enterprise Security & IAM
+              </div>
+              <div class="skill-box-desc">
+                Keycloak, OAuth2/OIDC, RBAC & ABAC Matrix models, Session tokens, Client-side
+                encryption.
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Info Boxes -->
+          <div class="info-section-group">
+            <!-- Education & Certifications -->
+            <div class="info-box-pill">
+              <h3 class="info-header-title">Education & Certifications</h3>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span
+                  ><strong>Bachelor of Software Engineering</strong> — Ton Duc Thang
+                  University</span
+                >
+              </div>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span>Claude Code in Action & Claude Code 101</span>
+                <span class="cert-badge-tag">Anthropic AI-DLC</span>
+              </div>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span>JavaScript Developer Professional Certification</span>
+                <span class="cert-badge-tag">Verified</span>
+              </div>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span>Modern Web Development & UI/UX Design Certification</span>
+                <span class="cert-badge-tag">Verified</span>
+              </div>
+            </div>
+
+            <!-- Contact & Online Presence -->
+            <div class="info-box-pill">
+              <h3 class="info-header-title">Contact & Online Presence</h3>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span
+                  ><strong>Website:</strong>
+                  <a
+                    href="https://tobbies-portfolio.web.app/"
+                    target="_blank"
+                    style="color: inherit; text-decoration: underline"
+                    >tobbies-portfolio.web.app</a
+                  ></span
+                >
+              </div>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span
+                  ><strong>Email:</strong> dangphat.job@gmail.com | <strong>Phone:</strong> (+84)
+                  981 227 712</span
+                >
+              </div>
+              <div class="info-item-row">
+                <svg class="sparkle-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#000"
+                    d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  />
+                </svg>
+                <span
+                  ><strong>GitHub:</strong> github.com/tobbieswork |
+                  <strong>LinkedIn:</strong> linkedin.com/in/tobbies</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="figma-footer">
+          <span>© 2026 Tobbies</span>
+          <span>Page 4 / 4</span>
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

@@ -112,7 +112,21 @@ export default function PartyPinModal({
           &times;
         </button>
         <div className="modal-pub-body">
-          <div className="pin-modal-header">🔐</div>
+          <div className="pin-modal-header flex justify-center mb-2">
+            <svg
+              className="w-12 h-12 text-amber-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+              />
+            </svg>
+          </div>
           <h3 className="modal-title" id="pin-modal-title">
             {t('party_pin.title')}
           </h3>
@@ -128,7 +142,24 @@ export default function PartyPinModal({
             )}
           </p>
 
-          {error && <div className="modal-error-box mb-4 flex items-center gap-2">⚠️ {error}</div>}
+          {error && (
+            <div className="modal-error-box mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-red-500 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                />
+              </svg>
+              {error}
+            </div>
+          )}
 
           <div className="mb-5 mt-5 flex justify-center gap-2.5">
             {digits.map((d, i) => (
@@ -154,15 +185,34 @@ export default function PartyPinModal({
 
           <div className="mt-6 flex flex-col gap-2">
             <button
-              className="btn-primary w-full justify-center min-h-[48px]"
+              className="btn-primary w-full flex items-center justify-center min-h-[48px]"
               onClick={handleSubmit}
               disabled={isChecking || digits.some((d) => d === '')}
             >
-              {isChecking
-                ? i18n.language === 'en'
-                  ? 'Verifying...'
-                  : 'Đang kiểm tra...'
-                : `🔓 ${t('party_pin.submit')}`}
+              {isChecking ? (
+                i18n.language === 'en' ? (
+                  'Verifying...'
+                ) : (
+                  'Đang kiểm tra...'
+                )
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5 mr-1.5 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                    />
+                  </svg>
+                  {t('party_pin.submit')}
+                </>
+              )}
             </button>
             <button
               className="btn-secondary w-full justify-center"

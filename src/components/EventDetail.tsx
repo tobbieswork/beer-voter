@@ -592,27 +592,87 @@ export default function EventDetail({
       {/* Banner nếu Kèo Đã Chốt */}
       {status === 'locked' && eventData.finalDateTime && (
         <div className="locked-banner animate-fade-in">
-          <div className="locked-banner-title">
-            <span>👑</span>{' '}
+          <div className="locked-banner-title flex items-center justify-center gap-2">
+            <svg
+              className="w-6 h-6 text-gold animate-bounce"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+              />
+            </svg>
             {i18n.language === 'en'
               ? "Gathering Finalized! Let's Dress Up And Go!"
               : 'Kèo Đã Chốt Chính Thức! Lên Đồ Đi Nhậu Thôi!'}
           </div>
           <div className="locked-summary-grid">
             <div className="locked-summary-box">
-              <div className="locked-summary-label">📅 {t('create_event.target_time_label')}</div>
+              <div className="locked-summary-label flex items-center justify-center gap-1.5">
+                <svg
+                  className="w-4 h-4 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                  />
+                </svg>
+                {t('create_event.target_time_label')}
+              </div>
               <div className="locked-summary-val">
                 {formatVietnameseDateTime(eventData.finalDateTime, i18n.language)}
               </div>
             </div>
             <div className="locked-summary-box">
-              <div className="locked-summary-label">
-                📍 {t('event_detail.option_types.location')}
+              <div className="locked-summary-label flex items-center justify-center gap-1.5">
+                <svg
+                  className="w-4 h-4 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                  />
+                </svg>
+                {t('event_detail.option_types.location')}
               </div>
               <div className="locked-summary-val">{eventData.finalLocation}</div>
             </div>
             <div className="locked-summary-box">
-              <div className="locked-summary-label">🍻 {t('event_detail.option_types.beer')}</div>
+              <div className="locked-summary-label flex items-center justify-center gap-1.5">
+                <svg
+                  className="w-4 h-4 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 2v12m0 0a5 5 0 01-5-5h10a5 5 0 01-5 5zm-4 8h8"
+                  />
+                </svg>
+                {t('event_detail.option_types.beer')}
+              </div>
               <div className="locked-summary-val">{eventData.finalBeerStyle}</div>
             </div>
           </div>
@@ -865,32 +925,74 @@ export default function EventDetail({
                           </div>
                         )}
                       <button
-                        className="btn-outline-danger w-full"
+                        className="btn-outline-danger w-full flex items-center justify-center gap-1.5"
                         onClick={() => setShowDeleteConfirm(true)}
                       >
-                        🗑️ {i18n.language === 'en' ? 'Delete This Gathering' : 'Xóa Kèo Này'}
+                        <svg
+                          className="w-4 h-4 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        {i18n.language === 'en' ? 'Delete This Gathering' : 'Xóa Kèo Này'}
                       </button>
                     </>
                   );
                 }
 
                 return status === 'voting' ? (
-                  <div className="info-box-muted">
-                    🔒 {i18n.language === 'en' ? 'Only ' : 'Chỉ '}
-                    <strong>
-                      {eventData.creatorNickname || eventData.creatorName} (
-                      {i18n.language === 'en' ? 'Host' : 'Chủ Kèo'})
-                    </strong>{' '}
-                    {i18n.language === 'en'
-                      ? 'can finalize this party.'
-                      : 'mới có quyền chốt kèo này.'}
+                  <div className="info-box-muted flex items-center justify-center gap-1.5">
+                    <svg
+                      className="w-4 h-4 text-amber-500 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                      />
+                    </svg>
+                    <span>
+                      {i18n.language === 'en' ? 'Only ' : 'Chỉ '}
+                      <strong>
+                        {eventData.creatorNickname || eventData.creatorName} (
+                        {i18n.language === 'en' ? 'Host' : 'Chủ Kèo'})
+                      </strong>{' '}
+                      {i18n.language === 'en'
+                        ? 'can finalize this party.'
+                        : 'mới có quyền chốt kèo này.'}
+                    </span>
                   </div>
                 ) : (
-                  <div className="info-box-green">
-                    ✅{' '}
-                    {i18n.language === 'en'
-                      ? 'Gathering finalized — voting locked.'
-                      : 'Kèo nhậu này đã đóng băng bình chọn.'}
+                  <div className="info-box-green flex items-center justify-center gap-1.5">
+                    <svg
+                      className="w-4 h-4 text-green-400 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>
+                      {i18n.language === 'en'
+                        ? 'Gathering finalized — voting locked.'
+                        : 'Kèo nhậu này đã đóng băng bình chọn.'}
+                    </span>
                   </div>
                 );
               })()}

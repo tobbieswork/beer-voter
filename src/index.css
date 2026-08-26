@@ -169,7 +169,7 @@
 }
 
 .btn-secondary {
-  @apply rounded-xl border border-glass px-5 py-2 text-[0.9rem] font-semibold text-white transition-all duration-300;
+  @apply rounded-xl border border-glass px-5 py-2.5 text-[0.9rem] font-semibold text-white transition-all duration-300;
   background-color: rgba(255, 255, 255, 0.05);
 }
 

@@ -409,7 +409,16 @@ export default function CreateEvent({
                 ))}
               </div>
               <button type="button" className="btn-add-opt-row" onClick={() => addOptField('date')}>
-                ➕ {i18n.language === 'en' ? 'Add Another Date/Time' : 'Thêm Lịch Khác'}
+                <svg
+                  className="w-4 h-4 mr-1.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                {i18n.language === 'en' ? 'Add Another Date/Time' : 'Thêm Lịch Khác'}
               </button>
             </div>
 
@@ -436,7 +445,19 @@ export default function CreateEvent({
                         className="btn-remove-opt"
                         onClick={() => removeOptField(index, 'location')}
                       >
-                        🗑️
+                        <svg
+                          className="w-4 h-4 text-red-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
                       </button>
                     )}
                   </div>
@@ -460,7 +481,16 @@ export default function CreateEvent({
                 className="btn-add-opt-row"
                 onClick={() => addOptField('location')}
               >
-                ➕ {i18n.language === 'en' ? 'Add Another Location' : 'Thêm Địa Điểm Khác'}
+                <svg
+                  className="w-4 h-4 mr-1.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                {i18n.language === 'en' ? 'Add Another Location' : 'Thêm Địa Điểm Khác'}
               </button>
             </div>
 
@@ -487,7 +517,19 @@ export default function CreateEvent({
                         className="btn-remove-opt"
                         onClick={() => removeOptField(index, 'beer')}
                       >
-                        🗑️
+                        <svg
+                          className="w-4 h-4 text-red-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
                       </button>
                     )}
                   </div>
@@ -507,14 +549,36 @@ export default function CreateEvent({
                 ))}
               </div>
               <button type="button" className="btn-add-opt-row" onClick={() => addOptField('beer')}>
-                ➕ {i18n.language === 'en' ? 'Add Another Beer Option' : 'Thêm Loại Bia Khác'}
+                <svg
+                  className="w-4 h-4 mr-1.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                {i18n.language === 'en' ? 'Add Another Beer Option' : 'Thêm Loại Bia Khác'}
               </button>
             </div>
 
             {/* Mật Khẩu Bảo Vệ (tùy chọn) */}
             <div className="form-group mb-6">
-              <label>
-                🔐 {t('create_event.pin_label')}{' '}
+              <label className="flex items-center gap-1">
+                <svg
+                  className="w-4 h-4 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+                {t('create_event.pin_label')}{' '}
                 <span className="font-normal text-muted">
                   (
                   {i18n.language === 'en'
