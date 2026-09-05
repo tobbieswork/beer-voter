@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as Sentry from '@sentry/node';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Import các modules nội bộ đã tách
 import { initDB } from './db/store.js';
@@ -28,6 +30,9 @@ const app = express();
 
 // Tin tưởng headers từ reverse proxy (Render, Cloudflare, v.v.) để giải quyết đúng giao thức https
 app.set('trust proxy', 1);
+
+// Cài đặt security headers
+app.use(helmet());
 
 // Cấu hình CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS
@@ -52,8 +57,27 @@ app.get('/api/ping', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Global API rate limit
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 150, // Limit each IP to 150 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Strict rate limit cho Auth và Verify PIN
+const strictLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // Limit each IP to 15 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/', apiLimiter);
+
 // Kết nối các Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', strictLimiter, authRoutes);
+app.use('/api/events/:id/verify-pin', strictLimiter);
 app.use('/api/events', eventRoutes);
 
 if (process.env.SENTRY_DSN) {

@@ -291,9 +291,6 @@ export default function CreateEvent({
       }
 
       const newEvent = await response.json();
-      if (newEvent.creatorToken) {
-        localStorage.setItem(`beervote_creator_token_${newEvent.id}`, newEvent.creatorToken);
-      }
       onCreateSuccess(newEvent.id);
       onClose();
     } catch (err) {

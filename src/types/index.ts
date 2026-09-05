@@ -10,8 +10,7 @@ export interface User {
   googleId?: string;
   githubId?: string;
   authMethod?: 'google' | 'guest' | 'github';
-  googleToken?: string;
-  githubToken?: string;
+  token?: string;
 }
 
 export interface EventOption {

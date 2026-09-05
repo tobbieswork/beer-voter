@@ -72,9 +72,6 @@ function AppContent() {
       if (decodedUser && decodedUser.id) {
         const performLogin = () => {
           loginUser(decodedUser!);
-          if (syncUserParam && creatorTokenParam && eventIdParam) {
-            localStorage.setItem(`beervote_creator_token_${eventIdParam}`, creatorTokenParam);
-          }
           showToast(
             '🍻 ' +
               (authDataParam
@@ -92,18 +89,13 @@ function AppContent() {
             logoutUser();
             performLogin();
           }
-        } else {
-          // If already logged in as the same user, just make sure to store creator token if available
-          if (syncUserParam && creatorTokenParam && eventIdParam) {
-            localStorage.setItem(`beervote_creator_token_${eventIdParam}`, creatorTokenParam);
-          }
+          // If already logged in as the same user, do nothing
         }
       }
 
       // Clean the query parameters from URL safely
       urlParams.delete('authData');
       urlParams.delete('syncUser');
-      urlParams.delete('creatorToken');
       const newSearch = urlParams.toString();
       navigate(location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash, {
         replace: true,
@@ -167,44 +159,26 @@ function AppContent() {
     async (id: string) => {
       try {
         const pinToken = getPinToken(id);
-        const creatorToken = localStorage.getItem(`beervote_creator_token_${id}`);
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (pinToken) {
           headers['X-Pin-Token'] = pinToken;
         }
-        if (creatorToken) {
-          headers['X-Creator-Token'] = creatorToken;
-        }
-        if (currentUser?.id) {
-          headers['X-User-Id'] = currentUser.id;
-        }
-        if (currentUser?.googleToken) {
-          headers['X-Google-Token'] = currentUser.googleToken;
-        }
-        if (currentUser?.githubToken) {
-          headers['X-Github-Token'] = currentUser.githubToken;
+        if (currentUser?.token) {
+          headers['Authorization'] = `Bearer ${currentUser.token}`;
         }
         const response = await fetch(`/api/events/${id}`, { headers });
         if (response.ok) {
           const data = await response.json();
           setCurrentEventData(data);
           // If we are verified as creator via userId/Google/GitHub on another device, send JOIN_EVENT now that data is loaded
-          const isCreator = !!creatorToken || (currentUser && currentUser.id === data.creatorId);
-          if (
-            isCreator &&
-            !creatorToken &&
-            wsRef.current &&
-            wsRef.current.readyState === WebSocket.OPEN
-          ) {
+          const isCreator = currentUser && currentUser.id === data.creatorId;
+          if (isCreator && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(
               JSON.stringify({
                 type: 'JOIN_EVENT',
                 eventId: id,
-                pinToken,
-                creatorToken,
-                userId: currentUser?.id,
-                googleToken: currentUser?.googleToken,
-                githubToken: currentUser?.githubToken,
+                pinToken: pinToken || undefined,
+                authToken: currentUser?.token || undefined,
               })
             );
           }
@@ -222,38 +196,21 @@ function AppContent() {
   // Tải dữ liệu khi chuyển trang
   useEffect(() => {
     if (currentEventId) {
-      // Check for creatorToken query parameter to securely sync creator status
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlCreatorToken = urlParams.get('creatorToken');
-      const syncUserParam = urlParams.get('syncUser');
-      if (urlCreatorToken && !syncUserParam) {
-        localStorage.setItem(`beervote_creator_token_${currentEventId}`, urlCreatorToken);
-        // Clean URL to keep it secure
-        urlParams.delete('creatorToken');
-        const newSearch = urlParams.toString();
-        const newPath =
-          window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
-        window.history.replaceState(null, '', newPath);
-      }
-
       addVisitedEvent(currentEventId);
       setVisitedEventIds(getVisitedEvents());
       const pinToken = getPinToken(currentEventId);
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${currentEventId}`);
       fetchEventDetail(currentEventId);
       // Only send JOIN_EVENT immediately if we already have a valid PIN token or are the creator.
       // Otherwise, defer to PIN gating effect or ws.onopen handler.
-      const isCreator = !!creatorToken;
+      const isCreator =
+        currentUser && currentEventData && currentUser.id === currentEventData.creatorId;
       if ((pinToken || isCreator) && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(
           JSON.stringify({
             type: 'JOIN_EVENT',
             eventId: currentEventId,
-            pinToken,
-            creatorToken,
-            userId: currentUser?.id,
-            googleToken: currentUser?.googleToken,
-            githubToken: currentUser?.githubToken,
+            pinToken: pinToken || undefined,
+            authToken: currentUser?.token || undefined,
           })
         );
       }
@@ -275,11 +232,7 @@ function AppContent() {
       return;
     }
     if (currentEventData.hasPin) {
-      const isCreatorTokenMatched = !!localStorage.getItem(
-        `beervote_creator_token_${currentEventId}`
-      );
-      const isCreatorIdMatched = currentUser && currentUser.id === currentEventData.creatorId;
-      const isCreator = isCreatorTokenMatched || isCreatorIdMatched;
+      const isCreator = currentUser && currentUser.id === currentEventData.creatorId;
       const token = getPinToken(currentEventId);
       setShowPinModal(!token && !isCreator);
     } else {
@@ -302,11 +255,13 @@ function AppContent() {
     nickname,
     realName,
     username,
+    token,
   }: {
     id?: string;
     nickname: string;
     realName: string;
     username: string;
+    token?: string;
   }) => {
     const userId = id || 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
     const user: User = {
@@ -316,6 +271,7 @@ function AppContent() {
       username,
       name: realName ? `${nickname} (${realName})` : nickname,
       authMethod: 'guest',
+      token,
     };
     loginUser(user);
     setIsJoinModalOpen(false);
@@ -332,6 +288,7 @@ function AppContent() {
     given_name,
     picture,
     credential,
+    token,
   }: {
     sub: string;
     email: string;
@@ -339,11 +296,12 @@ function AppContent() {
     given_name: string;
     picture: string;
     credential: string;
+    token?: string;
   }) => {
     const displayName = given_name || name || email;
     const realName = name || given_name || '';
     const user: User = {
-      id: 'google_' + sub,
+      id: 'usr_google_' + sub,
       nickname: displayName,
       realName,
       username: email,
@@ -352,7 +310,7 @@ function AppContent() {
       avatar: picture,
       googleId: sub,
       authMethod: 'google',
-      googleToken: credential,
+      token,
     };
     loginUser(user);
     setIsJoinModalOpen(false);
@@ -447,8 +405,7 @@ function AppContent() {
                           type: 'JOIN_EVENT',
                           eventId: currentEventId,
                           pinToken,
-                          userId: currentUser?.id,
-                          googleToken: currentUser?.googleToken,
+                          authToken: currentUser?.token || undefined,
                         })
                       );
                     }

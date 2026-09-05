@@ -41,7 +41,13 @@ const EN_FUNNY_NAMES = [
 interface GuestJoinModalProps {
   isOpen: boolean;
   onClose?: () => void;
-  onSubmit: (data: { id?: string; nickname: string; realName: string; username: string }) => void;
+  onSubmit: (data: {
+    id?: string;
+    nickname: string;
+    realName: string;
+    username: string;
+    token?: string;
+  }) => void;
   onGoogleSuccess: (data: {
     sub: string;
     email: string;
@@ -49,6 +55,7 @@ interface GuestJoinModalProps {
     given_name: string;
     picture: string;
     credential: string;
+    token?: string;
   }) => void;
   usedNicknames?: string[];
 }
@@ -102,6 +109,7 @@ export default function GuestJoinModal({
         given_name: data.given_name,
         picture: data.picture,
         credential: response.credential,
+        token: data.token,
       });
     } catch {
       // Fallback: decode JWT client-side if server not configured
@@ -192,6 +200,7 @@ export default function GuestJoinModal({
         nickname: data.nickname,
         realName: data.realName,
         username: data.username,
+        token: data.token,
       });
     } catch (err) {
       const msg =
@@ -246,6 +255,7 @@ export default function GuestJoinModal({
         nickname: data.nickname,
         realName: data.realName,
         username: data.username,
+        token: data.token,
       });
     } catch (err) {
       const msg =

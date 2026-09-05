@@ -8,7 +8,6 @@ export interface DBEvent {
   creatorNickname?: string;
   creatorRealName?: string;
   creatorUsername?: string;
-  creatorToken?: string;
   partyPin?: string;
   partyPinHash?: string;
   status: 'voting' | 'locked';
@@ -59,14 +58,16 @@ export interface DBComment {
 
 export interface DBUser {
   id: string;
-  authMethod: 'guest' | 'google';
+  authMethod: 'guest' | 'google' | 'github';
   username: string; // for guest
   nickname: string;
   realName: string;
   passwordHash?: string; // for guest, SHA-256
   googleId?: string; // for google
+  githubId?: string; // for github
   email?: string;
   avatar?: string;
+  role?: string;
   createdAt: string;
 }
 

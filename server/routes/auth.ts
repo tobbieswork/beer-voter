@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { readDB, insertUser, updateUser, hashPin } from '../db/store.js';
 import { DBUser } from '../db/types.js';
 import { verifyGoogleToken } from '../utils/auth.js';
+import { signAuthToken } from '../utils/jwt.js';
 
 const router = Router();
 const googleOAuthClient = new OAuth2Client();
@@ -48,7 +49,7 @@ router.post('/google/callback', async (req: Request, res: Response) => {
 });
 
 // Lấy thông tin session Google/GitHub OAuth và xoá cookie
-router.get('/session', (req: Request, res: Response) => {
+router.get('/session', async (req: Request, res: Response) => {
   const cookieHeader = req.headers.cookie;
   if (!cookieHeader) {
     return res.status(401).json({ message: 'Không tìm thấy session.' });
@@ -72,11 +73,41 @@ router.get('/session', (req: Request, res: Response) => {
     if (googleSessionCookie) {
       const sessionData = JSON.parse(decodeURIComponent(googleSessionCookie));
       res.clearCookie('beervote_google_session');
-      return res.json({ ...sessionData, authMethod: 'google' });
+
+      const dbUser: DBUser = {
+        id: `usr_google_${sessionData.sub}`,
+        authMethod: 'google',
+        username: sessionData.email,
+        nickname: sessionData.given_name || sessionData.name || '',
+        realName: sessionData.name || '',
+        googleId: sessionData.sub,
+        email: sessionData.email || '',
+        avatar: sessionData.picture || '',
+        createdAt: new Date().toISOString(),
+      };
+      await updateUser(dbUser.id, dbUser);
+      const token = signAuthToken(dbUser);
+
+      return res.json({ ...sessionData, authMethod: 'google', token });
     } else {
       const sessionData = JSON.parse(decodeURIComponent(githubSessionCookie));
       res.clearCookie('beervote_github_session');
-      return res.json({ ...sessionData, authMethod: 'github' });
+
+      const dbUser: DBUser = {
+        id: `usr_github_${sessionData.sub}`,
+        authMethod: 'github',
+        username: sessionData.login || sessionData.email || '',
+        nickname: sessionData.name || sessionData.login || '',
+        realName: sessionData.name || '',
+        githubId: sessionData.sub,
+        email: sessionData.email || '',
+        avatar: sessionData.picture || '',
+        createdAt: new Date().toISOString(),
+      };
+      await updateUser(dbUser.id, dbUser);
+      const token = signAuthToken(dbUser);
+
+      return res.json({ ...sessionData, authMethod: 'github', token });
     }
   } catch (err) {
     console.error('Lỗi phân tích session cookie:', err);
@@ -114,7 +145,6 @@ router.get('/github/callback', async (req: Request, res: Response) => {
   }
 
   try {
-    // 1. Exchange code for access token
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -128,22 +158,18 @@ router.get('/github/callback', async (req: Request, res: Response) => {
       }),
     });
 
-    if (!tokenRes.ok) {
-      throw new Error(`Failed to exchange code: ${tokenRes.status}`);
-    }
+    if (!tokenRes.ok) throw new Error(`Failed to exchange code: ${tokenRes.status}`);
 
     const tokenData = (await tokenRes.json()) as {
-      access_token?: string;
       error?: string;
       error_description?: string;
+      access_token?: string;
     };
     if (tokenData.error || !tokenData.access_token) {
-      throw new Error(tokenData.error_description || tokenData.error || 'No access token returned');
+      throw new Error(tokenData.error_description || tokenData.error || 'No access token');
     }
 
     const accessToken = tokenData.access_token;
-
-    // 2. Fetch user profile
     const userRes = await fetch('https://api.github.com/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -152,19 +178,15 @@ router.get('/github/callback', async (req: Request, res: Response) => {
       },
     });
 
-    if (!userRes.ok) {
-      throw new Error(`Failed to fetch user profile: ${userRes.status}`);
-    }
+    if (!userRes.ok) throw new Error(`Failed to fetch user profile: ${userRes.status}`);
 
     const profile = (await userRes.json()) as {
       id: number;
+      email?: string;
       login: string;
       name?: string;
-      email?: string;
       avatar_url?: string;
     };
-
-    // 3. Fetch primary email if not public in profile
     let email = profile.email || '';
     if (!email) {
       const emailsRes = await fetch('https://api.github.com/user/emails', {
@@ -175,19 +197,12 @@ router.get('/github/callback', async (req: Request, res: Response) => {
         },
       });
       if (emailsRes.ok) {
-        const emails = (await emailsRes.json()) as Array<{
-          email: string;
-          primary: boolean;
-          verified: boolean;
-        }>;
+        const emails = (await emailsRes.json()) as { primary: boolean; email: string }[];
         const primaryEmail = emails.find((e) => e.primary) || emails[0];
-        if (primaryEmail) {
-          email = primaryEmail.email;
-        }
+        if (primaryEmail) email = primaryEmail.email;
       }
     }
 
-    // 4. Save details in cookie
     const sessionData = {
       sub: String(profile.id),
       email,
@@ -201,7 +216,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 5 * 60 * 1000, // 5 minutes
+      maxAge: 5 * 60 * 1000,
     });
 
     const eventId = state ? decodeURIComponent(state as string) : '';
@@ -230,7 +245,7 @@ router.post('/google', async (req: Request, res: Response) => {
     const dbUser: DBUser = {
       id: `usr_google_${payload.sub}`,
       authMethod: 'google',
-      username: '',
+      username: payload.email || '',
       nickname: payload.given_name || payload.name || '',
       realName: payload.name || '',
       googleId: payload.sub,
@@ -239,8 +254,8 @@ router.post('/google', async (req: Request, res: Response) => {
       createdAt: new Date().toISOString(),
     };
 
-    // Upsert into users table
     await updateUser(dbUser.id, dbUser);
+    const token = signAuthToken(dbUser);
 
     res.json({
       sub: payload.sub,
@@ -249,6 +264,7 @@ router.post('/google', async (req: Request, res: Response) => {
       given_name: payload.given_name || '',
       family_name: payload.family_name || '',
       picture: payload.picture || '',
+      token,
     });
   } catch (e) {
     console.error('Google token verification failed:', e);
@@ -288,12 +304,14 @@ router.post('/register-guest', async (req: Request, res: Response) => {
   };
 
   await insertUser(newUser);
+  const token = signAuthToken(newUser);
 
   res.status(201).json({
     id: newUser.id,
     nickname: newUser.nickname,
     realName: newUser.realName,
     username: newUser.username,
+    token,
   });
 });
 
@@ -321,11 +339,14 @@ router.post('/guest', (req: Request, res: Response) => {
     return res.status(401).json({ message: 'Mật khẩu không chính xác!' });
   }
 
+  const token = signAuthToken(user);
+
   res.json({
     id: user.id,
     nickname: user.nickname,
     realName: user.realName,
     username: user.username,
+    token,
   });
 });
 

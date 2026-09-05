@@ -7,14 +7,13 @@ export interface ClientInfo {
   currentEventId: string | null;
   isLocal: boolean;
   lastActionAt: number;
-  verifiedPinTokens: Map<string, string>; // eventId -> valid pinToken
 }
 
 export const clients = new Map<WebSocket, ClientInfo>();
 let wss: WebSocketServer;
 
 export function initWebSocketServer(server: HttpServer): WebSocketServer {
-  wss = new WebSocketServer({ server });
+  wss = new WebSocketServer({ server, maxPayload: 16384 });
 
   wss.on('connection', (ws: WebSocket, req) => {
     const clientIp = req.socket.remoteAddress || '';
@@ -26,7 +25,6 @@ export function initWebSocketServer(server: HttpServer): WebSocketServer {
       currentEventId: null,
       isLocal,
       lastActionAt: 0,
-      verifiedPinTokens: new Map(),
     });
 
     ws.on('message', async (messageStr: string) => {

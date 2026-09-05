@@ -47,11 +47,8 @@ export function useWebSocket({
           JSON.stringify({
             type: 'JOIN_EVENT',
             eventId: currentEventId,
-            pinToken: getPinToken(currentEventId),
-            creatorToken: localStorage.getItem(`beervote_creator_token_${currentEventId}`),
-            userId: currentUser?.id,
-            googleToken: currentUser?.googleToken,
-            githubToken: currentUser?.githubToken,
+            pinToken: getPinToken(currentEventId) || undefined,
+            authToken: currentUser?.token || undefined,
           })
         );
       } else {
@@ -97,15 +94,7 @@ export function useWebSocket({
       console.error('Lỗi kết nối WebSocket:', err);
       ws.close();
     };
-  }, [
-    currentEventId,
-    navigateToEvent,
-    currentUser?.id,
-    currentUser?.googleToken,
-    currentUser?.githubToken,
-    setCurrentEventData,
-    setEvents,
-  ]);
+  }, [currentEventId, navigateToEvent, currentUser?.token, setCurrentEventData, setEvents]);
 
   useEffect(() => {
     connectWsRef.current = connectWebSocket;
@@ -129,22 +118,13 @@ export function useWebSocket({
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
       wsRef.current.send(
         JSON.stringify({
           type: 'VOTE_TOGGLE',
           eventId,
           optionId,
-          userId: userId || currentUser.id,
-          userName: userName || currentUser.name,
-          userNickname: currentUser.nickname || userName || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(eventId) || '',
-          creatorToken,
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
+          pinToken: getPinToken(eventId) || undefined,
+          authToken: currentUser.token,
         })
       );
     } else {
@@ -159,22 +139,12 @@ export function useWebSocket({
     }
     if (!optionData) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken =
-        localStorage.getItem(`beervote_creator_token_${optionData.eventId}`) || '';
       wsRef.current.send(
         JSON.stringify({
           type: 'ADD_OPTION',
           ...optionData,
-          creatorId: currentUser.id,
-          creatorName: currentUser.name,
-          userNickname: currentUser.nickname || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(optionData.eventId) || '',
-          creatorToken,
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
+          pinToken: getPinToken(optionData.eventId) || undefined,
+          authToken: currentUser.token,
         })
       );
     }
@@ -187,22 +157,12 @@ export function useWebSocket({
     }
     if (!commentData) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken =
-        localStorage.getItem(`beervote_creator_token_${commentData.eventId}`) || '';
       wsRef.current.send(
         JSON.stringify({
           type: 'ADD_COMMENT',
           ...commentData,
-          userId: currentUser.id,
-          userName: currentUser.name,
-          userNickname: currentUser.nickname || currentUser.name,
-          userRealName: currentUser.realName || '',
-          userUsername: currentUser.username || '',
-          userEmail: currentUser.email || currentUser.username || '',
-          pinToken: getPinToken(commentData.eventId) || '',
-          creatorToken,
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
+          pinToken: getPinToken(commentData.eventId) || undefined,
+          authToken: currentUser.token,
         })
       );
     }
@@ -214,16 +174,12 @@ export function useWebSocket({
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${lockData.eventId}`) || '';
       wsRef.current.send(
         JSON.stringify({
           type: 'LOCK_EVENT',
           ...lockData,
-          userId: currentUser.id,
-          creatorToken,
-          pinToken: getPinToken(lockData.eventId) || '',
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
+          pinToken: getPinToken(lockData.eventId) || undefined,
+          authToken: currentUser.token,
         })
       );
     }
@@ -232,16 +188,12 @@ export function useWebSocket({
   const handleUnlockEvent = (eventId: string) => {
     if (!currentUser) return;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
       wsRef.current.send(
         JSON.stringify({
           type: 'UNLOCK_EVENT',
           eventId,
-          userId: currentUser.id,
-          creatorToken,
-          pinToken: getPinToken(eventId) || '',
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
+          pinToken: getPinToken(eventId) || undefined,
+          authToken: currentUser.token,
         })
       );
     }
@@ -249,17 +201,13 @@ export function useWebSocket({
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!currentUser) return;
-    const creatorToken = localStorage.getItem(`beervote_creator_token_${eventId}`) || '';
     try {
       const res = await fetch(`/api/events/${eventId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creatorToken,
-          userId: currentUser.id,
-          googleToken: currentUser.googleToken,
-          githubToken: currentUser.githubToken,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentUser.token}`,
+        },
       });
       if (res.ok) {
         navigateToEvent(null);

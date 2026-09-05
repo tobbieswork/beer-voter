@@ -5,16 +5,14 @@ import {
   insertEvent,
   insertOptions,
   sanitizeEvent,
-  isPinAuthorized,
   getEventDetail,
   withoutPinHash,
   hashPin,
-  generatePinToken,
 } from '../db/store.js';
 import { DBEvent, DBOption } from '../db/types.js';
 import { supabase } from '../db/client.js';
 import { publishEventDeleted, publishDashboardUpdate } from '../redis.js';
-import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
+import { verifyAuthToken, signPinToken, verifyPinToken } from '../utils/jwt.js';
 
 const router = Router();
 
@@ -39,36 +37,32 @@ router.get('/', (_req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const pinToken = req.headers['x-pin-token'] as string | undefined;
-  const creatorToken = req.headers['x-creator-token'] as string | undefined;
-  const userId = req.headers['x-user-id'] as string | undefined;
-  const googleToken = req.headers['x-google-token'] as string | undefined;
-  const githubToken = req.headers['x-github-token'] as string | undefined;
+  const authHeader = req.headers['authorization'];
+  let authToken = '';
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    authToken = authHeader.substring(7);
+  }
+
   const db = readDB();
   const event = db.events.find((e) => e.id === id);
   if (!event) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
 
-  let isCreator = !!(creatorToken && creatorToken === event.creatorToken);
-
-  if (!isCreator && googleToken && userId && userId === event.creatorId) {
-    if (userId.startsWith('google_')) {
-      const googleSub = await verifyGoogleToken(googleToken);
-      if (googleSub && `google_${googleSub}` === event.creatorId) {
-        isCreator = true;
-      }
+  let isCreator = false;
+  if (authToken) {
+    const userPayload = verifyAuthToken(authToken);
+    if (userPayload && userPayload.userId === event.creatorId) {
+      isCreator = true;
     }
   }
 
-  if (!isCreator && githubToken && userId && userId === event.creatorId) {
-    if (userId.startsWith('github_')) {
-      const githubSub = await verifyGithubToken(githubToken);
-      if (githubSub && `github_${githubSub}` === event.creatorId) {
-        isCreator = true;
+  if (!isCreator) {
+    if (!event.partyPinHash) {
+      // no pin required
+    } else {
+      if (!pinToken || !verifyPinToken(pinToken, event.id)) {
+        return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
       }
     }
-  }
-
-  if (!isCreator && !isPinAuthorized(event, pinToken)) {
-    return res.status(403).json({ message: 'Yêu cầu xác thực PIN!' });
   }
 
   const eventDetail = getEventDetail(db, id);
@@ -101,8 +95,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   const eventId = randomUUID();
-  const creatorToken = randomUUID();
-
+  // We no longer generate or store creatorToken
   const pinHash =
     partyPin && /^\d{6}$/.test(String(partyPin)) ? hashPin(String(partyPin)) : undefined;
 
@@ -114,7 +107,6 @@ router.post('/', async (req: Request, res: Response) => {
     creatorNickname: creatorNickname || creatorName,
     creatorRealName: creatorRealName || '',
     creatorUsername: creatorUsername || '',
-    creatorToken,
     partyPin: partyPin && /^\d{6}$/.test(String(partyPin)) ? String(partyPin) : undefined,
     partyPinHash: pinHash,
     status: 'voting',
@@ -157,7 +149,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   publishDashboardUpdate();
-  res.status(201).json({ ...withoutPinHash(newEvent), creatorToken });
+  res.status(201).json({ ...withoutPinHash(newEvent) });
 });
 
 // Xác thực PIN sự kiện
@@ -171,11 +163,12 @@ router.post('/:id/verify-pin', (req: Request, res: Response) => {
   const event = db.events.find((e) => e.id === id);
   if (!event)
     return res.status(404).json({ valid: false, message: 'Không tìm thấy kèo nhậu này!' });
+
   if (!event.partyPinHash) {
-    return res.json({ valid: true, pinToken: generatePinToken(id) });
+    return res.json({ valid: true, pinToken: signPinToken(id) });
   }
   if (hashPin(String(pin)) === event.partyPinHash) {
-    return res.json({ valid: true, pinToken: generatePinToken(id) });
+    return res.json({ valid: true, pinToken: signPinToken(id) });
   }
   res.json({ valid: false });
 });
@@ -183,30 +176,23 @@ router.post('/:id/verify-pin', (req: Request, res: Response) => {
 // Xóa kèo nhậu
 router.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { creatorToken, userId, googleToken, githubToken } = req.body;
+  const authHeader = req.headers['authorization'];
+  let authToken = '';
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    authToken = authHeader.substring(7);
+  }
 
   const db = readDB();
   const eventIndex = db.events.findIndex((e) => e.id === id);
   if (eventIndex === -1) return res.status(404).json({ message: 'Không tìm thấy kèo nhậu này!' });
 
   const event = db.events[eventIndex];
-  let authorized = !!(event.creatorToken && event.creatorToken === creatorToken);
 
-  if (!authorized && googleToken && userId && userId === event.creatorId) {
-    if (userId.startsWith('google_')) {
-      const googleSub = await verifyGoogleToken(googleToken);
-      if (googleSub && `google_${googleSub}` === event.creatorId) {
-        authorized = true;
-      }
-    }
-  }
-
-  if (!authorized && githubToken && userId && userId === event.creatorId) {
-    if (userId.startsWith('github_')) {
-      const githubSub = await verifyGithubToken(githubToken);
-      if (githubSub && `github_${githubSub}` === event.creatorId) {
-        authorized = true;
-      }
+  let authorized = false;
+  if (authToken) {
+    const userPayload = verifyAuthToken(authToken);
+    if (userPayload && userPayload.userId === event.creatorId) {
+      authorized = true;
     }
   }
 
@@ -220,12 +206,10 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
   // 2. Xóa dữ liệu vĩnh viễn
   if (supabase) {
-    // Nhờ ON DELETE CASCADE ở Foreign Keys, chỉ cần xóa event id là Supabase tự động cascade xóa các options, votes, comments liên quan!
     const { error } = await supabase.from('events').delete().eq('id', id);
     if (error) console.error('❌ Lỗi xóa event trên Supabase:', error.message);
   } else {
-    // Chế độ local file: ghi đè lại cache mới
-    writeDB(db); // Gọi hàm tương thích ngược của local file
+    writeDB(db);
   }
 
   publishEventDeleted(id);
@@ -233,7 +217,6 @@ router.delete('/:id', async (req: Request, res: Response) => {
   res.json({ message: 'Kèo nhậu đã được xóa!' });
 });
 
-// Cần export writeDB từ store để phục vụ việc lưu của chế độ local file
 import { writeDB } from '../db/store.js';
 
 export default router;

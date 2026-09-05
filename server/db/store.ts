@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { createHash, randomUUID } from 'crypto';
 import { supabase } from './client.js';
 import { DBEvent, DBOption, DBVote, DBComment, DBUser, DatabaseSchema } from './types.js';
+import { verifyPinToken } from '../utils/jwt.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,10 +19,6 @@ export let cacheDB: DatabaseSchema = {
   users: [],
 };
 let _isLoaded = false;
-
-// Bộ lưu trữ mã PIN dùng trong WebSocket/APIs
-const pinTokens = new Map<string, { eventId: string; expiresAt: number }>();
-const PIN_TOKEN_TTL = 24 * 60 * 60 * 1000;
 
 // ================= BỘ CHUYỂN ĐỔI KIỂU DỮ LIỆU (Mappers) =================
 
@@ -104,7 +101,6 @@ export function toDbEvent(e: DBEvent) {
     creator_nickname: e.creatorNickname || null,
     creator_real_name: e.creatorRealName || null,
     creator_username: e.creatorUsername || null,
-    creator_token: e.creatorToken || null,
     party_pin: e.partyPin || null,
     party_pin_hash: e.partyPinHash || null,
     status: e.status,
@@ -125,7 +121,6 @@ export function fromDbEvent(r: RowEvent): DBEvent {
     creatorNickname: r.creator_nickname || undefined,
     creatorRealName: r.creator_real_name || undefined,
     creatorUsername: r.creator_username || undefined,
-    creatorToken: r.creator_token || undefined,
     partyPin: r.party_pin || undefined,
     partyPinHash: r.party_pin_hash || undefined,
     status: r.status as 'voting' | 'locked',
@@ -461,10 +456,8 @@ export async function updateEventStatus(
 
 // ================= TIỆN ÍCH DỮ LIỆU KÈO & MÃ PIN =================
 
-export function sanitizeEvent(
-  event: DBEvent
-): Omit<DBEvent, 'creatorToken' | 'partyPinHash'> & { hasPin: boolean } {
-  const { creatorToken: _t, partyPinHash: _p, ...rest } = event;
+export function sanitizeEvent(event: DBEvent): Omit<DBEvent, 'partyPinHash'> & { hasPin: boolean } {
+  const { partyPinHash: _p, ...rest } = event;
   return { ...rest, hasPin: !!event.partyPinHash };
 }
 
@@ -477,29 +470,10 @@ export function hashPin(pin: string): string {
   return createHash('sha256').update(String(pin)).digest('hex');
 }
 
-export function generatePinToken(eventId: string): string {
-  const token = randomUUID();
-  pinTokens.set(token, { eventId, expiresAt: Date.now() + PIN_TOKEN_TTL });
-  return token;
-}
-
-export function checkPinToken(
-  pinToken: string | undefined
-): { eventId: string; isValid: boolean } | null {
-  if (!pinToken || pinToken.length < 1) return null;
-  const entry = pinTokens.get(pinToken);
-  if (!entry || Date.now() > entry.expiresAt) {
-    pinTokens.delete(pinToken);
-    return null;
-  }
-  return { eventId: entry.eventId, isValid: true };
-}
-
 export function isPinAuthorized(event: DBEvent | undefined, pinToken: string | undefined): boolean {
   if (!event || !event.partyPinHash) return true;
   if (!pinToken) return false;
-  const check = checkPinToken(pinToken);
-  return check !== null && check.eventId === event.id;
+  return verifyPinToken(pinToken, event.id);
 }
 
 export function getEventDetail(db: DatabaseSchema, eventId: string) {

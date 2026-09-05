@@ -8,9 +8,7 @@ export function getInitialUser(): User | null {
   const username = localStorage.getItem('beervote_user_username');
   const avatar = localStorage.getItem('beervote_user_avatar') || undefined;
   const googleId = localStorage.getItem('beervote_user_google_id') || undefined;
-  const googleToken = localStorage.getItem('beervote_user_google_token') || undefined;
-  const githubId = localStorage.getItem('beervote_user_github_id') || undefined;
-  const githubToken = localStorage.getItem('beervote_user_github_token') || undefined;
+  const token = localStorage.getItem('beervote_auth_token') || undefined;
   const authMethod = (localStorage.getItem('beervote_user_auth_method') || 'guest') as
     | 'google'
     | 'guest'
@@ -24,10 +22,8 @@ export function getInitialUser(): User | null {
       name: realName ? `${nickname} (${realName})` : nickname,
       avatar,
       googleId,
-      githubId,
       authMethod,
-      googleToken,
-      githubToken,
+      token,
     };
   }
   return null;
@@ -42,12 +38,8 @@ export function saveUserToStorage(user: User) {
   else localStorage.removeItem('beervote_user_avatar');
   if (user.googleId) localStorage.setItem('beervote_user_google_id', user.googleId);
   else localStorage.removeItem('beervote_user_google_id');
-  if (user.googleToken) localStorage.setItem('beervote_user_google_token', user.googleToken);
-  else localStorage.removeItem('beervote_user_google_token');
-  if (user.githubId) localStorage.setItem('beervote_user_github_id', user.githubId);
-  else localStorage.removeItem('beervote_user_github_id');
-  if (user.githubToken) localStorage.setItem('beervote_user_github_token', user.githubToken);
-  else localStorage.removeItem('beervote_user_github_token');
+  if (user.token) localStorage.setItem('beervote_auth_token', user.token);
+  else localStorage.removeItem('beervote_auth_token');
   localStorage.setItem('beervote_user_auth_method', user.authMethod || 'guest');
 }
 
@@ -60,9 +52,7 @@ export function clearUserFromStorage() {
     'beervote_user_avatar',
     'beervote_user_google_id',
     'beervote_user_auth_method',
-    'beervote_user_google_token',
-    'beervote_user_github_id',
-    'beervote_user_github_token',
+    'beervote_auth_token',
   ].forEach((k) => localStorage.removeItem(k));
 }
 
@@ -89,7 +79,7 @@ export function useUser(
             const displayName = given_name || name || email;
             const realName = name || given_name || '';
             const user: User = {
-              id: 'google_' + sub,
+              id: 'usr_google_' + sub,
               nickname: displayName,
               realName,
               username: email,
@@ -98,7 +88,7 @@ export function useUser(
               avatar: picture,
               googleId: sub,
               authMethod: 'google',
-              googleToken: credential,
+              token: data.token,
             };
             saveUserToStorage(user);
             setCurrentUser(user);
@@ -134,16 +124,15 @@ export function useUser(
             const displayName = name || login || email || `GitHub User ${sub}`;
             const realName = name || '';
             const user: User = {
-              id: 'github_' + sub,
+              id: 'usr_github_' + sub,
               nickname: displayName,
               realName,
               username: login || email || '',
               name: realName ? `${displayName} (${realName})` : displayName,
               email,
               avatar: picture,
-              githubId: sub,
               authMethod: 'github',
-              githubToken: credential,
+              token: data.token,
             };
             saveUserToStorage(user);
             setCurrentUser(user);
