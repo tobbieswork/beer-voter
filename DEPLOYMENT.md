@@ -19,6 +19,7 @@ The application is fully prepared for horizontal scaling but is currently deploy
 ## Step-by-Step Deployment Process
 
 ### 1. Provision the Server (Google Cloud Console)
+
 1. Go to Compute Engine -> VM Instances.
 2. Create an instance named `beer-vote-server`.
 3. **Region:** Must be `us-central1`, `us-east1`, or `us-west1` to qualify for the Always Free Tier.
@@ -27,11 +28,13 @@ The application is fully prepared for horizontal scaling but is currently deploy
 6. **Firewall:** Check both "Allow HTTP traffic" and "Allow HTTPS traffic".
 
 ### 2. Connect the Domain (DuckDNS)
+
 1. Log into [DuckDNS](https://www.duckdns.org/).
 2. Create a subdomain (e.g., `beer-vote.duckdns.org`).
 3. Point the IP address to the **External IP** of your Google Cloud VM.
 
 ### 3. Server Setup & Dependencies
+
 SSH into the Google Cloud VM and install the required software:
 
 ```bash
@@ -48,6 +51,7 @@ sudo systemctl start redis-server
 ```
 
 ### 4. Application Setup
+
 Clone the repository and install npm packages:
 
 ```bash
@@ -58,10 +62,13 @@ npm run build
 ```
 
 Create your `.env` file securely on the server:
+
 ```bash
 nano .env
 ```
-*Ensure it contains:*
+
+_Ensure it contains:_
+
 - `VITE_GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_ID`
 - `SUPABASE_URL`
@@ -69,6 +76,7 @@ nano .env
 - `REDIS_URL=redis://127.0.0.1:6379` (Required for WebSocket Pub/Sub)
 
 ### 5. Start the Application with PM2
+
 We use `dotenv-cli` to force PM2 to read the `.env` file when starting the `npm run start` script.
 
 ```bash
@@ -76,9 +84,11 @@ pm2 start "dotenv -- npm run start" --name "beer-vote"
 pm2 save
 pm2 startup
 ```
-*Note: If you want to run multiple instances (horizontal scaling) on a larger VM, you can run `pm2 start "dotenv -- npm run start" --name "beer-vote" -i max` and Redis will automatically route the WebSocket messages between them.*
+
+_Note: If you want to run multiple instances (horizontal scaling) on a larger VM, you can run `pm2 start "dotenv -- npm run start" --name "beer-vote" -i max` and Redis will automatically route the WebSocket messages between them._
 
 ### 6. Configure Nginx Reverse Proxy
+
 Nginx sits in front of the Node app, handling incoming web traffic on port 80 and forwarding it to the Node app on port 3001, while preserving WebSocket upgrade headers.
 
 1. Create a configuration file: `sudo nano /etc/nginx/sites-available/beervote`
@@ -100,6 +110,7 @@ server {
 ```
 
 3. Enable the configuration:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/beervote /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
@@ -107,6 +118,7 @@ sudo systemctl restart nginx
 ```
 
 ### 7. Secure with SSL (HTTPS)
+
 Use Certbot to automatically fetch a free SSL certificate from Let's Encrypt and update your Nginx configuration:
 
 ```bash
@@ -114,7 +126,9 @@ sudo certbot --nginx -d YOUR_DOMAIN.duckdns.org
 ```
 
 ### 8. Update Google OAuth Origins
+
 Because Google Sign-In strictly requires HTTPS, you must add your new secure domain to Google Cloud Console:
+
 1. Go to APIs & Services -> Credentials.
 2. Edit your OAuth 2.0 Client ID.
 3. Add `https://YOUR_DOMAIN.duckdns.org` to **Authorized JavaScript origins**.
