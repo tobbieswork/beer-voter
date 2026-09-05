@@ -87,8 +87,10 @@ export interface RowUser {
   real_name: string;
   password_hash?: string | null;
   google_id?: string | null;
+  github_id?: string | null;
   email?: string | null;
   avatar?: string | null;
+  role?: string | null;
   created_at: string;
 }
 
@@ -229,8 +231,10 @@ export function toDbUser(u: DBUser) {
     real_name: u.realName,
     password_hash: u.passwordHash || null,
     google_id: u.googleId || null,
+    github_id: u.githubId || null,
     email: u.email || null,
     avatar: u.avatar || null,
+    role: u.role || null,
     created_at: u.createdAt,
   };
 }
@@ -238,14 +242,16 @@ export function toDbUser(u: DBUser) {
 export function fromDbUser(r: RowUser): DBUser {
   return {
     id: r.id,
-    authMethod: r.auth_method as 'guest' | 'google',
+    authMethod: r.auth_method as 'guest' | 'google' | 'github',
     username: r.username,
     nickname: r.nickname,
     realName: r.real_name,
     passwordHash: r.password_hash || undefined,
     googleId: r.google_id || undefined,
+    githubId: r.github_id || undefined,
     email: r.email || undefined,
     avatar: r.avatar || undefined,
+    role: r.role || undefined,
     createdAt: r.created_at,
   };
 }
