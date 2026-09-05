@@ -135,6 +135,53 @@ Because Google Sign-In strictly requires HTTPS, you must add your new secure dom
 
 ---
 
+## Testing & Verifying Redis WebSocket Scaling
+
+To verify that Redis Pub/Sub is actively handling real-time WebSocket events:
+
+### 1. Check Startup Logs
+
+```bash
+pm2 logs beer-vote --lines 30
+```
+
+Look for:
+
+```text
+✅ Đã subscribe Redis channel: beervote:ws:events (Total subscriptions: 1)
+```
+
+### 2. Live Pub/Sub Monitor
+
+Run the following command in a separate SSH terminal:
+
+```bash
+redis-cli monitor
+```
+
+Vote or add a comment in the browser. You will immediately see Redis register:
+
+```text
+"PUBLISH" "beervote:ws:events" "{\"type\":\"EVENT_UPDATED\",...}"
+```
+
+### 3. Multi-Instance Test (Zero Extra Cost)
+
+Scale the application to 2 processes on your VM:
+
+```bash
+pm2 scale beer-vote 2
+```
+
+> **FAQ: Does scaling to 2 instances cost extra?**
+> **No.** It runs 2 Node.js processes within the same VM instance using PM2's cluster load-balancing. Google Cloud bills per VM instance (which is covered by the Always Free Tier), not per Node.js process. Each process only uses ~70-90MB of RAM.
+>
+> To scale back down to 1 instance: `pm2 scale beer-vote 1`
+
+Open the app on 2 separate browsers (or one phone and one laptop). Because PM2 distributes incoming WebSocket connections between the two separate processes, updates made on Client 1 will route through Redis to Client 2 in real time!
+
+---
+
 ## Troubleshooting
 
 - **Supabase Fallback / Missing Data:** If the app says it is falling back to `db.json`, it means PM2 failed to read the `.env` file. Run `pm2 restart beer-vote` or ensure you used `dotenv-cli` when starting the process.
