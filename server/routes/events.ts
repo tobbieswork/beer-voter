@@ -13,7 +13,7 @@ import {
 } from '../db/store.js';
 import { DBEvent, DBOption } from '../db/types.js';
 import { supabase } from '../db/client.js';
-import { broadcastEventDeleted, broadcastDashboardUpdate } from '../websocket/server.js';
+import { publishEventDeleted, publishDashboardUpdate } from '../redis.js';
 import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
 
 const router = Router();
@@ -156,7 +156,7 @@ router.post('/', async (req: Request, res: Response) => {
     await insertOptions(optionsToInsert);
   }
 
-  broadcastDashboardUpdate();
+  publishDashboardUpdate();
   res.status(201).json({ ...withoutPinHash(newEvent), creatorToken });
 });
 
@@ -228,8 +228,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     writeDB(db); // Gọi hàm tương thích ngược của local file
   }
 
-  broadcastEventDeleted(id);
-  broadcastDashboardUpdate();
+  publishEventDeleted(id);
+  publishDashboardUpdate();
   res.json({ message: 'Kèo nhậu đã được xóa!' });
 });
 

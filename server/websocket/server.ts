@@ -1,6 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server as HttpServer } from 'http';
-import { readDB, getEventDetail, sanitizeEvent } from '../db/store.js';
+import { EventDetailPayload, DashboardEventPayload } from '../db/adapters/StorageAdapter.js';
 import { handleWebSocketMessage } from './handlers.js';
 
 export interface ClientInfo {
@@ -46,12 +46,8 @@ export function initWebSocketServer(server: HttpServer): WebSocketServer {
   return wss;
 }
 
-export function broadcastEventUpdate(eventId: string): void {
-  const db = readDB();
-  const eventDetail = getEventDetail(db, eventId);
-  if (!eventDetail) return;
-
-  const message = JSON.stringify({ type: 'EVENT_UPDATED', eventId, eventData: eventDetail });
+export function broadcastToLocalClients(eventId: string, eventData: EventDetailPayload): void {
+  const message = JSON.stringify({ type: 'EVENT_UPDATED', eventId, eventData });
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const info = clients.get(client);
@@ -62,21 +58,8 @@ export function broadcastEventUpdate(eventId: string): void {
   });
 }
 
-export function broadcastDashboardUpdate(): void {
-  const db = readDB();
-  const summaryEvents = db.events.map((event) => {
-    const votesCount = db.votes.filter((v) => v.eventId === event.id).length;
-    const commentsCount = db.comments.filter((c) => c.eventId === event.id).length;
-    const optionsCount = db.options.filter((o) => o.eventId === event.id).length;
-    return { ...sanitizeEvent(event), votesCount, commentsCount, optionsCount };
-  });
-  summaryEvents.sort((a, b) => {
-    if (a.status === b.status)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    return a.status === 'voting' ? -1 : 1;
-  });
-
-  const message = JSON.stringify({ type: 'DASHBOARD_UPDATED', events: summaryEvents });
+export function broadcastDashboardToLocalClients(events: DashboardEventPayload[]): void {
+  const message = JSON.stringify({ type: 'DASHBOARD_UPDATED', events });
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       const info = clients.get(client);
@@ -85,7 +68,7 @@ export function broadcastDashboardUpdate(): void {
   });
 }
 
-export function broadcastEventDeleted(eventId: string): void {
+export function broadcastDeletedToLocalClients(eventId: string): void {
   const message = JSON.stringify({ type: 'EVENT_DELETED', eventId });
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {

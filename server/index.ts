@@ -12,6 +12,7 @@ import { initDB } from './db/store.js';
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import { initWebSocketServer } from './websocket/server.js';
+import { initRedis } from './redis.js';
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
@@ -73,6 +74,7 @@ if (fs.existsSync(distPath)) {
 // Khởi tạo HTTP Server & WebSocket Server
 const server = http.createServer(app);
 initWebSocketServer(server);
+initRedis();
 
 const PORT = process.env.PORT || 3001;
 

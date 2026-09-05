@@ -1,8 +1,8 @@
 /* global process */
 import { Router, Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { readDB, insertGuest, hashPin } from '../db/store.js';
-import { DBGuest } from '../db/types.js';
+import { readDB, insertUser, updateUser, hashPin } from '../db/store.js';
+import { DBUser } from '../db/types.js';
 import { verifyGoogleToken } from '../utils/auth.js';
 
 const router = Router();
@@ -227,6 +227,21 @@ router.post('/google', async (req: Request, res: Response) => {
     });
     const payload = ticket.getPayload();
     if (!payload) throw new Error('Empty payload');
+    const dbUser: DBUser = {
+      id: `usr_google_${payload.sub}`,
+      authMethod: 'google',
+      username: '',
+      nickname: payload.given_name || payload.name || '',
+      realName: payload.name || '',
+      googleId: payload.sub,
+      email: payload.email || '',
+      avatar: payload.picture || '',
+      createdAt: new Date().toISOString(),
+    };
+
+    // Upsert into users table
+    await updateUser(dbUser.id, dbUser);
+
     res.json({
       sub: payload.sub,
       email: payload.email || '',
@@ -249,10 +264,12 @@ router.post('/register-guest', async (req: Request, res: Response) => {
   }
 
   const db = readDB();
-  const guests = db.guests || [];
+  const users = db.users || [];
 
   const lowerUsername = username.trim().toLowerCase();
-  const exists = guests.some((g) => g.username.toLowerCase() === lowerUsername);
+  const exists = users.some(
+    (u) => u.authMethod === 'guest' && u.username.toLowerCase() === lowerUsername
+  );
   if (exists) {
     return res.status(400).json({ message: 'Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.' });
   }
@@ -260,8 +277,9 @@ router.post('/register-guest', async (req: Request, res: Response) => {
   const id = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5);
   const passwordHash = hashPin(password);
 
-  const newGuest: DBGuest = {
+  const newUser: DBUser = {
     id,
+    authMethod: 'guest',
     nickname: nickname.trim(),
     realName: realName.trim(),
     username: username.trim(),
@@ -269,13 +287,13 @@ router.post('/register-guest', async (req: Request, res: Response) => {
     createdAt: new Date().toISOString(),
   };
 
-  await insertGuest(newGuest);
+  await insertUser(newUser);
 
   res.status(201).json({
-    id: newGuest.id,
-    nickname: newGuest.nickname,
-    realName: newGuest.realName,
-    username: newGuest.username,
+    id: newUser.id,
+    nickname: newUser.nickname,
+    realName: newUser.realName,
+    username: newUser.username,
   });
 });
 
@@ -287,25 +305,27 @@ router.post('/guest', (req: Request, res: Response) => {
   }
 
   const db = readDB();
-  const guests = db.guests || [];
+  const users = db.users || [];
 
   const lowerUsername = username.trim().toLowerCase();
-  const guest = guests.find((g) => g.username.toLowerCase() === lowerUsername);
+  const user = users.find(
+    (u) => u.authMethod === 'guest' && u.username.toLowerCase() === lowerUsername
+  );
 
-  if (!guest) {
+  if (!user) {
     return res.status(404).json({ message: 'Không tìm thấy tài khoản Khách này!' });
   }
 
   const passwordHash = hashPin(password);
-  if (guest.passwordHash !== passwordHash) {
+  if (user.passwordHash !== passwordHash) {
     return res.status(401).json({ message: 'Mật khẩu không chính xác!' });
   }
 
   res.json({
-    id: guest.id,
-    nickname: guest.nickname,
-    realName: guest.realName,
-    username: guest.username,
+    id: user.id,
+    nickname: user.nickname,
+    realName: user.realName,
+    username: user.username,
   });
 });
 

@@ -57,12 +57,16 @@ export interface DBComment {
   createdAt: string;
 }
 
-export interface DBGuest {
+export interface DBUser {
   id: string;
-  username: string;
+  authMethod: 'guest' | 'google';
+  username: string; // for guest
   nickname: string;
   realName: string;
-  passwordHash: string; // SHA-256
+  passwordHash?: string; // for guest, SHA-256
+  googleId?: string; // for google
+  email?: string;
+  avatar?: string;
   createdAt: string;
 }
 
@@ -71,5 +75,5 @@ export interface DatabaseSchema {
   options: DBOption[];
   votes: DBVote[];
   comments: DBComment[];
-  guests?: DBGuest[];
+  users?: DBUser[];
 }

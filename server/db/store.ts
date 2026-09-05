@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createHash, randomUUID } from 'crypto';
 import { supabase } from './client.js';
-import { DBEvent, DBOption, DBVote, DBComment, DBGuest, DatabaseSchema } from './types.js';
+import { DBEvent, DBOption, DBVote, DBComment, DBUser, DatabaseSchema } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +15,7 @@ export let cacheDB: DatabaseSchema = {
   options: [],
   votes: [],
   comments: [],
-  guests: [],
+  users: [],
 };
 let _isLoaded = false;
 
@@ -82,12 +82,16 @@ export interface RowComment {
   created_at: string;
 }
 
-export interface RowGuest {
+export interface RowUser {
   id: string;
+  auth_method: string;
   username: string;
   nickname: string;
   real_name: string;
-  password_hash: string;
+  password_hash?: string | null;
+  google_id?: string | null;
+  email?: string | null;
+  avatar?: string | null;
   created_at: string;
 }
 
@@ -221,24 +225,32 @@ export function fromDbComment(r: RowComment): DBComment {
   };
 }
 
-export function toDbGuest(g: DBGuest) {
+export function toDbUser(u: DBUser) {
   return {
-    id: g.id,
-    username: g.username,
-    nickname: g.nickname,
-    real_name: g.realName,
-    password_hash: g.passwordHash,
-    created_at: g.createdAt,
+    id: u.id,
+    auth_method: u.authMethod,
+    username: u.username,
+    nickname: u.nickname,
+    real_name: u.realName,
+    password_hash: u.passwordHash || null,
+    google_id: u.googleId || null,
+    email: u.email || null,
+    avatar: u.avatar || null,
+    created_at: u.createdAt,
   };
 }
 
-export function fromDbGuest(r: RowGuest): DBGuest {
+export function fromDbUser(r: RowUser): DBUser {
   return {
     id: r.id,
+    authMethod: r.auth_method as 'guest' | 'google',
     username: r.username,
     nickname: r.nickname,
     realName: r.real_name,
-    passwordHash: r.password_hash,
+    passwordHash: r.password_hash || undefined,
+    googleId: r.google_id || undefined,
+    email: r.email || undefined,
+    avatar: r.avatar || undefined,
     createdAt: r.created_at,
   };
 }
@@ -265,25 +277,25 @@ export async function initDB() {
       await runMigration();
 
       // 2. Lấy dữ liệu quan hệ mới
-      const [eventsRes, optionsRes, votesRes, commentsRes, guestsRes] = await Promise.all([
+      const [eventsRes, optionsRes, votesRes, commentsRes, usersRes] = await Promise.all([
         supabase.from('events').select('*'),
         supabase.from('options').select('*'),
         supabase.from('votes').select('*'),
         supabase.from('comments').select('*'),
-        supabase.from('guests').select('*'),
+        supabase.from('users').select('*'),
       ]);
 
       if (eventsRes.error) throw eventsRes.error;
       if (optionsRes.error) throw optionsRes.error;
       if (votesRes.error) throw votesRes.error;
       if (commentsRes.error) throw commentsRes.error;
-      if (guestsRes.error) throw guestsRes.error;
+      if (usersRes.error) throw usersRes.error;
 
       cacheDB.events = (eventsRes.data || []).map(fromDbEvent);
       cacheDB.options = (optionsRes.data || []).map(fromDbOption);
       cacheDB.votes = (votesRes.data || []).map(fromDbVote);
       cacheDB.comments = (commentsRes.data || []).map(fromDbComment);
-      cacheDB.guests = (guestsRes.data || []).map(fromDbGuest);
+      cacheDB.users = (usersRes.data || []).map(fromDbUser);
 
       console.log(
         `✅ Đồng bộ thành công từ Supabase. Kèo: ${cacheDB.events.length}, Votes: ${cacheDB.votes.length}`
@@ -305,7 +317,7 @@ export async function initDB() {
     } else {
       const data = fs.readFileSync(DB_PATH, 'utf8');
       cacheDB = JSON.parse(data) as DatabaseSchema;
-      if (!cacheDB.guests) cacheDB.guests = [];
+      if (!cacheDB.users) cacheDB.users = [];
     }
     console.log(`✅ Đã tải thành công DB từ file local. Số lượng kèo: ${cacheDB.events.length}`);
   } catch (error) {
@@ -390,12 +402,30 @@ export async function insertComment(comment: DBComment): Promise<void> {
   }
 }
 
-export async function insertGuest(guest: DBGuest): Promise<void> {
-  if (!cacheDB.guests) cacheDB.guests = [];
-  cacheDB.guests.push(guest);
+export async function insertUser(user: DBUser): Promise<void> {
+  if (!cacheDB.users) cacheDB.users = [];
+  cacheDB.users.push(user);
   if (supabase) {
-    const { error } = await supabase.from('guests').insert(toDbGuest(guest));
-    if (error) console.error('❌ Lỗi insert guest lên Supabase:', error.message);
+    const { error } = await supabase.from('users').insert(toDbUser(user));
+    if (error) console.error('❌ Lỗi insert user lên Supabase:', error.message);
+  } else {
+    saveLocalDB();
+  }
+}
+
+export async function updateUser(userId: string, fields: Partial<DBUser>): Promise<void> {
+  if (!cacheDB.users) cacheDB.users = [];
+  const index = cacheDB.users.findIndex((u) => u.id === userId);
+  if (index !== -1) {
+    cacheDB.users[index] = { ...cacheDB.users[index], ...fields };
+  } else {
+    cacheDB.users.push(fields as DBUser);
+  }
+
+  if (supabase) {
+    const dbUser = toDbUser(cacheDB.users.find((u) => u.id === userId) || (fields as DBUser));
+    const { error } = await supabase.from('users').upsert(dbUser);
+    if (error) console.error('❌ Lỗi upsert user lên Supabase:', error.message);
   } else {
     saveLocalDB();
   }

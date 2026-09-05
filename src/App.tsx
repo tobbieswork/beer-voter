@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './App.css';
 import BeerBubbles from './components/BeerBubbles';
@@ -21,15 +22,20 @@ import {
   clearPinToken,
 } from './utils/storage';
 
-export default function App() {
+function AppContent() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [events, setEvents] = useState<EventData[]>([]);
   const [_visitedEventIds, setVisitedEventIds] = useState<string[]>(() => getVisitedEvents());
 
-  const [currentEventId, setCurrentEventId] = useState<string | null>(() => {
-    const params = new URLSearchParams(window.location.search);
+  const currentEventId = useMemo(() => {
+    const match = location.pathname.match(/^\/events\/([^/]+)/);
+    if (match) return match[1];
+    const params = new URLSearchParams(location.search);
     return params.get('eventId') || null;
-  });
+  }, [location.pathname, location.search]);
 
   const [currentEventData, setCurrentEventData] = useState<EventData | null>(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -47,9 +53,8 @@ export default function App() {
   // Encapsulate user state & logic inside custom hook
   const { currentUser, loginUser, logoutUser } = useUser(showToast, setIsJoinModalOpen);
 
-  // Account synchronization logic via QR Code params: authData & syncUser
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const authDataParam = urlParams.get('authData');
     const syncUserParam = urlParams.get('syncUser');
     const targetUserParam = authDataParam || syncUserParam;
@@ -100,36 +105,24 @@ export default function App() {
       urlParams.delete('syncUser');
       urlParams.delete('creatorToken');
       const newSearch = urlParams.toString();
-      const newPath =
-        window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
-      window.history.replaceState(null, '', newPath);
+      navigate(location.pathname + (newSearch ? `?${newSearch}` : '') + location.hash, {
+        replace: true,
+      });
     }
-  }, [currentUser, currentEventId, loginUser, logoutUser, showToast, t]);
+  }, [currentUser, currentEventId, loginUser, logoutUser, showToast, t, location, navigate]);
 
-  // 1. Tự động đồng bộ URL (Router mini)
+  // 1. Tự động đồng bộ URL (Router mini) -> Giờ dùng react-router
   const navigateToEvent = useCallback(
     (eventId: string | null) => {
-      setCurrentEventId(eventId);
-      const params = new URLSearchParams(window.location.search);
       if (eventId) {
-        params.set('eventId', eventId);
+        navigate(`/events/${eventId}`);
+        if (!currentUser) setIsJoinModalOpen(true);
       } else {
-        params.delete('eventId');
-        setCurrentEventData(null);
-      }
-      const newSearch = params.toString();
-      const newUrl = newSearch
-        ? `${window.location.origin}${window.location.pathname}?${newSearch}`
-        : `${window.location.origin}${window.location.pathname}`;
-      window.history.pushState({ eventId }, '', newUrl);
-
-      if (eventId && !currentUser) {
-        setIsJoinModalOpen(true);
-      } else {
+        navigate('/');
         setIsJoinModalOpen(false);
       }
     },
-    [currentUser]
+    [currentUser, navigate]
   );
 
   // Encapsulate WebSocket logic inside custom hook
@@ -150,23 +143,12 @@ export default function App() {
     setIsJoinModalOpen,
   });
 
-  // Lắng nghe nút Back/Forward của trình duyệt
+  // Lắng nghe nút Back/Forward của trình duyệt (React Router tự xử lý)
   useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const eventId = params.get('eventId') || null;
-      setCurrentEventId(eventId);
-
-      if (eventId && !currentUser) {
-        setIsJoinModalOpen(true);
-      } else {
-        setIsJoinModalOpen(false);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentUser]);
+    if (currentEventId && !currentUser) {
+      setIsJoinModalOpen(true);
+    }
+  }, [currentEventId, currentUser]);
 
   // 2. Gọi API lấy dữ liệu ban đầu
   const fetchEvents = useCallback(async () => {
@@ -434,51 +416,62 @@ export default function App() {
 
       {/* Phần nội dung chính của sòng nhậu */}
       <main className="main-content">
-        {currentEventId && showPinModal ? (
-          <PartyPinModal
-            eventId={currentEventId}
-            eventTitle={currentEventData?.title}
-            onSuccess={(pinToken) => {
-              if (!currentEventId) return;
-              savePinToken(currentEventId, pinToken);
-              setShowPinModal(false);
-              fetchEventDetail(currentEventId);
-              // Send JOIN_EVENT with pinToken now that we have it
-              if (wsRef.current?.readyState === WebSocket.OPEN) {
-                wsRef.current.send(
-                  JSON.stringify({
-                    type: 'JOIN_EVENT',
-                    eventId: currentEventId,
-                    pinToken,
-                    userId: currentUser?.id,
-                    googleToken: currentUser?.googleToken,
-                  })
-                );
-              }
-            }}
-            onBack={() => navigateToEvent(null)}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Dashboard
+                events={events}
+                onSelectEvent={navigateToEvent}
+                onCreateEventClick={handleCreateEventClick}
+                currentUser={currentUser}
+              />
+            }
           />
-        ) : currentEventId ? (
-          <EventDetail
-            eventId={currentEventId}
-            eventData={currentEventData}
-            currentUser={currentUser}
-            onBack={() => navigateToEvent(null)}
-            onVoteToggle={handleVoteToggle}
-            onAddOption={handleAddOption}
-            onAddComment={handleAddComment}
-            onLockEvent={handleLockEvent}
-            onUnlockEvent={handleUnlockEvent}
-            onDeleteEvent={handleDeleteEvent}
+          <Route
+            path="/events/:id"
+            element={
+              currentEventId && showPinModal ? (
+                <PartyPinModal
+                  eventId={currentEventId}
+                  eventTitle={currentEventData?.title}
+                  onSuccess={(pinToken) => {
+                    if (!currentEventId) return;
+                    savePinToken(currentEventId, pinToken);
+                    setShowPinModal(false);
+                    fetchEventDetail(currentEventId);
+                    // Send JOIN_EVENT with pinToken now that we have it
+                    if (wsRef.current?.readyState === WebSocket.OPEN) {
+                      wsRef.current.send(
+                        JSON.stringify({
+                          type: 'JOIN_EVENT',
+                          eventId: currentEventId,
+                          pinToken,
+                          userId: currentUser?.id,
+                          googleToken: currentUser?.googleToken,
+                        })
+                      );
+                    }
+                  }}
+                  onBack={() => navigateToEvent(null)}
+                />
+              ) : currentEventId ? (
+                <EventDetail
+                  eventId={currentEventId}
+                  eventData={currentEventData}
+                  currentUser={currentUser}
+                  onBack={() => navigateToEvent(null)}
+                  onVoteToggle={handleVoteToggle}
+                  onAddOption={handleAddOption}
+                  onAddComment={handleAddComment}
+                  onLockEvent={handleLockEvent}
+                  onUnlockEvent={handleUnlockEvent}
+                  onDeleteEvent={handleDeleteEvent}
+                />
+              ) : null
+            }
           />
-        ) : (
-          <Dashboard
-            events={events}
-            onSelectEvent={navigateToEvent}
-            onCreateEventClick={handleCreateEventClick}
-            currentUser={currentUser}
-          />
-        )}
+        </Routes>
       </main>
 
       {/* Modal yêu cầu nhập biệt danh và định danh khi vào sòng hoặc tạo kèo */}
@@ -501,5 +494,13 @@ export default function App() {
         currentUser={currentUser}
       />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }

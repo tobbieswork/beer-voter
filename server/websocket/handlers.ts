@@ -10,7 +10,8 @@ import {
   updateEventStatus,
 } from '../db/store.js';
 import { DBEvent, DBOption } from '../db/types.js';
-import { ClientInfo, clients, broadcastEventUpdate, broadcastDashboardUpdate } from './server.js';
+import { ClientInfo, clients } from './server.js';
+import { publishEventUpdate, publishDashboardUpdate } from '../redis.js';
 import { verifyGoogleToken, verifyGithubToken } from '../utils/auth.js';
 
 const RATE_LIMIT_MS = 500;
@@ -154,8 +155,8 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         });
       }
 
-      broadcastEventUpdate(eventId);
-      broadcastDashboardUpdate();
+      publishEventUpdate(eventId);
+      publishDashboardUpdate();
       break;
     }
 
@@ -220,8 +221,8 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         createdAt: new Date().toISOString(),
       });
 
-      broadcastEventUpdate(eventId);
-      broadcastDashboardUpdate();
+      publishEventUpdate(eventId);
+      publishDashboardUpdate();
       break;
     }
 
@@ -266,8 +267,8 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         createdAt: new Date().toISOString(),
       });
 
-      broadcastEventUpdate(eventId);
-      broadcastDashboardUpdate();
+      publishEventUpdate(eventId);
+      publishDashboardUpdate();
       break;
     }
 
@@ -327,8 +328,8 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         finalBeerStyle,
       });
 
-      broadcastEventUpdate(eventId);
-      broadcastDashboardUpdate();
+      publishEventUpdate(eventId);
+      publishDashboardUpdate();
       console.log(`Kèo ${eventId} đã được CHỐT thành công bởi Chủ Kèo!`);
       break;
     }
@@ -380,8 +381,8 @@ export async function handleWebSocketMessage(ws: WebSocket, action: WSAction): P
         finalBeerStyle: null,
       });
 
-      broadcastEventUpdate(eventId);
-      broadcastDashboardUpdate();
+      publishEventUpdate(eventId);
+      publishDashboardUpdate();
       console.log(`Kèo ${eventId} đã được MỞ KHÓA bởi Chủ Kèo.`);
       break;
     }

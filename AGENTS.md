@@ -164,3 +164,5 @@ These are high-impact changes that would improve developer experience. Not all a
 7. ✅ **GitHub Actions CI**: `.github/workflows/ci.yml` added. Runs on push/PR to `main`: lint, typecheck, format check, build. Enable branch protection in GitHub settings to require CI passes.
 
 8. **Any Type Cleanliness**: Completed clean-up of `any` types in database, REST handlers, and Websocket event loops. Fully typed row mapping structures to ensure standard compliance.
+
+9. **Database Architecture (Users Table)**: Currently, Google OAuth users are stateless (only stored in browser localStorage) while Guest users are saved to the `guests` table. For better data integrity and centralized management, the `guests` table should be renamed/migrated to a unified `users` table. The backend should UPSERT Google users into this table during the `/api/auth/google/callback` flow so all votes, comments, and events can be tied to a real database row.
