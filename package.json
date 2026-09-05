@@ -48,7 +48,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/ws": "^8.5.10",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.5.0",
     "concurrently": "^8.2.2",
     "eslint": "^10.3.0",
