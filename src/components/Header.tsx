@@ -28,7 +28,7 @@ export default function Header({ currentUser, onGoHome, onSignOut, onSignIn }: H
         aria-label={t('header.home')}
       >
         <span className="text-2xl sm:text-3xl animate-rock max-[360px]:text-xl">🍻</span>
-        <span className="bg-gradient-to-r from-white to-gold bg-clip-text text-xl font-extrabold text-transparent sm:text-2xl max-[360px]:hidden">
+        <span className="bg-gradient-to-r from-amber-900 to-amber-600 bg-clip-text text-xl font-extrabold text-transparent sm:text-2xl max-[360px]:hidden">
           BeerVote
         </span>
       </button>

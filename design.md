@@ -1,6 +1,9 @@
 # 🍻 BeerVote — Design System & UI Specification for Stitch
 
-> **Document Purpose**: This specification provides complete design guidance, component hierarchy, visual tokens, layout architectures, and screen-by-screen blueprints for **Stitch** to generate cohesive, high-fidelity, and modern UI designs for **BeerVote**.
+> **Document Purpose**: This specification provides complete design guidance, component hierarchy, visual tokens, layout architectures, and screen-by-screen blueprints for **Stitch** to generate cohesive, high-fidelity UI designs for **BeerVote**.
+>
+> **Active Design System**: **Craft Pollen (Material Design 3)** (`assets/184dc696cd5c4eb2bf1d74b487a84659`)  
+> **Nocturnal Companion**: **Cyber Pub Glassmorphism** (`assets/8bbc9a62b14d435f9377b256d08b0ef7`)
 
 ---
 
@@ -19,283 +22,164 @@
 
 ### 1.3 Brand Persona & Atmosphere
 
-- **Aesthetic**: _Cyber Pub Glassmorphism_ — deep obsidian dark mode layered with warm amber, bubbling craft beer gold, and translucent frosted glass surfaces.
+- **Aesthetic**: _Craft Pollen (Material Design 3)_ — channels the warmth, communal hospitality, and artisanal craftsmanship of craft brewing through the disciplined, expressive framework of Material Design 3.
 - **Tone & Voice**: Celebratory, witty, energetic, warm, and distinctly Vietnamese drinking culture blended with modern craft brewery aesthetics.
-- **Metaphors**: Foaming pint glasses, rising beer bubbles, clinking mugs (🍻), amber neon tavern signs, glowing toast notifications.
+- **Metaphors**: Foaming pint glasses, golden malt grains, roasted chestnuts, clinking mugs (🍻), pub meters, and diamond beer ranks (💎).
 
 ---
 
-## 2. Visual Design System & Design Tokens
+## 2. Visual Design System: Craft Pollen (Material Design 3)
 
-### 2.1 Color Palette
+### 2.1 Color Palette & Role Mapping
 
 ```
 +--------------------------------------------------------------------------+
-|  OBSIDIAN DARK PALETTE (Base)                                            |
-|  [#0a0b0d] Primary BG       [#14161d] Secondary BG    [#171a21] Card BG  |
+|  SURFACE CONTAINERS & CANVAS                                             |
+|  [#FFF8F6] Surface Canvas     [#FFF1EB] Container Low  [#FEEAE1] Default |
+|  [#F8E4DC] Container High     [#F2DFD6] Highest        [#FFFFFF] Lowest  |
 +--------------------------------------------------------------------------+
-|  AMBER & GOLD ACCENTS (Brand & Highlights)                               |
-|  [#ffb000] Beer Gold        [#f59e0b] Amber Glow      [#d97706] Deep Hops|
+|  ARTISANAL CRAFT BREWERY ACCENTS                                         |
+|  [#8E4A00] / [#B86200] Warm Amber Primary                                |
+|  [#77574E] Roasted Chestnut Secondary                                    |
+|  [#6C5D2F] Harvest Grain / Hops Gold Tertiary                            |
 +--------------------------------------------------------------------------+
-|  SEMANTIC & STATUS                                                       |
-|  [#10b981] Active / Open    [#f87171] Locked / Danger [#88909a] Muted    |
+|  OUTLINES & TYPOGRAPHY                                                   |
+|  [#231914] On-Surface Text    [#554337] On-Surface Variant                |
+|  [#887365] Outline            [#DBC2B1] Outline Variant                  |
 +--------------------------------------------------------------------------+
 ```
 
-| Token Name              | Hex / RGBA Value            | Usage / Description                                         |
-| :---------------------- | :-------------------------- | :---------------------------------------------------------- |
-| `--bg-primary`          | `#0a0b0d`                   | Deepest background canvas (obsidian pub interior)           |
-| `--bg-secondary`        | `#14161d`                   | Surface background for panels, drawers, toolbars            |
-| `--bg-card`             | `rgba(23, 26, 33, 0.65)`    | Frosted glass card fill (backdrop-filter: blur(16px))       |
-| `--bg-card-hover`       | `rgba(30, 34, 43, 0.85)`    | Elevated glass card on hover / focus                        |
-| `--bg-input`            | `rgba(13, 15, 19, 0.85)`    | Recessed form input and chat background                     |
-| `--accent-gold`         | `#ffb000`                   | Primary brand accent: beer foam, active toggles, CTAs       |
-| `--accent-gold-hover`   | `#d97706`                   | Deep amber for active press and button hover states         |
-| `--accent-amber`        | `#f59e0b`                   | Warm secondary accent for badges and icons                  |
-| `--accent-green`        | `#10b981`                   | Success state, active voting badge, connection online       |
-| `--accent-red`          | `#f87171`                   | Danger, delete action, "Kèo Đã Khóa" locked badge           |
-| `--border-glass`        | `rgba(255, 255, 255, 0.08)` | Subtle border for glass cards and modal boundaries          |
-| `--border-glass-active` | `rgba(255, 176, 0, 0.35)`   | Glowing border for selected voting options & focused inputs |
-| `--text-primary`        | `#f3f4f6`                   | High-contrast foam white for headlines and active text      |
-| `--text-secondary`      | `#a8acb8`                   | Neutral cool silver for labels, timestamps, subtitles       |
-| `--text-muted`          | `#6b7280`                   | Dimmed captions and inactive placeholders                   |
+| Token Name                                | Hex Value | Usage / Description                                                         |
+| :---------------------------------------- | :-------- | :-------------------------------------------------------------------------- |
+| `surface` / `--bg-primary`                | `#FFF8F6` | Soft, warm cream canvas establishing a welcoming, luminous backdrop         |
+| `surface-container-low`                   | `#FFF1EB` | Subtle background grouping layer for list items and section clusters        |
+| `surface-container` / `--bg-card`         | `#FEEAE1` | Default card background and floating action bar backdrop                    |
+| `surface-container-high`                  | `#F8E4DC` | Elevated modules, nested sheets, and interactive item wells                 |
+| `surface-container-highest`               | `#F2DFD6` | Active pressed states, search bars, and segmented button wells              |
+| `primary` / `--accent-gold`               | `#B86200` | Drives primary voting actions, key callouts, and main CTA buttons           |
+| `primary-hover`                           | `#8E4A00` | Deep honey amber for active hover and press states                          |
+| `secondary`                               | `#77574E` | Roasted chestnut: handles secondary buttons and supporting UI elements      |
+| `tertiary`                                | `#6C5D2F` | Harvest grain / hops gold: tasting notes, award badges, ABV/IBU micro-stats |
+| `on-surface` / `--text-primary`           | `#231914` | Deep espresso high-contrast text for headlines and titles                   |
+| `on-surface-variant` / `--text-secondary` | `#554337` | Roasted chestnut text for body copy, subtitles, and labels                  |
+| `outline` / `--text-muted`                | `#887365` | Boundary definition for unfocused inputs and structural dividing lines      |
+| `outline-variant` / `--border-glass`      | `#DBC2B1` | Soft, low-contrast borders for resting cards, chips, and dividers           |
+| `error` / `--accent-red`                  | `#BA1A1A` | Danger state, locked badges, and destructive actions                        |
+| `success` / `--accent-green`              | `#2E6C38` | Active session indicators and confirmed checkmarks                          |
 
-### 2.2 Glassmorphism & Elevation System
+### 2.2 Elevation & Depth (M3 Tonal Stepped Paradigm)
 
-- **Glass Spec**:
-  - `backdrop-filter: blur(16px) saturate(180%)`
-  - `background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(23,26,33,0.65) 100%)`
-  - `border: 1px solid rgba(255, 255, 255, 0.08)`
-  - Optional Gold Neon Highlight: `box-shadow: 0 0 20px rgba(255, 176, 0, 0.15)`
-- **Elevation Layers**:
-  - **Level 0 (Canvas)**: Background canvas with animated floating micro-bubbles (`BeerBubbles.tsx`).
-  - **Level 1 (Cards & Lists)**: `box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37)`.
-  - **Level 2 (Modals & Drawers)**: `box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.6)`.
-  - **Level 3 (Toasts & Tooltips)**: `box-shadow: 0 4px 16px rgba(255, 176, 0, 0.25)`.
+- **Level 0 (Flat)**: `Surface` (`#FFF8F6`). Unraised background views, clean sheet backdrops. Zero shadow.
+- **Level 1 (Card & In-List Surfaces)**: `Surface Container Low` (`#FFF1EB`) with a crisp `1px` border of `Outline Variant` (`#DBC2B1`). Ambient shadow: `0px 1px 3px 1px rgba(119, 87, 78, 0.08)`.
+- **Level 2 (Active Interactive Cards & Scrolled Bars)**: `Surface Container` (`#FEEAE1`). Ambient shadow: `0px 2px 6px 2px rgba(119, 87, 78, 0.12)`.
+- **Level 3 (Floating Action Button & Bottom Sheets)**: `Surface Container High` (`#F8E4DC`). Ambient shadow: `0px 4px 12px 3px rgba(184, 98, 0, 0.16)`. Warm amber radiance provides physical lift.
+- **Level 4 & 5 (Dialogs, Overlays)**: `Surface Container Highest` (`#F2DFD6`) with deep ambient diffusion: `0px 8px 24px 4px rgba(119, 87, 78, 0.20)`.
 
 ### 2.3 Typography
 
-- **Primary Font**: `Outfit`, system-ui, sans-serif
-  - Geometric, warm, round curves that mirror bubbles and beer foam.
+- **Headlines & Display**: `Outfit` (Rounded geometric curves that mirror pill shapes and beer foam).
+- **Body & Technical Data**: `Inter` or `Outfit` (Optimal readability for vote counts, timestamps, and venue addresses).
 - **Hierarchy Scale**:
-  - **Display 1 (Hero Title)**: 32px–40px / Line-height 1.1 / Weight 800 / Letter-spacing: -0.02em
-  - **Headline 2 (Section Title)**: 22px–26px / Line-height 1.25 / Weight 700
-  - **Title (Card & Modal Header)**: 18px–20px / Line-height 1.3 / Weight 600
-  - **Body 1 (Main Text, Options)**: 15px–16px / Line-height 1.5 / Weight 400–500
-  - **Body 2 (Metadata, Labels)**: 13px–14px / Line-height 1.4 / Weight 400
+  - **Display 1 (Hero Title)**: 32px–40px / Weight 800 / Letter-spacing: -0.02em
+  - **Headline 2 (Section Title)**: 22px–26px / Weight 700 / Line-height 1.25
+  - **Title (Card Header)**: 18px–20px / Weight 600 / Line-height 1.3
+  - **Body 1 (Main Text, Options)**: 15px–16px / Weight 400–500
+  - **Body 2 (Metadata, Labels)**: 13px–14px / Weight 400
   - **Badge / Micro (Status, Counters)**: 11px–12px / Weight 700 / Uppercase / Letter-spacing: 0.04em
 
-### 2.4 Iconography & Visual Accents
+### 2.4 Shapes & Curvature
 
-- **System Icons**: Lucide / Feather vector icons (Clock, MapPin, Beer, Check, Lock, Unlock, Share2, Copy, Users, Trash2, ArrowLeft, Globe).
-- **Party Emojis**: 🍻 (Cheers / Hero), 🍺 (Draft beer), 👑 (Host / Creator), 🔥 (Hot / Leading vote), 🍕 (Snacks / Mồi), ⚡ (Speed / Action), 📍 (Location), ⏰ (Time).
-- **Signature Animations**:
-  - `float-up`: Ambient beer bubbles floating bottom-to-top with random opacities and scales.
-  - `rock`: Subtle playful 12° rocking animation for the brand beer mug logo.
-  - `pulse-amber`: Pulsing glow for winning selections and live active badges.
+- **Pill / Fully Rounded (`rounded-full` / `9999px`)**: Primary CTA buttons, voting tally pills, search bars, filter chips, navigation indicators, and FABs.
+- **Extra Large Containers (`rounded-2xl` / `1.5rem` / `24px`)**: Applied to primary cards, modal dialogs, and bottom sheets.
+- **Medium Elements (`rounded-lg` / `12px`–`16px`)**: Secondary input fields and tag wrappers.
 
 ---
 
-## 3. Information Architecture & Navigation
+## 3. Screen Specifications: Home Lounge (`a82883fcf8a64573a4c9cd19cf6c766e`)
+
+### 3.1 Top Bar / Header
+
+- **Brand Mark**: Minimalist geometric beer mug merged with vote badge ("🍻 BeerVote") + subtitle _"Kèo Nhậu Tới Bến"_.
+- **Language Selector**: Pill toggle (`🇻🇳 VI | 🇬🇧 EN`).
+- **User Profile Capsule**: Pill container displaying active user nickname (e.g. _"🍗 Chiến Thần Diệt Mồi"_ or Google Avatar) + status indicator.
+
+### 3.2 Hero Welcoming & Action Section
+
+- **Greeting**: _"Sẵn sàng cạn ly chưa, Chiến Thần? 🍻"_
+- **Tagline**: _"Lên kèo nhanh chóng, chọn quán đỉnh cao, không lo bàn lùi."_
+- **Primary CTA**: **"+ Tạo Kèo Mới"** in radiant Warm Amber (`#B86200`), full pill shape, white text, ambient warm shadow.
+- **Quick PIN Room Entry Card**:
+  - Container: Soft container fill (`#FFF1EB`) with outline (`#DBC2B1`).
+  - Title: _"🔑 Vào nhanh bằng mã PIN 6 số"_
+  - Input: 6-digit numeric input with placeholder _"Nhập mã PIN phòng..."_.
+  - Action Button: _"Vào Phòng →"_.
+
+### 3.3 "Kèo Đang Chờ Bạn" (Active Sessions / Bento Cards)
+
+- **Card 1: Active Live Voting Session**:
+  - Title: _"Thứ Sáu Bùng Nổ 🚀"_
+  - Creator Tag: _"👑 Tạo bởi Alex"_
+  - Status Pill: Glowing green pulse dot + _"🟢 Đang Vote (Live)"_ + vote tally.
+  - Top Leading Picks Preview (with beer foam progress meters):
+    - 🕒 `19:30 Thứ 6 (67% • 6 votes)`
+    - 📍 `Bia Hơi Vỉa Hè Bờ Sông (70% • 7 votes)`
+    - 🍺 `Craft IPA Hoa Bia Thơm Nồng (5 votes)`
+  - Attendees Stack: Overlapping avatar bubbles.
+  - Action: _"Vào Bình Chọn Ngay →"_.
+- **Card 2: Locked / Finalized Session ("Chốt Kèo")**:
+  - Title: _"Mừng Lương Về 🎉"_
+  - Creator Tag: _"👑 Tạo bởi Bảo"_
+  - Status Pill: _"🔒 ĐÃ CHỐT KÈO"_
+  - Countdown Snippet: `[02 Giờ : 15 Phút]` nữa khai tiệc.
+  - Confirmed Winner: _"🏆 Quán Lẩu Dê Đồng Quê • 19:00 Hôm Nay"_.
+  - Action: _"Xem Địa Điểm & Chỉ Đường 📍"_.
+
+### 3.4 Drinking Stats Widget (Pub Meter)
+
+- Frosted container banner:
+  - _"🍻 3 kèo đã tham gia • 48 ly cạn cùng anh em tuần này! Cấp bậc: Bợm Nhậu Kim Cương 💎"_
+
+### 3.5 Past Events Accordion ("Kèo Cũ Đã Tàn")
+
+- Muted cards displaying historical parties with participant totals and dates.
+
+### 3.6 Bottom Navigation Dock
+
+- Fixed bottom M3 navigation dock with frosted pill:
+  - **Lounge** (Active pill indicator)
+  - **Kèo Của Tôi**
+  - **Quán Ngon**
+  - **Hồ Sơ**
+
+---
+
+## 4. Screen Specifications: Voting Room (`c3a788dba19e43c082609b2744e0ed01`)
+
+- **Top Bar**: Back navigation to Lounge, party title, host badge, QR share button.
+- **Winner / Countdown Banner**: Real-time flip countdown blocks with rotating slogans.
+- **3 Voting Pillars**:
+  1. 🕒 **Thời Gian (When)**: Leading date option cards with vote counts, avatar stacks, and "+1 Vote" / "✓ Đã vote" toggles.
+  2. 📍 **Địa Điểm (Where)**: Venue cards with Google Maps links and address badges.
+  3. 🍺 **Loại Bia (Drink)**: Craft & draught beer option chips.
+- **Inline Proposal Bar**: Quick "+ Đề xuất quán / giờ mới" input.
+- **Banter Drawer**: Live commentary feed with 1-tap reaction chips (`🍻 Cạn ly!`, `🏃‍♂️ Đang tới!`, `🍕 Gọi mồi đê!`).
+- **Sticky Host Action**: Floating Amber **"🔒 Chốt Kèo"** button.
+
+---
+
+## 5. Technical Implementation Mapping
 
 ```
-                       [ Global Sticky Header ]
-                (Logo | Lang Switcher | User Pill)
-                                 │
-         ┌───────────────────────┴────────────────────────┐
-         ▼                                                ▼
-  [ Dashboard / Lounge ]                       [ Event Detail / Room ]
-  ├── Hero & Fast Actions                      ├── Party Banner & Status
-  │   ├── "Tạo Kèo Mới" CTA                     │   ├── Voting Active (Open)
-  │   └── Quick PIN Keypad                     │   └── Locked / Chốt Kèo + Countdown
-  ├── "Kèo Của Bạn" (Active Parties)           ├── Live Attendee Avatar Stack
-  │   ├── Party Title & Creator Tag            ├── 3-Pillar Voting Sections:
-  │   ├── Winning Highlights                   │   ├── 🕒 Thời Gian (When)
-  │   └── Status Badge                         │   ├── 📍 Địa Điểm (Where)
-  └── Past / Visited Parties                   │   └── 🍺 Loại Bia (What to drink)
-                                               ├── Real-time Chat / Banter Stream
-                                               └── Host Toolbar (Lock / Share / Delete)
+Stitch Token                   CSS Variable                Tailwind Utility
+-----------------------------------------------------------------------------
+surface                        --bg-primary                bg-bg-primary
+surface-container-low          --bg-secondary              bg-bg-secondary
+surface-container              --bg-card                   bg-bg-card
+surface-container-high         --bg-card-hover             bg-bg-card-hover
+primary (#B86200)              --accent-gold               bg-gold, text-gold
+primary-hover (#8E4A00)        --accent-gold-hover         hover:bg-gold-hover
+on-surface (#231914)           --text-primary              text-text-primary
+on-surface-variant (#554337)   --text-secondary            text-text-secondary
+outline (#887365)              --text-muted                text-text-muted
+outline-variant (#DBC2B1)      --border-glass              border-border-glass
 ```
-
----
-
-## 4. Screen-by-Screen Specifications
-
-### 4.1 Global Sticky Header
-
-- **Placement**: Fixed top (`top: 0`, `z-index: 50`), blurred glass bar.
-- **Elements**:
-  - **Brand Mark**: Rocking beer mugs `🍻` + Gradient text `"BeerVote"` (White to Gold gradient). Clicking returns to Dashboard.
-  - **Language Pill**: Toggle button (`🇻🇳 VI` / `🇬🇧 EN`) with smooth indicator slide.
-  - **User Profile Pill**:
-    - _If Logged In / Guest Set_: User avatar image (or beer mug icon) + Nickname + Optional Real Name in parentheses. Clicking opens profile edit modal.
-    - _If First-Time Visitor_: `"🔑 Đăng nhập / Tham gia"` primary pill button.
-
----
-
-### 4.2 Screen 1: Dashboard / Lounge (`Dashboard.tsx`)
-
-- **Purpose**: Welcomes party goers, displays currently joined parties, and allows entering a room via PIN or starting a new party.
-- **Layout Grid**:
-  - Mobile: Single column with sticky bottom action button.
-  - Desktop: Centered 1200px container, 2-column or 3-column responsive bento cards.
-- **Components**:
-  1. **Ambient Layer**: Floating beer bubbles canvas behind cards.
-  2. **Hero Welcome Card**:
-     - Large headline: _"Sẵn sàng cạn ly chưa, [Nickname]? 🍻"_
-     - Subtitle: _"Lên kèo nhanh chóng, chọn quán đỉnh cao, không lo bàn lùi."_
-     - Action Row:
-       - Primary CTA: **"+ Tạo Kèo Mới"** (Large gold glow button).
-       - Secondary Input: **"Nhập mã PIN 6 số"** with inline "Vào Phòng" submit button.
-  3. **Event Card Grid ("Kèo Đang Chờ Bạn")**:
-     - **Card Anatomy**:
-       - _Top Row_: Event Title, Creator pill (`👑 CreatorName`), Status Badge:
-         - `Đang Vote` (Green glow pill + pulse dot).
-         - `Đã Chốt Kèo` (Amber-red badge + Countdown snippet).
-       - _Middle Row_: Quick summary chips:
-         - Leading Date & Time (`📅 19:30 Thứ 6`).
-         - Leading Venue (`📍 Bia Hơi Vỉa Hè Bờ Sông`).
-         - Leading Drink (`🍺 Bia Thủ Công IPA`).
-       - _Bottom Row_: Attendee avatar stack (`3+ bạn đang tham gia`) + Arrow button `"Vào Kèo →"`.
-  4. **Empty State**:
-     - Illustrated foaming pint glass, humorous copy: _"Chưa có kèo nào hết! Đừng để cuối tuần trôi qua trong nước mắt, hãy tạo kèo ngay!"_ + CTA button.
-
----
-
-### 4.3 Screen 2: Create Party Modal / Wizard (`CreateEvent.tsx`)
-
-- **Purpose**: Frictionless 60-second creation of a new drinking room.
-- **Modal Spec**: Centered glass dialog, backdrop overlay with blur, max-width 560px.
-- **Fields & Steps**:
-  1. **Party Name**:
-     - Input field with quick preset suggestion chips:
-       - _VI_: `"Họp mặt cuối tuần 🍻"`, `"Mừng lương về 🎉"`, `"Thứ Sáu bùng nổ 🚀"`, `"Bàn mưu tính kế 🧠"`.
-       - _EN_: `"Weekend Gathering 🍻"`, `"Salary Celebration 🎉"`, `"TGIF Blast 🚀"`.
-  2. **Security / Privacy (PIN Toggle)**:
-     - Toggle switch: _"Bảo vệ bằng mã PIN 6 số"_.
-     - When ON: 6-digit PIN input with dice randomizer button to auto-generate a PIN.
-  3. **Initial Options Seeder (Tabbed or Accordion)**:
-     - **Thời gian (When)**: Quick date buttons (`Hôm nay 🕒`, `Ngày mai 🌅`, `Thứ 6 này ⚡`, `Thứ 7 này 🥳`) or datetime picker.
-     - **Địa điểm (Where)**: Venue name input + Quick chips (`Bia Hơi Vỉa Hè 🌊`, `Quán Lẩu Dê 🐐`, `Beer Club Sôi Động 🎶`, `Nướng & Beer 💨`).
-     - **Loại bia (Beer)**: Drink input + Quick chips (`Bia hơi Hà Nội 🍺`, `Bia thủ công IPA 🌾`, `Bia tháp Tiger 🐯`).
-  4. **Footer Actions**:
-     - Cancel (ghost secondary) and **"🚀 Tạo Sòng Nhậu Ngay"** (Primary gold gradient).
-
----
-
-### 4.4 Screen 3: Party Voting Room (`EventDetail.tsx` — The Core Screen)
-
-- **Purpose**: Live collaborative decision center where friends vote, propose places, chat, and see real-time updates.
-- **Layout Architecture**:
-  - **Header Ribbon**:
-    - Back button (`← Quay lại Lounge`).
-    - Event Title & Host Crown Badge (`👑 Tạo bởi Alex`).
-    - Room Actions: Share Button (`🔗 Chia sẻ / Mã QR`), Host Settings (`🔒 Chốt Kèo`, `🗑️ Xóa`).
-  - **Party Status Hero Banner**:
-    - **State A: Voting Active (`status: 'open'`)**:
-      - Soft green glass banner with pulsating indicator: _"Đang mở bình chọn — Anh em thả tim cho quán ưng ý nhất!"_
-    - **State B: Locked / Finalized (`status: 'locked'`)**:
-      - Celebratory Amber/Crimson Glass Banner.
-      - Crowned Winners Row:
-        - 🏆 **Thời gian chốt**: `19:30 - Thứ 6 (12/10)`
-        - 🏆 **Địa điểm chốt**: `Bia Hơi Bờ Sông (120 Hoàng Sa)`
-        - 🏆 **Loại bia chốt**: `Bia Tháp Tiger Bạc`
-      - **Live Countdown Timer (`Countdown.tsx`)**:
-        - Big numeric digit flip-cards: `[02 Ngày] : [05 Giờ] : [42 Phút] : [18 Giây]`.
-        - Rotating Humorous Slogans:
-          - _"Gan của bạn đã sẵn sàng chưa? 🔥"_
-          - _"Nhớ đến đúng giờ, trễ 1 phút phạt 1 ly! ⏰"_
-          - _"Đứa nào bàn lùi hoặc bùng kèo làm cún! 🐶"_
-          - _"Lên đồ đẹp, chuẩn bị cạn ly tới bến! 🍻"_
-  - **The 3 Voting Pillars (Tabs or Segmented Columns)**:
-    1. **📅 THỜI GIAN (When)**
-    2. **📍 ĐỊA ĐIỂM (Where)**
-    3. **🍺 LOẠI BIA (What to Drink)**
-  - **Option Card Anatomy (`EventOption`)**:
-    - **Left**: Value text (e.g., _"19:30 Thứ Sáu"_ or _"Craft Beer East West"_ with external Maps link icon).
-    - **Middle**: Vote count badge (`5 votes`) + Overlapping voter avatar bubbles.
-    - **Right**: Vote Toggle Action:
-      - _Unvoted_: Secondary glass button with empty heart or `+1`.
-      - _Voted by User_: Vibrant Gold filled button with gold drop shadow (`✓ Đã vote`).
-      - _Disabled_: When event is locked (read-only with winning ribbon).
-  - **Propose New Option Bar**:
-    - Sleek inline input at the bottom of each pillar: _"+ Đề xuất quán / thời gian khác..."_ + Add button.
-  - **Live Banter & Chat Stream**:
-    - Collapsible bottom drawer (mobile) or right-hand sidebar (desktop).
-    - Chat message list with colored user avatars, timestamps, and message bubble.
-    - Quick Reaction Bar: 1-tap chips (`🍻 Cạn ly!`, `🏃‍♂️ Đang phi tới!`, `🍕 Gọi mồi đê!`, `🤫 Trốn vợ thành công`).
-
----
-
-### 4.5 Screen 4: Modals & Micro-Flows
-
-#### A. Guest Join & Quick Nickname Modal (`GuestJoinModal.tsx`)
-
-- **Trigger**: New user opens a shared party link.
-- **Visuals**:
-  - Fun pub tavern illustration / animated beer mug.
-  - Headline: _"Gia nhập sòng nhậu BeerVote!"_
-  - **Random Nickname Dice Generator**:
-    - Input populated with random funny Vietnamese nicknames:
-      - _"Chiến Thần Diệt Mồi 🍗"_, _"Beer Thủ Vô Song 🍺"_, _"Bá Chủ Bàn Beer 👑"_, _"Sát Thủ Vỉa Hè 🛵"_, _"Thánh Bàn Lùi 🛑"_, _"Dũng Sĩ Cạn Ly 🥂"_.
-    - Dice icon button next to input: 1-click rolls a new witty nickname.
-  - Real Name optional sub-input (_"Tên thật để anh em nhận ra bạn"_).
-  - Primary CTA: **"Vào Bàn Ngay 🍻"**.
-  - Divider: _"Hoặc đăng nhập nhanh bằng Google"_.
-  - Google Sign-In One-Tap button.
-
-#### B. 6-Digit Party PIN Keypad Modal (`PartyPinModal.tsx`)
-
-- **Trigger**: Entering a locked/private party room.
-- **Visuals**:
-  - Lock icon with golden keyhole.
-  - Headline: _"Phòng Nhậu Kín — Nhập Mã PIN"_.
-  - Subtitle: _"Hỏi chủ sòng nhậu mã PIN 6 số để vào bình chọn."_
-  - 6 individual digit input boxes with auto-focus advance, large monospace digits.
-  - Shake animation on incorrect PIN entry with crimson error toast: _"Mã PIN không đúng, thử lại nhé!"_.
-
-#### C. Host Lock Event Modal (Chốt Kèo Confirmation)
-
-- **Trigger**: Host clicks _"Chốt Kèo"_ button.
-- **Visuals**:
-  - Step selector allowing host to confirm or manually pick the winning Time, Place, and Beer.
-  - Warning note: _"Sau khi chốt, các thành viên khác sẽ không thể vote thêm."_
-  - Primary Confirm CTA: **"🎉 Chốt Kèo & Kích Hoạt Đếm Ngược"**.
-
-#### D. Share & QR Code Modal
-
-- **Visuals**:
-  - High-contrast QR code generated in a frosted card.
-  - Short URL with 1-click **"Copy Link"** button (shows green checkmark on copy).
-  - Quick share buttons to Zalo, Messenger, Telegram.
-
----
-
-## 5. Responsive Design & Multi-Device Layouts
-
-| Viewport    | Breakpoint         | Layout Strategy                                                                                                                           |
-| :---------- | :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Mobile**  | `360px – 480px`    | 100% full width, single column, minimum 44px tap targets, bottom floating navigation/action bar, safe-area-inset padding for iOS notches. |
-| **Tablet**  | `768px – 1023px`   | 2-column layout (Left: Voting columns; Right: Chat & Attendees).                                                                          |
-| **Desktop** | `1024px – 1440px+` | Wide pub lounge bento layout, max-width 1280px, fixed sticky chat sidebar, ambient floating bubbles across the full canvas.               |
-
----
-
-## 6. Micro-Interactions & Delighters for Stitch
-
-1. **Beer Foam Progress Fill**:
-   - Each option card features a subtle background progress bar representing the percentage of total votes, styled like golden beer liquid with a white foam crest.
-2. **Confetti & Cheers Eruption**:
-   - When the host clicks _"Chốt Kèo"_, triggering the lock state, a celebratory particle explosion of beer mugs and confetti bursts across the screen.
-3. **Optimistic Vote Reaction**:
-   - Clicking vote instantly increments the counter and toggles the gold button state with zero perceived latency before WebSocket confirmation.
-4. **Live Presence Avatars**:
-   - Pulsing green status rings around avatars of users currently connected in the room.
-
----
-
-## 7. Stitch Prompt Guidelines (How to Prompt Stitch)
-
-When asking Stitch to generate screens based on this document, use the following prompt pattern:
-
-> _"Generate a high-fidelity [Screen Name] for BeerVote using the Cyber Pub Glassmorphism design system specified in design.md. Use the dark obsidian background (#0a0b0d), glowing beer gold accents (#ffb000), frosted glassmorphism cards with Outfit typography, and bilingual Vietnamese/English micro-copy. Emphasize energetic, celebratory social pub vibes with real-time voting badges, attendee avatars, and live countdown timers."_

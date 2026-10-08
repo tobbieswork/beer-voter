@@ -29,12 +29,12 @@ export default function BeerBubbles() {
   });
 
   return (
-    <div className="fixed inset-0 -z-20 overflow-hidden bg-gradient-to-b from-[#07080a] via-[#11131a] to-[#1c1304]">
+    <div className="fixed inset-0 -z-20 overflow-hidden bg-gradient-to-b from-[#fff8f6] via-[#fff1eb] to-[#f8e4dc]">
       <div className="absolute inset-x-0 bottom-0 -z-10 h-full w-full pointer-events-none">
         {bubbles.map((bubble) => (
           <div
             key={bubble.id}
-            className="absolute bottom-[-20px] rounded-full bg-radial-gradient from-[rgba(255,200,0,0.4)] via-[rgba(255,176,0,0.05)] to-transparent animate-float-up shadow-[inset_0_1px_3px_rgba(255,255,255,0.3),0_2px_10px_rgba(255,176,0,0.1)]"
+            className="absolute bottom-[-20px] rounded-full bg-radial-gradient from-[rgba(184,98,0,0.25)] via-[rgba(184,98,0,0.06)] to-transparent animate-float-up shadow-[inset_0_1px_3px_rgba(255,255,255,0.7),0_2px_8px_rgba(184,98,0,0.12)]"
             style={bubble.style}
           />
         ))}

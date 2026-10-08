@@ -10,7 +10,12 @@ interface DashboardProps {
   currentUser?: User | null;
 }
 
-export default function Dashboard({ events, onSelectEvent, onCreateEventClick }: DashboardProps) {
+export default function Dashboard({
+  events,
+  onSelectEvent,
+  onCreateEventClick,
+  currentUser,
+}: DashboardProps) {
   const { t, i18n } = useTranslation();
   const [filterStatus, setFilterStatus] = useState<'all' | 'voting' | 'locked'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,15 +50,34 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
     return matchesStatus && matchesSearch;
   });
 
+  const [pinInput, setPinInput] = useState('');
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pinInput.trim()) return;
+    const trimmed = pinInput.trim();
+    const found = events.find((ev) => ev.id === trimmed || ev.id.startsWith(trimmed));
+    if (found) {
+      onSelectEvent(found.id);
+    } else {
+      onSelectEvent(trimmed);
+    }
+  };
+
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container pb-20">
       {/* 1. Hero Section */}
-      <div className="dashboard-hero-section card-pub mb-8">
+      <div className="dashboard-hero-section card-pub mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="dashboard-title">
             <span className="hero-badge mb-3 inline-block">{t('dashboard.hero_tag')}</span>
-            <h2 className="mb-2 text-white text-3xl font-extrabold tracking-tight flex items-center gap-2">
-              <span>🍻</span> {t('dashboard.hero_title')}
+            <h2 className="mb-2 text-text-primary text-3xl font-extrabold tracking-tight flex items-center gap-2">
+              <span>🍻</span>{' '}
+              {currentUser?.nickname
+                ? i18n.language === 'en'
+                  ? `Ready to cheers, ${currentUser.nickname}? 🍻`
+                  : `Sẵn sàng cạn ly chưa, ${currentUser.nickname}? 🍻`
+                : t('dashboard.hero_title')}
             </h2>
             <p className="text-text-secondary text-[1rem] leading-relaxed">
               {t('dashboard.hero_subtitle')}
@@ -64,8 +88,45 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
           </button>
         </div>
 
+        {/* Quick PIN Room Entry Card */}
+        <div className="quick-pin-card mt-6">
+          <form
+            onSubmit={handlePinSubmit}
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔑</span>
+              <div>
+                <h4 className="font-bold text-sm text-text-primary">
+                  {i18n.language === 'en'
+                    ? 'Quick Join via 6-digit PIN'
+                    : 'Vào nhanh bằng mã PIN 6 số'}
+                </h4>
+                <p className="text-xs text-text-secondary">
+                  {i18n.language === 'en'
+                    ? 'Enter the party PIN or room code to jump straight in'
+                    : 'Nhập mã phòng ví dụ: 889210 để vào tiệc ngay'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={i18n.language === 'en' ? 'PIN code / ID...' : 'Nhập mã PIN...'}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                className="search-input !py-1.5 !px-3 text-sm !w-44"
+                maxLength={36}
+              />
+              <button type="submit" className="btn-primary !py-1.5 !px-4 text-xs shrink-0">
+                {i18n.language === 'en' ? 'Join →' : 'Vào Phòng →'}
+              </button>
+            </div>
+          </form>
+        </div>
+
         {/* 2. Stats Dashboard Grid */}
-        <div className="stats-dashboard-grid mt-8">
+        <div className="stats-dashboard-grid mt-6">
           <div className="stat-card">
             <span className="stat-icon">🍺</span>
             <div className="stat-info">
@@ -96,6 +157,21 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Pub Meter Banner */}
+        <div className="pub-meter-banner mt-6">
+          <div className="flex items-center gap-2">
+            <span>🍻</span>
+            <span>
+              {i18n.language === 'en'
+                ? `${totalEvents} parties joined • ${totalVotes * 3} pints cheersed with buddies this week!`
+                : `${totalEvents} kèo đã tham gia • ${totalVotes * 3} ly cạn cùng anh em tuần này!`}
+            </span>
+          </div>
+          <span className="hero-badge !m-0 !py-0.5 !px-2.5 text-xs">
+            {i18n.language === 'en' ? 'Rank: Diamond Drinker 💎' : 'Cấp bậc: Bợm Nhậu Kim Cương 💎'}
+          </span>
         </div>
       </div>
 
@@ -197,11 +273,13 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                       : `🍻 ${t('dashboard.status_locked')}`}
                   </span>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-white leading-snug">{event.title}</h3>
+                <h3 className="mb-2 text-xl font-bold text-text-primary leading-snug">
+                  {event.title}
+                </h3>
                 <div className="flex flex-col gap-1 text-text-secondary text-[0.85rem]">
                   <span>
                     {i18n.language === 'en' ? 'Host: ' : 'Chủ sòng: '}
-                    <strong className="text-white">{event.creatorName}</strong>
+                    <strong className="text-text-primary">{event.creatorName}</strong>
                   </span>
                   <span>
                     {i18n.language === 'en' ? 'Date Created: ' : 'Ngày lên kèo: '}
@@ -210,7 +288,7 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                 </div>
               </div>
 
-              <div className="my-4 py-3 border-t border-b border-dashed border-white/5 card-middle-preview">
+              <div className="my-4 py-3 border-t border-b border-dashed border-border-glass card-middle-preview">
                 {event.status === 'voting' ? (
                   <div className="flex items-center gap-2 italic text-text-secondary text-[0.85rem] current-status-hint">
                     <span className="beer-glow">✨</span>{' '}
@@ -245,7 +323,7 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                           d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
                         />
                       </svg>
-                      <span className="font-semibold text-[0.85rem] text-white">
+                      <span className="font-semibold text-[0.85rem] text-text-primary">
                         {event.finalLocation}
                       </span>
                     </div>
@@ -275,7 +353,7 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                 <div className="flex gap-3 text-text-muted text-[0.85rem] stats-row">
                   <span className="stat-item flex items-center gap-1">
                     <svg
-                      className="w-4 h-4 text-green-400"
+                      className="w-4 h-4 text-green-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -292,7 +370,7 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
                   <span>•</span>
                   <span className="stat-item flex items-center gap-1">
                     <svg
-                      className="w-4 h-4 text-blue-400"
+                      className="w-4 h-4 text-amber-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -355,6 +433,18 @@ export default function Dashboard({ events, onSelectEvent, onCreateEventClick }:
           ))}
         </div>
       )}
+
+      {/* Floating Bottom Navigation Dock (Craft Pollen M3) */}
+      <nav className="bottom-nav-dock" aria-label="Quick Navigation">
+        <button type="button" className="bottom-nav-item active">
+          <span>🍻</span>
+          <span>{i18n.language === 'en' ? 'Lounge' : 'Trang Chủ'}</span>
+        </button>
+        <button type="button" className="bottom-nav-item" onClick={onCreateEventClick}>
+          <span>➕</span>
+          <span>{i18n.language === 'en' ? 'New Party' : 'Tạo Kèo'}</span>
+        </button>
+      </nav>
     </div>
   );
 }

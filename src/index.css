@@ -2,48 +2,83 @@
 
 @import 'tailwindcss';
 
-/* Bridge: legacy App.css var(--*) → actual theme values */
+/* Craft Pollen (Material Design 3) Design System Tokens */
 :root {
-  --accent-gold: #ffb000;
-  --accent-gold-hover: #d97706;
-  --accent-amber: #f59e0b;
-  --accent-green: #34d399;
-  --accent-red: #f87171;
-  --bg-primary: #0a0b0d;
-  --bg-secondary: #14161d;
-  --bg-card: rgba(23, 26, 33, 0.65);
-  --bg-card-hover: rgba(30, 34, 43, 0.8);
-  --bg-input: rgba(13, 15, 19, 0.8);
-  --border-glass: rgba(255, 255, 255, 0.06);
-  --border-glass-active: rgba(255, 176, 0, 0.3);
-  --text-primary: #f3f4f6;
-  --text-secondary: #a8acb8;
-  --text-muted: #88909a;
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-gold: 0 0 15px rgba(255, 176, 0, 0.15);
+  --primary: #8e4a00;
+  --primary-hover: #6f3900;
+  --primary-container: #ffdcc4;
+  --on-primary: #ffffff;
+  --on-primary-container: #2f1500;
+
+  --secondary: #77574e;
+  --secondary-container: #ffdbd1;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #2c160f;
+
+  --tertiary: #6c5d2f;
+  --tertiary-container: #f6e1a7;
+  --on-tertiary: #ffffff;
+  --on-tertiary-container: #231b00;
+
+  --surface: #fff8f6;
+  --surface-dim: #e9d6ce;
+  --surface-bright: #fff8f6;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #fff1eb;
+  --surface-container: #feeae1;
+  --surface-container-high: #f8e4dc;
+  --surface-container-highest: #f2dfd6;
+
+  --on-surface: #231914;
+  --on-surface-variant: #554337;
+  --outline: #887365;
+  --outline-variant: #dbc2b1;
+
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+
+  /* Theme variables for the application */
+  --accent-gold: #b86200;
+  --accent-gold-hover: #8e4a00;
+  --accent-amber: #b25f00;
+  --accent-green: #2e6c38;
+  --accent-red: #ba1a1a;
+  --bg-primary: #fff8f6;
+  --bg-secondary: #fff1eb;
+  --bg-card: #feeae1;
+  --bg-card-hover: #f8e4dc;
+  --bg-input: #ffffff;
+  --border-glass: #dbc2b1;
+  --border-glass-active: #b86200;
+  --text-primary: #231914;
+  --text-secondary: #554337;
+  --text-muted: #887365;
+  --shadow-glass: 0px 2px 6px 2px rgba(119, 87, 78, 0.12);
+  --shadow-gold: 0px 4px 12px 3px rgba(184, 98, 0, 0.16);
 }
 
 @theme {
-  --color-bg-primary: #0a0b0d;
-  --color-bg-secondary: #14161d;
-  --color-gold: #ffb000;
-  --color-gold-hover: #d97706;
-  --color-amber: #f59e0b;
-  --color-green: #10b981;
-  --color-green-light: #34d399;
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-gold: var(--accent-gold);
+  --color-gold-hover: var(--accent-gold-hover);
+  --color-amber: var(--accent-amber);
+  --color-green: var(--accent-green);
+  --color-green-light: #4ade80;
   --color-red-light: #f87171;
-  --color-red: #f87171;
-  --color-text-primary: #f3f4f6;
-  --color-text-secondary: #a8acb8;
-  --color-text-muted: #88909a;
-  --color-glass: rgba(255, 255, 255, 0.06);
-  --color-glass-active: rgba(255, 176, 0, 0.3);
-  --color-glass-hover: rgba(255, 255, 255, 0.12);
-  --font-sans-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --color-red: var(--accent-red);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-glass: var(--border-glass);
+  --color-glass-active: var(--border-glass-active);
+  --color-glass-hover: rgba(184, 98, 0, 0.12);
+  --font-sans-family: 'Outfit', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --radius-glass: 18px;
   --radius-glass-lg: 24px;
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-gold: 0 0 15px rgba(255, 176, 0, 0.15);
+  --shadow-glass: var(--shadow-glass);
+  --shadow-gold: var(--shadow-gold);
   --animation-float-up: float-up linear infinite;
   --animation-rock: rock 3s ease-in-out infinite;
   --animation-pulse-amber: pulse-amber 2s ease-in-out infinite;
@@ -97,16 +132,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #0a0b0d;
+    background: var(--bg-primary);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 176, 0, 0.2);
+    background: rgba(184, 98, 0, 0.25);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #ffb000;
+    background: var(--accent-gold);
   }
 }
 
